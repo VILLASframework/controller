@@ -3,7 +3,7 @@ import pika
 import json
 import config
 
-def callback(ch, method, properties, body):
+def callback(channel, method, properties, body):
 	json_body = json.loads(body)
 
 	print("Received %r" % json_body)

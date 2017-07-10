@@ -8,27 +8,30 @@ import time
 import villas.controller as controller
 import villas.amqp as amqp
 
-LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-			  '-35s %(lineno) -5d: %(message)s')
-LOGGER = logging.getLogger(__name__)
+simulators = [
+	controller.RscadSimulator('134.130.40.72', 4)
+]
+
+def connected(connection):
+	handles = [
+		controller.StatusPublisher(connection, simulator) for simulator in simulators,
+		controller.StatusConsumer(connection)
+	]
 
 def main():
-	logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-
-	connection = amqp.Connection(config.BROKER_URI)
-	chan = connection.channel()
+	logger = logging.getLogger()
+	logger.setLevel(logging.DEBUG)
 	
-	simulator = controller.RscadSimulator(config.SIM_HOST, config.SIM_RACK_NUMBER)
+	logger2 = logging.getLogger('pika.callback')
+	logger2.setLevel(logging.INFO)
 	
-	pub = controller.StatusPublisher(chan)
-	sub = controller.StatusSubscriber(chan)
-
+	connection = amqp.Connection(config.BROKER_URI, connected)
+	
 	try:
-		conn.run()
+		connection.run()
 	except KeyboardInterrupt:
-		conn.stop()
-	
-	LOGGER.info("Goodbye!")
+		connection.stop()
+		logger.info("Goodbye!")
 
 if __name__ == '__main__':
 	main()
