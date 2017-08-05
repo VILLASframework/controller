@@ -1,47 +1,59 @@
-import pika
 import logging
-import json
+import threading
 
-from villas.amqp.channel import Channel
+from kombu import Producer, Exchange
 
 LOGGER = logging.getLogger(__name__)
 
-class StatusPublisher(Channel):
+class Timer(threading.Thread):
+	def __init__(self, interval):
+		super(Timer, self).__init__()
+	
+		self.interval = interval
+		self.event = threading.Event()
 
-	def __init__(self, connection, simulator):
-		super(self.__class__, self).__init__(connection)
+	def run(self):
+		while not self.stopped():
+			self.periodical()
+			self.event.wait(self.interval)
+		
+		LOGGER.info("Thread stopped")
+	
+	def stopped(self):
+		return self.event.is_set()
+
+	def cancel(self):
+		LOGGER.info('Stopping thread: %s', threading.current_thread)
+		self.event.set()
+		self.join()
+
+class StatusPublisher(Producer, Timer):
+
+	def __init__(self, channel, simulator):
+		LOGGER.info('Starting status publisher for %s with connection %s', simulator, channel)
+
+		Timer.__init__(self,
+			interval = 2.0
+		)
+		
+		Producer.__init__(self,
+			channel = channel,
+			exchange = Exchange(
+				name = 'status',
+				type = 'topic',
+				durable = False
+			),
+			routing_key = 'status.simulator.rtds.rack1'
+		)
 		
 		self._simulator = simulator
 		
-	def on_open(self, channel):
-		super(self.__class__, self).on_open(channel)
-		
-		self.schedule_message()
+		self.start()
 	
-	def schedule_message(self):
-		self._timeout = self._connection.add_timeout(1.0, self.send)
-
-	def configure(self):
-		self._exchange = self._channel.exchange_declare(
-			exchange = 'status',
-			type = 'topic'
-		)
+	def periodical(self):
+		state = {
+			'state' : self._simulator.state,
+			'name'	:  self._simulator.name
+		}
 		
-		LOGGER.info('Configure from StatusPubsliher')
-
-	def send(self):
-		state = self._simulator.get_state()
-	
-		self._channel.basic_publish(
-			exchange = 'status',
-			routing_key = 'status.simulator.rtds.rack1',
-			body = json.dumps(state),
-			properties = pika.BasicProperties(content_type='application/json')
-		)
-		
-		self.schedule_message()
-
-	def on_closed(self, channel, reply_code, reply_text):
-		self._connection.remove_timeout(self._timeout)
-		
-		super(self.__class__, self).on_closed(channel, reply_code, reply_text)
+		self.publish(state)

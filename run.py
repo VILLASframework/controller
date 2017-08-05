@@ -1,37 +1,52 @@
 #!/usr/bin/env python
 import logging
-import pika
-import json
 import config
 import time
 
-import villas.controller as controller
-import villas.amqp as amqp
+from kombu import Connection, Queue
+from kombu.mixins import ConsumerMixin
+from kombu.pools import connections
 
-simulators = [
-	controller.RscadSimulator('134.130.40.72', 4)
+import villas.controller as controller
+
+class Worker(ConsumerMixin):
+
+	def __init__(self, channel):
+		self.connection = channel
+		
+	def get_consumers(self, Consumer, channel):
+		return [
+			controller.StatusConsumer(channel),
+			controller.Discovery(channel, simulators)
+		]
+
+simulators = [ 
+	controller.RscadSimulator('134.130.40.72', 2),
+	controller.RscadSimulator('134.130.40.73', 3),
+	controller.RscadSimulator('134.130.40.74', 4),
+	controller.RscadSimulator('134.130.40.75', 5),
+	controller.RscadSimulator('134.130.40.76', 6),
+	controller.RscadSimulator('134.130.40.77', 7),
 ]
 
-def connected(connection):
-	handles = [
-		controller.StatusPublisher(connection, simulator) for simulator in simulators,
-		controller.StatusConsumer(connection)
-	]
+if __name__ == '__main__':
+	logging.basicConfig(level=logging.DEBUG)
 
-def main():
 	logger = logging.getLogger()
 	logger.setLevel(logging.DEBUG)
 	
-	logger2 = logging.getLogger('pika.callback')
-	logger2.setLevel(logging.INFO)
+	logger3 = logging.getLogger('rtds')
+	logger3.setLevel(logging.INFO)
+
+	c = Connection(config.BROKER_URI)
+	w = Worker(c)
 	
-	connection = amqp.Connection(config.BROKER_URI, connected)
+	publishers = [ controller.StatusPublisher(c.clone(), s) for s in simulators ]
 	
 	try:
-		connection.run()
+		w.run()
 	except KeyboardInterrupt:
-		connection.stop()
-		logger.info("Goodbye!")
-
-if __name__ == '__main__':
-	main()
+		pass
+	
+	logger.info('Shutdown')
+	map(lambda x: x.cancel(), publishers)

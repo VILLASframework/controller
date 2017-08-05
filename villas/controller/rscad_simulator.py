@@ -10,6 +10,8 @@ class RscadSimulator(Simulator, Rack):
 	def __init__(self, host, number):
 		Rack.__init__(self, host, number)
 		
+		self.name = '%s(%d)' % (host, number)
+		
 	def start(self, body):
 		Simulator.start(self, body)
 		
@@ -22,7 +24,8 @@ class RscadSimulator(Simulator, Rack):
 	def resume(self, body):
 		Simulator.resume(self, body)
 
-	def get_state(self):
+	@property
+	def state(self):
 		try:
 			user, case = self.ping()
 			

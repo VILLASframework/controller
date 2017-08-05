@@ -1,5 +1,5 @@
 
-class Simulator:
+class Simulator(object):
 
 	def __init__(self):
 		self.state = { 'state' : 'unknown' }
@@ -15,3 +15,6 @@ class Simulator:
 
 	def resume(self, body):
 		print 'Resume simulation: ', body
+		
+	def __str__(self):
+		return self.name
