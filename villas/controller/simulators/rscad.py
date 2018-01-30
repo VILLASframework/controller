@@ -1,20 +1,20 @@
 import socket
 import time
 
-from simulator import Simulator
+from .. import simulator
 
-from rtds.rack.rack import Rack
+#from rtds.rack.rack import Rack
 
-class RscadSimulator(Simulator, Rack):
+class RscadSimulator(simulator.Simulator):
 
 	def __init__(self, host, number):
 		Rack.__init__(self, host, number)
-		
+
 		self.name = '%s(%d)' % (host, number)
-		
+
 	def start(self, body):
 		Simulator.start(self, body)
-		
+
 	def stop(self, body):
 		Simulator.stop(self, body)
 
@@ -28,7 +28,7 @@ class RscadSimulator(Simulator, Rack):
 	def state(self):
 		try:
 			user, case = self.ping()
-			
+
 			if len(user) > 0:
 				state = {
 					'status' : 'running',
@@ -43,7 +43,7 @@ class RscadSimulator(Simulator, Rack):
 			state = {
 				'status' : 'offline'
 			}
-			
+
 		state['time'] = int(round(time.time() * 1000))
 
 		return state
