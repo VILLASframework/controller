@@ -2,6 +2,7 @@ from .. import command
 
 import kombu
 import socket
+import json
 
 class SimulatorCommand(command.Command):
 
@@ -98,7 +99,8 @@ class SimulatorPingCommand(command.Command):
 	@staticmethod
 	def on_message(message):
 		if 'state' in message.payload:
-			print(message.payload)
+			sys.stdout.write("%s\n" % json.dumps(message.payload))
+			sys.stdout.flush()
 
 class SimulatorStartCommand(command.Command):
 

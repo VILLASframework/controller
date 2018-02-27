@@ -45,7 +45,6 @@ class MonitorCommand(command.Command):
 		except KeyboardInterrupt:
 			pass
 
-
 	@staticmethod
 	def on_message(message):
 		entry = {
