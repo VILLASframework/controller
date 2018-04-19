@@ -1,0 +1,27 @@
+{
+        "broker" : {
+                "url" : "amqp://guest:guest@172.17.0.3/%2F"
+        },
+        "directories" : {
+                "results" : "/var/lib/villas/results",
+                "models" : "/var/lib/villas/models"
+        },
+        "simulators" : [
+                {
+                        "name" : "DPSIM Simulator #1",
+                        "type" : "dpsim",
+                        "realm" : "de.rwth-aachen.eonerc.acs",
+                        "uuid" : "e15f5ad4-241f-11e8-9bf3-23372608bf60",
+                        "location" : "Richard's PC",
+                        "owner" : "rmr"
+                },
+                {
+                        "name" : "Dummy Simulator #1",
+                        "type" : "dummy",
+                        "realm" : "de.rwth-aachen.eonerc.acs",
+                        "uuid" : "e15f5ad4-041f-11e8-9bf3-23372608bf60",
+                        "location" : "Steffen's Laptop",
+                        "owner" : "svo"
+                }
+        ]
+}
