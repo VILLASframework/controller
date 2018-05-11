@@ -87,6 +87,10 @@ class Simulator(object):
 			self.pause(message)
 		elif action == 'resume':
 			self.resume(message)
+		elif action == 'shutdown':
+			self.shutdown(message)
+		elif action == 'reset':
+			self.reset(message)
 
 		message.ack()
 
@@ -106,6 +110,7 @@ class Simulator(object):
 			headers = self.headers
 		)
 
+	# Actions
 	def ping(self, message):
 		self.publish_state()
 
