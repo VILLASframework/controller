@@ -47,7 +47,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'running'])
 			t.start()
 
-			change_state('starting')
+			self.change_state('starting')
 		else:
 			self.logger.warn('Attempted to start non-stopped simulator')
 
@@ -58,7 +58,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'stopped'])
 			t.start()
 
-			change_state('stopping')
+			self.change_state('stopping')
 		else:
 			self.logger.warn('Attempted to stop non-running simulator')
 
@@ -69,7 +69,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'paused'])
 			t.start()
 
-			change_state('pausing')
+			self.change_state('pausing')
 		else:
 			self.logger.warn('Attempted to pause non-running simulator')
 
@@ -80,7 +80,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'running'])
 			t.start()
 
-			change_state('resuming')
+			self.change_state('resuming')
 		else:
 			self.logger.warn('Attempted to resume non-paused simulator')
 
@@ -90,7 +90,7 @@ class DummySimulator(simulator.Simulator):
 		t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'shutdown'])
 		t.start()
 
-		change_state('shuttingdown')
+		self.change_state('shuttingdown')
 
 	def reset(self, message):
 		self.logger.info('Resetting simulator...')
@@ -100,4 +100,4 @@ class DummySimulator(simulator.Simulator):
 
 		self.started = time.time()
 
-		change_state('resetting')
+		self.change_state('resetting')
