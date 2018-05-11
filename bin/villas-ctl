@@ -7,7 +7,7 @@ import kombu
 from villas.controller.config import Config, ConfigType
 from villas.controller.command import Command
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("villas.controller")
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
