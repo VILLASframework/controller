@@ -47,7 +47,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'running'])
 			t.start()
 
-			self._state = 'starting'
+			change_state('starting')
 		else:
 			self.logger.warn('Attempted to start non-stopped simulator')
 
@@ -58,7 +58,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'stopped'])
 			t.start()
 
-			self._state = 'stopping'
+			change_state('stopping')
 		else:
 			self.logger.warn('Attempted to stop non-running simulator')
 
@@ -69,7 +69,7 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'paused'])
 			t.start()
 
-			self._state = 'pausing'
+			change_state('pausing')
 		else:
 			self.logger.warn('Attempted to pause non-running simulator')
 
@@ -80,6 +80,6 @@ class DummySimulator(simulator.Simulator):
 			t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'running'])
 			t.start()
 
-			self._state = 'resuming'
+			change_state('resuming')
 		else:
 			self.logger.warn('Attempted to resume non-paused simulator')
