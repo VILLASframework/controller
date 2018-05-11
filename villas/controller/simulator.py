@@ -14,7 +14,7 @@ class Simulator(object):
 		self.model = None
 		self._state = 'unknown'
 
-		self.logger = logging.getLogger(self.uuid)
+		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
 		self.exchange = kombu.Exchange(
 			name = 'villas',
@@ -70,7 +70,7 @@ class Simulator(object):
 		}
 
 	def on_message(self, message):
-		#self.logger.debug("Received message: %s: %s", message, message.payload)
+		self.logger.debug("Received message: %s: %s", message, message.payload)
 
 		if 'action' not in message.payload:
 			return
