@@ -3,6 +3,7 @@ from .. import command
 import kombu
 import socket
 import json
+import sys
 
 class SimulatorCommand(command.Command):
 
@@ -15,7 +16,7 @@ class SimulatorCommand(command.Command):
 
 		filt = parser.add_argument_group('Filter simulators')
 		filt.add_argument('-r', '--realm')
-		filt.add_argument('-c', '--category')
+		filt.add_argument('-c', '--category', default = "simulator")
 		filt.add_argument('-t', '--type')
 		filt.add_argument('-u', '--uuid')
 
