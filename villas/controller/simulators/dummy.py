@@ -83,3 +83,21 @@ class DummySimulator(simulator.Simulator):
 			change_state('resuming')
 		else:
 			self.logger.warn('Attempted to resume non-paused simulator')
+
+	def shutdown(self, message):
+		self.logger.info('Shutdown simulator...')
+
+		t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'shutdown'])
+		t.start()
+
+		change_state('shuttingdown')
+
+	def reset(self, message):
+		self.logger.info('Resetting simulator...')
+
+		t = threading.Timer(1.0, DummySimulator.change_state, args=[self, 'idle'])
+		t.start()
+
+		self.started = time.time()
+
+		change_state('resetting')
