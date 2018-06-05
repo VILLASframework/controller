@@ -22,7 +22,6 @@ class SimulatorCommand(command.Command):
 		filt.add_argument('-c', '--category', default = "simulator")
 		filt.add_argument('-t', '--type')
 		filt.add_argument('-u', '--uuid')
-		filt.add_argument('-w', '--working_directory')
 
 		sim_subparsers = parser.add_subparsers(
 			title = 'action',
@@ -54,8 +53,6 @@ class SimulatorCommand(command.Command):
 		if args.type:
 			headers['type'] = args.type
 
-		if args.working_directory:
-			headers['working_directory'] = args.working_directory
 
 		return headers
 
