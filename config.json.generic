@@ -13,15 +13,12 @@
                         "realm" : "de.rwth-aachen.eonerc.acs",
                         "uuid" : "generic-1",
                         "location" : "Richard's PC",
-                        "owner" : "rmr"
-                },
-                {
-                        "name" : "DPSIM Simulator #1",
-                        "type" : "dpsim",
-                        "realm" : "de.rwth-aachen.eonerc.acs",
-                        "uuid" : "e15f5ad4-241f-11e8-9bf3-23372608bf60",
-                        "location" : "Richard's PC",
-                        "owner" : "rmr"
+                        "owner" : "rmr",
+			"whitelist" : [
+				"/sbin/ping",
+				"^echo"
+			],
+			"shell" : true
                 },
                 {
                         "name" : "Dummy Simulator #1",
