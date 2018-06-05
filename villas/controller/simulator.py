@@ -59,7 +59,8 @@ class Simulator(object):
 				binding_arguments = self.headers,
 				durable = False
 			),
-			no_ack = True
+			no_ack = True,
+			accept = {'application/json'}
 		)
 
 	@property
