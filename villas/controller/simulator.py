@@ -68,8 +68,19 @@ class Simulator(object):
 			'x-match' : 'any',
 			'category' : 'simulator',
 			'realm' : self.realm,
-			'uuid' : self.uuid
+			'uuid' : self.uuid,
+			'type' : self.type
 		}
+
+	@property
+	def state(self):
+		state = {
+			'state' : self._state,
+			'model' : self.model,
+			'properties' : self.properties
+		}
+
+		return state
 
 	def on_message(self, message):
 		self.logger.debug("Received message: %s: %s", message, message.payload)
@@ -95,16 +106,6 @@ class Simulator(object):
 			self.reset(message)
 
 		message.ack()
-
-	@property
-	def state(self):
-		state = {
-			'state' : self._state,
-			'model' : self.model,
-			'properties' : self.properties
-		}
-
-		return state
 
 	def publish_state(self):
 		self.producer.publish(

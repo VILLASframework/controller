@@ -8,23 +8,12 @@ import subprocess, signal
 class GenericSimulator(simulator.Simulator):
 
 	def __init__(self, **args):
-		args['type'] = 'generic'
-
 		self.started = time.time()
 		self.sim = None
 		self.child = None
 		self.return_code = None
 
 		super().__init__(**args)
-
-	@property
-	def headers(self):
-		headers = super().headers
-
-		headers['type'] = 'generic'
-		headers['version'] = '0.1.0'
-
-		return headers
 
 	@property
 	def state(self):
