@@ -132,19 +132,19 @@ class SimulatorStartCommand(command.Command):
 			exchange = exchange
 		)
 
+		message = {
+			'action' : 'start',
+		}
+
 		try:
-			parameters = json.loads(args.parameters)
-
-			message = {
-				'action' : 'start',
-				'parameters' : parameters
-			}
-
-			producer.publish(message,
-				headers = SimulatorCommand.get_headers(args)
-			)
+			if args.parameters is not None:
+				message['parameters'] = json.loads(args.parameters)
 		except json.JSONDecodeError as e:
 			LOGGER.error('Failed to parse parameters: %s at line %d column %d' % (e.msg, e.lineno, e.colno))
+
+		producer.publish(message,
+			headers = SimulatorCommand.get_headers(args)
+		)
 
 class SimulatorStopCommand(command.Command):
 
