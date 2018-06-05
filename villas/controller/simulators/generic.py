@@ -10,7 +10,6 @@ import subprocess, signal
 class GenericSimulator(simulator.Simulator):
 
 	def __init__(self, **args):
-		print(args)
 		args['type'] = 'generic'
 
 		self.started = time.time()

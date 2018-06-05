@@ -34,11 +34,9 @@ class Simulator(object):
 	def from_json(json):
 		from .simulators import dummy, generic, rtlab, rscad
 
-		print("Type: " + str(json['type']))
 		if json['type'] == "dummy":
 			return dummy.DummySimulator(**json)
 		if json['type'] == "generic":
-			print("hello richard")
 			return generic.GenericSimulator(**json)
 		elif json['type'] == "dpsim":
 			from .simulators import dpsim
