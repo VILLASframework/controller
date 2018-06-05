@@ -3,6 +3,7 @@
 import logging
 import argparse
 import kombu
+import socket
 
 from villas.controller.config import Config, ConfigType
 from villas.controller.command import Command
@@ -46,8 +47,7 @@ def setup_argparse():
 	)
 
 	parser.add_argument('-b', '--broker',
-		help = 'URL of AMQP broker',
-		default = "amqp://guest:guest@localhost/%2F"
+		help = 'URL of AMQP broker'
 	)
 
 	parser.add_argument('-c', '--config',
@@ -56,7 +56,7 @@ def setup_argparse():
 		default = Config()
 	)
 
-	parser.add_argument('--log-level',
+	parser.add_argument('-d', '--log-level',
 		default = 'INFO',
 		dest = 'log_level',
 		type = _log_level_string_to_int,
@@ -75,8 +75,25 @@ if __name__ == '__main__':
 
 	setup_logging(args)
 
-	with kombu.Connection(args.broker) as c:
+	if args.broker is not None:
+		broker = args.broker
+	elif 'broker' in args.config.json and 'url' in args.config.json['broker']:
+		broker = args.config.json['broker']['url']
+	else:
+		broker = 'amqp://guest:guest@localhost/%2F'
+
+	LOGGER.info('Connecting to: %s' % broker)
+	with kombu.Connection(broker, connect_timeout=3) as c:
 		try:
+			c.connect()
+
+			if c.connected:
+				LOGGER.info('Connection established!')
+
 			args.func(c, args)
+		except ConnectionRefusedError:
+			LOGGER.error("Connection refused!")
+		except socket.timeout:
+			LOGGER.error("Connection timeout!")
 		except KeyboardInterrupt:
 			LOGGER.info("Ctrl-C... Abort")
