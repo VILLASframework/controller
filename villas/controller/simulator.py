@@ -14,7 +14,7 @@ class Simulator(object):
 		self.model = None
 		self._state = 'unknown'
 
-		self.logger = logging.getLogger(self.uuid)
+		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
 		self.exchange = kombu.Exchange(
 			name = 'villas',
@@ -32,7 +32,7 @@ class Simulator(object):
 
 	@staticmethod
 	def from_json(json):
-		from .simulators import dummy, generic, rtlab, rscad, dpsim
+		from .simulators import dummy, generic, rtlab, rscad
 
 		print("Type: " + str(json['type']))
 		if json['type'] == "dummy":
@@ -41,6 +41,7 @@ class Simulator(object):
 			print("hello richard")
 			return generic.GenericSimulator(**json)
 		elif json['type'] == "dpsim":
+			from .simulators import dpsim
 			return dpsim.DPsimSimulator(**json)
 		elif json['type'] == "rtlab":
 			return dpsim.RTLabSimulator(**json)
@@ -73,7 +74,7 @@ class Simulator(object):
 		}
 
 	def on_message(self, message):
-		#self.logger.debug("Received message: %s: %s", message, message.payload)
+		self.logger.debug("Received message: %s: %s", message, message.payload)
 
 		if 'action' not in message.payload:
 			return
@@ -90,6 +91,10 @@ class Simulator(object):
 			self.pause(message)
 		elif action == 'resume':
 			self.resume(message)
+		elif action == 'shutdown':
+			self.shutdown(message)
+		elif action == 'reset':
+			self.reset(message)
 
 		message.ack()
 
@@ -109,6 +114,7 @@ class Simulator(object):
 			headers = self.headers
 		)
 
+	# Actions
 	def ping(self, message):
 		self.publish_state()
 

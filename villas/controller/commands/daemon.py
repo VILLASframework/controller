@@ -1,6 +1,9 @@
 from .. import command
 
+import logging
 import villas.controller.controller
+
+LOGGER = logging.getLogger(__name__)
 
 class DaemonCommand(command.Command):
 
@@ -11,9 +14,10 @@ class DaemonCommand(command.Command):
 
 	@staticmethod
 	def run(connection, args):
-		d = villas.controller.controller.Controller(connection, args.config.simulators)
-
 		try:
+			d = villas.controller.controller.Controller(connection, args.config.simulators)
 			d.run()
 		except KeyboardInterrupt:
 			pass
+		except ConnectionError:
+			LOGGER.error("Failed to connect to broker.")

@@ -9,6 +9,7 @@
 	"simulators" : [
 		{
 			"name" : "Dummy Simulator #1",
+			"category" : "simulator",
 			"type" : "dummy",
 			"realm" : "de.rwth-aachen.eonerc.acs",
 			"uuid" : "e15f5ad4-041f-11e8-9bf3-23372608bf60",
@@ -17,6 +18,7 @@
 		},
 		{
 			"name" : "Dummy Simulator #2",
+			"category" : "simulator",
 			"type" : "dummy",
 			"realm" : "de.rwth-aachen.eonerc.acs",
 			"uuid" : "ef6f6e46-044e-11e8-812f-17b6617a2f37",

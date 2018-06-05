@@ -3,6 +3,10 @@ from .. import command
 import kombu
 import socket
 import json
+import sys
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 class SimulatorCommand(command.Command):
 
@@ -15,7 +19,7 @@ class SimulatorCommand(command.Command):
 
 		filt = parser.add_argument_group('Filter simulators')
 		filt.add_argument('-r', '--realm')
-		filt.add_argument('-c', '--category')
+		filt.add_argument('-c', '--category', default = "simulator")
 		filt.add_argument('-t', '--type')
 		filt.add_argument('-u', '--uuid')
 		filt.add_argument('-w', '--working_directory')
@@ -111,6 +115,7 @@ class SimulatorStartCommand(command.Command):
 	@staticmethod
 	def add_parser(subparsers):
 		parser = subparsers.add_parser('start', help = 'Start a remote simulator')
+		parser.add_argument('-p', '--parameters', metavar = 'JSON')
 		parser.set_defaults(func = SimulatorStartCommand.run)
 
 	@staticmethod
@@ -126,13 +131,19 @@ class SimulatorStartCommand(command.Command):
 			exchange = exchange
 		)
 
-		message = {
-			'action' : 'start'
-		}
+		try:
+			parameters = json.loads(args.parameters)
 
-		producer.publish(message,
-			headers = SimulatorCommand.get_headers(args)
-		)
+			message = {
+				'action' : 'start',
+				'parameters' : parameters
+			}
+
+			producer.publish(message,
+				headers = SimulatorCommand.get_headers(args)
+			)
+		except json.JSONDecodeError as e:
+			LOGGER.error('Failed to parse parameters: %s at line %d column %d' % (e.msg, e.lineno, e.colno))
 
 class SimulatorStopCommand(command.Command):
 
