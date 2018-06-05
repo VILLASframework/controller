@@ -27,11 +27,6 @@ class GenericSimulator(simulator.Simulator):
 
 		return state
 
-	def change_state(self, state):
-		self.logger.info('Simulation generic')
-		self._state = state
-		self.publish_state()
-
 	def start(self, message):
 		# Start an external command
 		if self.child:

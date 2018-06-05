@@ -114,6 +114,10 @@ class Simulator(object):
 			headers = self.headers
 		)
 
+	def change_state(self, state):
+		self._state = state
+		self.publish_state()
+
 	# Actions
 	def ping(self, message):
 		self.publish_state()
