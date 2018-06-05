@@ -2,7 +2,7 @@ import dpsim
 
 from .. import simulator
 
-class DPSimSimulator(simulator.Simulator):
+class DPsimSimulator(simulator.Simulator):
 
 	def __init__(self):
 		pass
