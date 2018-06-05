@@ -1,8 +1,6 @@
 import time
 import socket
 import os
-import tempfile
-from io import BytesIO
 
 from .. import simulator
 import subprocess, signal
