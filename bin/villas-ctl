@@ -86,14 +86,18 @@ if __name__ == '__main__':
 	with kombu.Connection(broker, connect_timeout=3) as c:
 		try:
 			c.connect()
-
-			if c.connected:
-				LOGGER.info('Connection established!')
-
-			args.func(c, args)
 		except ConnectionRefusedError:
 			LOGGER.error("Connection refused!")
 		except socket.timeout:
 			LOGGER.error("Connection timeout!")
+		except:
+			LOGGER.error("Failed to establish connection to broker!")
+
+		try:
+			if c.connected:
+				LOGGER.info('Connection established!')
+
+			args.func(c, args)
+
 		except KeyboardInterrupt:
 			LOGGER.info("Ctrl-C... Abort")
