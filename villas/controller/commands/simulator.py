@@ -19,7 +19,7 @@ class SimulatorCommand(command.Command):
 
 		filt = parser.add_argument_group('Filter simulators')
 		filt.add_argument('-r', '--realm')
-		filt.add_argument('-c', '--category', default = "simulator")
+		filt.add_argument('-c', '--category')
 		filt.add_argument('-t', '--type')
 		filt.add_argument('-u', '--uuid')
 
@@ -39,7 +39,9 @@ class SimulatorCommand(command.Command):
 
 	@staticmethod
 	def get_headers(args):
-		headers = {}
+		headers = {
+			'x-match' : 'any'
+		}
 
 		if args.realm:
 			headers['realm'] = args.realm
@@ -53,6 +55,8 @@ class SimulatorCommand(command.Command):
 		if args.type:
 			headers['type'] = args.type
 
+		if len(headers) <= 1:
+			headers['x-match'] = 'all'
 
 		return headers
 
