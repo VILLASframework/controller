@@ -12,7 +12,7 @@ class Simulator(object):
 		self.properties = args
 
 		self.model = None
-		self._state = 'unknown'
+		self._state = 'idle'
 
 		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
@@ -21,6 +21,10 @@ class Simulator(object):
 			type = 'headers',
 			durable = True
 		)
+
+	def __del__(self):
+		if self.connection:
+			self.change_state('shutdown')
 
 	def set_connection(self, connection):
 		self.connection = connection
