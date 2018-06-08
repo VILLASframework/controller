@@ -19,7 +19,7 @@ class SimulatorCommand(command.Command):
 
 		filt = parser.add_argument_group('Filter simulators')
 		filt.add_argument('-r', '--realm')
-		filt.add_argument('-c', '--category', default = "simulator")
+		filt.add_argument('-c', '--category')
 		filt.add_argument('-t', '--type')
 		filt.add_argument('-u', '--uuid')
 
@@ -39,7 +39,9 @@ class SimulatorCommand(command.Command):
 
 	@staticmethod
 	def get_headers(args):
-		headers = {}
+		headers = {
+			'x-match' : 'any'
+		}
 
 		if args.realm:
 			headers['realm'] = args.realm
@@ -52,6 +54,9 @@ class SimulatorCommand(command.Command):
 
 		if args.type:
 			headers['type'] = args.type
+
+		if len(headers) <= 1:
+			headers['x-match'] = 'all'
 
 		return headers
 
@@ -127,19 +132,19 @@ class SimulatorStartCommand(command.Command):
 			exchange = exchange
 		)
 
+		message = {
+			'action' : 'start',
+		}
+
 		try:
-			parameters = json.loads(args.parameters)
-
-			message = {
-				'action' : 'start',
-				'parameters' : parameters
-			}
-
-			producer.publish(message,
-				headers = SimulatorCommand.get_headers(args)
-			)
+			if args.parameters is not None:
+				message['parameters'] = json.loads(args.parameters)
 		except json.JSONDecodeError as e:
 			LOGGER.error('Failed to parse parameters: %s at line %d column %d' % (e.msg, e.lineno, e.colno))
+
+		producer.publish(message,
+			headers = SimulatorCommand.get_headers(args)
+		)
 
 class SimulatorStopCommand(command.Command):
 

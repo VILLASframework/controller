@@ -12,7 +12,7 @@ class Simulator(object):
 		self.properties = args
 
 		self.model = None
-		self._state = 'unknown'
+		self._state = 'idle'
 
 		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
@@ -21,6 +21,10 @@ class Simulator(object):
 			type = 'headers',
 			durable = True
 		)
+
+	def __del__(self):
+		if self.connection:
+			self.change_state('shutdown')
 
 	def set_connection(self, connection):
 		self.connection = connection
@@ -34,10 +38,12 @@ class Simulator(object):
 
 	@staticmethod
 	def from_json(json):
-		from .simulators import dummy, rtlab, rscad
+		from .simulators import dummy, generic, rtlab, rscad
 
 		if json['type'] == "dummy":
 			return dummy.DummySimulator(**json)
+		if json['type'] == "generic":
+			return generic.GenericSimulator(**json)
 		elif json['type'] == "dpsim":
 			from .simulators import dpsim
 			return dpsim.DPsimSimulator(**json)
@@ -59,7 +65,8 @@ class Simulator(object):
 				binding_arguments = self.headers,
 				durable = False
 			),
-			no_ack = True
+			no_ack = True,
+			accept = {'application/json'}
 		)
 
 	@property
@@ -68,8 +75,19 @@ class Simulator(object):
 			'x-match' : 'any',
 			'category' : 'simulator',
 			'realm' : self.realm,
-			'uuid' : self.uuid
+			'uuid' : self.uuid,
+			'type' : self.type
 		}
+
+	@property
+	def state(self):
+		state = {
+			'state' : self._state,
+			'model' : self.model,
+			'properties' : self.properties
+		}
+
+		return state
 
 	def on_message(self, message):
 		self.logger.debug("Received message: %s: %s", message, message.payload)
@@ -96,21 +114,15 @@ class Simulator(object):
 
 		message.ack()
 
-	@property
-	def state(self):
-		state = {
-			'state' : self._state,
-			'model' : self.model,
-			'properties' : self.properties
-		}
-
-		return state
-
 	def publish_state(self):
 		self.producer.publish(
 			self.state,
 			headers = self.headers
 		)
+
+	def change_state(self, state):
+		self._state = state
+		self.publish_state()
 
 	# Actions
 	def ping(self, message):

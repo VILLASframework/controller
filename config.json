@@ -1,12 +1,38 @@
 {
 	"broker" : {
-		"url" : "amqp://guest:guest@localhost/%2F"
+		"url" : "amqp://villas:s3c0sim4!@137.226.248.91/%2F"
 	},
 	"directories" : {
 		"results" : "/var/lib/villas/results",
 		"models" : "/var/lib/villas/models"
 	},
 	"simulators" : [
+		{
+                        "name" : "Generic Simulator #1",
+                        "type" : "generic",
+                        "realm" : "de.rwth-aachen.eonerc.acs",
+                        "uuid" : "4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c",
+                        "location" : "Richard's PC",
+                        "owner" : "rmr",
+			"whitelist" : [
+				"/sbin/ping",
+				"^echo"
+			],
+			"shell" : true
+		},
+		{
+                        "name" : "Generic Simulator #2",
+                        "type" : "generic",
+                        "realm" : "de.rwth-aachen.eonerc.acs",
+                        "uuid" : "82b0d882-6b1c-11e8-9708-ffdb6522d53c",
+                        "location" : "Steffens PC",
+                        "owner" : "svg",
+			"whitelist" : [
+				"/sbin/ping",
+				"^echo"
+			],
+			"shell" : true
+                },
 		{
 			"name" : "Dummy Simulator #1",
 			"category" : "simulator",
@@ -15,15 +41,6 @@
 			"uuid" : "e15f5ad4-041f-11e8-9bf3-23372608bf60",
 			"location" : "Steffen's Laptop",
 			"owner" : "svo"
-		},
-		{
-			"name" : "Dummy Simulator #2",
-			"category" : "simulator",
-			"type" : "dummy",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "ef6f6e46-044e-11e8-812f-17b6617a2f37",
-			"location" : "Markus' Laptop",
-			"owner" : "mgr"
 		}
 	]
 }
