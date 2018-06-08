@@ -30,6 +30,8 @@ class Simulator(object):
 			exchange = self.exchange
 		)
 
+		self.publish_state()
+
 	@staticmethod
 	def from_json(json):
 		from .simulators import dummy, rtlab, rscad
