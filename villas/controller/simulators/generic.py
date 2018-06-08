@@ -54,7 +54,7 @@ class GenericSimulator(simulator.Simulator):
 		argv = [argv0]
 
 		if 'argv' in params:
-			argv += params['argv']
+			argv += [ str(x) for x in params['argv'] ]
 
 		if 'shell' in params:
 			if 'shell' not in self.properties or self.properties['shell'] != True:
