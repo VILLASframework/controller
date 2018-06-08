@@ -22,10 +22,6 @@ class Simulator(object):
 			durable = True
 		)
 
-	def __del__(self):
-		if self.connection:
-			self.change_state('shutdown')
-
 	def set_connection(self, connection):
 		self.connection = connection
 
@@ -138,6 +134,12 @@ class Simulator(object):
 		pass
 
 	def resume(self, message):
+		pass
+
+	def shutdow(self, message):
+		pass
+
+	def reset(self, message):
 		pass
 
 	def __str__(self):
