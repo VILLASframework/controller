@@ -1,6 +1,7 @@
 import json
 import argparse
 import logging
+import os
 
 from . import simulator
 
@@ -16,21 +17,21 @@ class ConfigType(argparse.FileType):
 
 class Config(object):
 
-	DEFAULT_PATHS = [ '/etc/villas/controller.json', '~/.villas/controller.json', 'config.json' ]
+	DEFAULT_PATHS = [ 'config.json', 'etc/config.json', '/etc/villas/controller/config.json' ]
 
 	def __init__(self, f = None):
-		if f:
-			self.json = json.load(f)
-		else:
-			self.try_default_paths()
+		if f is None:
+			f = self.find_default_path()
 
-	def try_default_paths(self):
+		LOGGER.info('Reading configuration from %s' % f)
+
+		with open(f) as fp:
+			self.json = json.load(fp)
+
+	def find_default_path(self):
 		for path in Config.DEFAULT_PATHS:
-			try:
-				with open(path) as f:
-					self.json = json.load(f)
-			except IOError:
-				pass
+			if os.access(path, os.R_OK):
+				return path
 
 	@property
 	def simulators(self):
