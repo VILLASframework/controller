@@ -5,11 +5,15 @@ import argparse
 import kombu
 import socket
 import sys
+import datetime
+import termcolor
+
+from villas.controller import __version__ as version
 
 from villas.controller.config import Config, ConfigType
 from villas.controller.command import Command
 
-LOGGER = logging.getLogger("villas.controller")
+LOGGER = logging.getLogger('villas.controller')
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
 
@@ -27,7 +31,7 @@ def _log_level_string_to_int(log_level_string):
 
 def setup_logging(args):
 	logging.basicConfig(level=args.log_level,
-		format='%(asctime)s %(levelname)-8s %(name)s %(message)s',
+		format='%(asctime)s | %(levelname)s | %(name)s | %(message)s',
 		datefmt='%Y-%m-%d %H:%M:%S'
 	)
 
@@ -37,18 +41,35 @@ def setup_logging(args):
 	amqp = logging.getLogger('amqp')
 	amqp.setLevel(logging.INFO)
 
-	kombu = logging.getLogger("kombu")
+	kombu = logging.getLogger('kombu')
 	kombu.setLevel(args.log_level)
 
+	villas = logging.getLogger('villas')
+	villas.setLevel(args.log_level)
 
 def setup_argparse():
 	# Main parser
 	parser = argparse.ArgumentParser(
-		prog = 'villas-ctl'
+		prog = 'villas-ctl',
+		formatter_class = argparse.RawTextHelpFormatter,
+		epilog = ("VILLAScontroller %s\n"
+			  " Copyright 2014-%d, Institute for Automation of Complex Power Systems, EONERC\n"
+ 			  " Steffen Vogel <StVogel@eonerc.rwth-aachen.de>\n"
+			% (
+				termcolor.colored(version, "blue"),
+				datetime.date.today().year
+			)
+		)
 	)
 
 	parser.add_argument('-b', '--broker',
 		help = 'URL of AMQP broker'
+	)
+
+	parser.add_argument('-v', '--version',
+		help = 'Show program version and exit',
+		action = 'version',
+		version = version
 	)
 
 	parser.add_argument('-c', '--config',
@@ -71,6 +92,10 @@ def setup_argparse():
 	return parser
 
 if __name__ == '__main__':
+	# Show log messages during parsing
+	l = logging.getLogger('villas')
+	l.setLevel(logging.DEBUG)
+
 	parser = setup_argparse()
 	args = parser.parse_args()
 
@@ -88,13 +113,13 @@ if __name__ == '__main__':
 		try:
 			c.connect()
 		except ConnectionRefusedError:
-			LOGGER.error("Connection refused!")
+			LOGGER.error('Connection refused!')
 			sys.exit(-1)
 		except socket.timeout:
-			LOGGER.error("Connection timeout!")
+			LOGGER.error('Connection timeout!')
 			sys.exit(-1)
 		except:
-			LOGGER.error("Failed to establish connection to broker!")
+			LOGGER.error('Failed to establish connection to broker!')
 			sys.exit(-1)
 
 		try:
@@ -104,4 +129,4 @@ if __name__ == '__main__':
 			args.func(c, args)
 
 		except KeyboardInterrupt:
-			LOGGER.info("Ctrl-C... Abort")
+			LOGGER.info('Ctrl-C... Abort')
