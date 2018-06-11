@@ -66,7 +66,8 @@ setup(
 		'termcolor'
 	],
 	data_files = [
-		('/etc/villas/controller', glob('etc/*.json'))
+		('/etc/villas/controller', glob('etc/*.json')),
+		('/etc/systemd/system', ['villas-controller.service'])
 	],
 	scripts = glob('bin/*')
 )

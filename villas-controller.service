@@ -1,0 +1,10 @@
+[Unit]
+Description=VILLAScontroller
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/local/bin/villas-ctl -c /etc/villas/controller/config.json daemon
+
+[Install]
+WantedBy=multi-user.target
