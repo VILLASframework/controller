@@ -1,6 +1,8 @@
 import logging
 import kombu
 import uuid
+import pycurl
+from io import BytesIO
 
 class Simulator(object):
 
@@ -141,6 +143,20 @@ class Simulator(object):
 
 	def reset(self, message):
 		pass
+
+	def downloadURL(self, url):
+		try:
+			buffer = BytesIO()
+			c = pycurl.Curl()
+			c.setopt(c.URL, url)
+			c.setopt(c.WRITEDATA, buffer)
+			c.perform()
+			c.close()
+		except pycurl.error as e:
+			self.logger.error('Failed to load url: ' + url + " error: " + str(e))
+			return None
+
+		return buffer
 
 	def __str__(self):
 		return "Simulator <%s, %s>" % (self.type, self.uuid)

@@ -3,9 +3,7 @@ import dpsim.components.dp as dp
 import time
 import socket
 import os
-import pycurl
 import tempfile
-from io import BytesIO
 
 from .. import simulator
 
@@ -45,24 +43,16 @@ class DPsimSimulator(simulator.Simulator):
 		self.publish_state()
 
 	def loadCIMURL(self, url):
-		try:
-			buffer = BytesIO()
-			c = pycurl.Curl()
-			c.setopt(c.URL, url)
-			c.setopt(c.WRITEDATA, buffer)
-			c.perform()
-			c.close()
-		except pycurl.error:
-			self.logger.error('Failed to load url: ' + url)
-
-		try:
-			fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
-			fp.write(buffer.getvalue())
-			fp.close()
-			dpsim.load_cim(fp.name)
-			os.unlink(fp.name)
-		except IOError:
-			self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
+		buffer = self.downloadURL(url)
+		if buffer != None:
+			try:
+				fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
+				fp.write(buffer.getvalue())
+				fp.close()
+				dpsim.load_cim(fp.name)
+				os.unlink(fp.name)
+			except IOError:
+				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
 
 	def start(self, message):
 		if message.properties:
