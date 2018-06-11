@@ -9,6 +9,8 @@ import os
 
 from .exceptions import SimulationException
 from . import __version__ as version
+import pycurl
+from io import BytesIO
 
 class Simulator(object):
 
