@@ -69,59 +69,75 @@ class GenericSimulator(simulator.Simulator):
 			args['env'] = params['shell']
 
 		valid = False
-		for regex in self.properties['whitelist']:
-			if re.match(regex, argv0) is not None:
-				valid = True
-				break
+		self.logger.info(self.properties)
+		if 'whitelist' in self.properties:
+			for regex in self.properties['whitelist']:
+				self.logger.info("Checking for match: " + regex)
+				if re.match(regex, argv0) is not None:
+					valid = True
+					break
 
 		if not valid:
 			self.logger.error('Executable "%s" is not whitelisted!' % argv0)
-			self.change_state('failed')
+			self.change_state('error')
 			return
 
-		self.logger.info('Execute: %s' % argv)
-		self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
+		if self.change_state('starting'):
+			self.logger.info('Execute: %s' % argv)
+			self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
 
-		self.change_state('running')
-
-		while self.child.returncode is None:
-			self.child.poll()
-
-			# Suspend the thread for some time
-			# TODO: do we really need this?
-			time.sleep(0.1)
-
-		if self.child.returncode >= 0:
-			self.return_code = self.child.returncode
-			self.logger.info('Child process terminated with code: %d' % self.return_code)
-			self.change_state('finished')
-		elif self.child.returncode == -signal.SIGTERM:
-			self.logger.info('Child process has been terminated by a signal')
-			self.change_state('stopped')
-		else:
-			sig = signal.Signals(-self.child.returncode)
-			self.logger.error('Child process caught signal: %s', sig.name)
-			self.change_state('failed')
+		if self.change_state('running'):
+			self.child.wait()
+			if self.child.returncode == 0:
+				self.logger.info('Child process has finished.')
+				self.change_state('stopping')
+				self.change_state('idle')
+			elif self.child.returncode > 0:
+				self.return_code = self.child.returncode
+				self.logger.info('Child process exited with code: %d' % self.return_code)
+				self.change_state('error')
+			elif self.child.returncode == -signal.SIGTERM:
+				self.logger.info('Child process was terminated')
+				self.change_state('idle')
+			else:
+				sig = signal.Signals(-self.child.returncode)
+				self.logger.error('Child process caught signal: %s', sig.name)
+				self.change_state('error')
 
 		self.child = None
 
 	def reset(self, message):
-		# Stop the external command (kill)
+		self.change_state('idle')
+
+		# Don't send a signal if the child does not exist
 		if self.child is None:
 			return
 
+		# Stop the external command (kill)
 		# This is a hard reset!
 		self.child.send_signal(signal.SIGKILL)
 
 	def stop(self, message):
-		# Stop the external command (kill)
+		send_cont = False
+
 		if self.child is None:
 			self.change_state('error')
 			self.logger.error('No child process is running')
 			return
 
-		self.child.terminate()
-		self.logger.info('Send termination signal to child process')
+		if self._state == 'paused':
+			send_cont = True
+
+		# Stop the external command (SIGTERM)
+		if self.change_state('stopping'):
+			self.child.terminate()
+			self.logger.info('Send termination signal to child process')
+			# If the process has been paused, we must resume it
+			# so that it can process the SIGTERM and exit
+			if send_cont:
+				self.child.send_signal(signal.SIGCONT)
+
+		# final transition to idle state occurs in run thread
 
 	def pause(self, message):
 		# Suspend command
@@ -130,9 +146,10 @@ class GenericSimulator(simulator.Simulator):
 			self.logger.error('No child process is running')
 			return
 
-		self.child.send_signal(signal.SIGSTOP)
-		self.change_state('paused')
-		self.logger.info('Child process has been paused')
+		if self.change_state('pausing'):
+			self.child.send_signal(signal.SIGSTOP)
+		if self.change_state('paused'):
+			self.logger.info('Child process has been paused')
 
 	def resume(self, message):
 		# Let process run
@@ -141,9 +158,10 @@ class GenericSimulator(simulator.Simulator):
 			self.logger.error('No child process is running')
 			return
 
-		self.child.send_signal(signal.SIGCONT)
-		self.change_state('resumed')
-		self.logger.info('Child process has been resumed')
+		if self.change_state('resuming'):
+			self.child.send_signal(signal.SIGCONT)
+		if self.change_state('running'):
+			self.logger.info('Child process has resumed')
 
 	def ping(self, message):
 		if (self.child):
