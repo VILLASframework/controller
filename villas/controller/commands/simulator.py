@@ -36,6 +36,7 @@ class SimulatorCommand(command.Command):
 		SimulatorPauseCommand.add_parser(sim_subparsers)
 		SimulatorResumeCommand.add_parser(sim_subparsers)
 		SimulatorPingCommand.add_parser(sim_subparsers)
+		SimulatorResetCommand.add_parser(sim_subparsers)
 
 	@staticmethod
 	def get_headers(args):
@@ -224,6 +225,34 @@ class SimulatorResumeCommand(command.Command):
 
 		message = {
 			'action' : 'resume'
+		}
+
+		producer.publish(message,
+			headers = SimulatorCommand.get_headers(args)
+		)
+
+class SimulatorResetCommand(command.Command):
+
+	@staticmethod
+	def add_parser(subparsers):
+		parser = subparsers.add_parser('reset', help = 'Reset a remote simulator from error state')
+		parser.set_defaults(func = SimulatorResetCommand.run)
+
+	@staticmethod
+	def run(connection, args):
+		channel = connection.channel()
+
+		exchange = kombu.Exchange('villas',
+			type = 'headers',
+			durable = True
+		)
+
+		producer = kombu.Producer(channel,
+			exchange = exchange
+		)
+
+		message = {
+			'action' : 'reset'
 		}
 
 		producer.publish(message,

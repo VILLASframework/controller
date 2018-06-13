@@ -117,8 +117,34 @@ class Simulator(object):
 		)
 
 	def change_state(self, state):
+		success = True
+		valid_state_transitions = {
+			# current   # list of valid next states
+			'error':    [ 'idle', 'error' ],
+			'idle':     [ 'idle', 'starting', 'error' ],
+			'starting': [ 'running', 'error' ],
+			'running':  [ 'pausing', 'stopping', 'error' ],
+			'pausing':  [ 'paused', 'error' ],
+			'paused':   [ 'resuming', 'stopping', 'error' ],
+			'resuming': [ 'running', 'error' ],
+			'stopping': [ 'idle', 'error' ]
+		}
+
+		# check that we have been asked for a valid state
+		if state not in valid_state_transitions:
+			self.logger.error("Unrecognized state: " + state)
+			state = 'error'
+			success = False
+
+		if state not in valid_state_transitions[self._state]:
+			self.logger.error("Cannot transition from " +
+					self._state + " to " + state)
+			state = 'error'
+			success = False
+
 		self._state = state
 		self.publish_state()
+		return success
 
 	# Actions
 	def ping(self, message):
