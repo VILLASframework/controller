@@ -196,4 +196,4 @@ class Simulator(object):
 		self.started = time.time()
 
 	def __str__(self):
-		return "Simulator <%s, %s>" % (self.type, self.uuid)
+		return "%sSimulator <%s: %s>" % (self.type, self.name, self.uuid)

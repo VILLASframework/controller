@@ -10,7 +10,7 @@ class Controller(kombu.mixins.ConsumerMixin):
 		self.connection = connection
 
 		for sim in self.simulators:
-			LOGGER.info("Adding %s simulator: %s (%s)", sim.type, sim.name, sim.uuid)
+			LOGGER.info('Adding %s', str(sim))
 			sim.set_connection(connection)
 
 	def get_consumers(self, Consumer, channel):
