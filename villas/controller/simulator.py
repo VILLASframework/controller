@@ -23,6 +23,7 @@ class Simulator(object):
 
 		self.model = None
 		self._state = 'idle'
+		self._stateargs = {}
 
 		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
@@ -178,7 +179,7 @@ class Simulator(object):
 	def resume(self, message):
 		pass
 
-	def shutdow(self, message):
+	def shutdown(self, message):
 		pass
 
 	def reset(self, message):
