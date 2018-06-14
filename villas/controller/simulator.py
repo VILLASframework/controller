@@ -44,7 +44,7 @@ class Simulator(object):
 
 	@staticmethod
 	def from_json(json):
-		from .simulators import dummy, generic, rtlab, rscad
+		from .simulators import dummy, generic, rtlab, rtds
 
 		if json['type'] == "dummy":
 			return dummy.DummySimulator(**json)
@@ -55,8 +55,8 @@ class Simulator(object):
 			return dpsim.DPsimSimulator(**json)
 		elif json['type'] == "rtlab":
 			return dpsim.RTLabSimulator(**json)
-		elif json['type'] == "rscad":
-			return dpsim.RSCADSimulator(**json)
+		elif json['type'] == "rtds":
+			return dpsim.RTDSSimulator(**json)
 		else:
 			return None
 
