@@ -13,7 +13,8 @@ class Simulator(object):
 		self.realm = args['realm']
 		self.type = args['type']
 		self.name = args['name']
-		self.uuid = args['uuid'] or uuid.uuid4()
+		self.enabled = args['enabled'] if 'enabled' in args else True
+		self.uuid = args['uuid'] if 'uuid' in args else uuid.uuid4()
 		self.started = time.time()
 
 		self.properties = args
