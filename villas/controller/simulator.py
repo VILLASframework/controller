@@ -148,7 +148,7 @@ class Simulator(object):
 		valid_state_transitions = {
 			# current        # list of valid next states
 			'error':         [ 'resetting', 'error' ],
-			'idle':          [ 'resetting', 'error', 'idle', 'starting' ],
+			'idle':          [ 'resetting', 'error', 'idle', 'starting', 'shuttingdown' ],
 			'starting':      [ 'resetting', 'error', 'running' ],
 			'running':       [ 'resetting', 'error', 'pausing', 'stopping' ],
 			'pausing':       [ 'resetting', 'error', 'paused' ],
