@@ -2,6 +2,7 @@ import sys
 import threading
 import re
 
+from ..exceptions import SimulationException
 from .. import simulator
 import subprocess, signal
 
@@ -24,60 +25,53 @@ class GenericSimulator(simulator.Simulator):
 	def start(self, message):
 		# Start an external command
 		if self.child is not None:
-			self.change_state('error')
-			self.logger.error('Child process is already running');
-			return
+			raise SimulationException(self, 'Child process is already running')
 
 		try:
 			params = message.payload['parameters']
 
 			thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
 			thread.start()
-		except:
-			self.change_state('error')
-
+		except Exception as e:
+			self.change_state('error', msg = 'Failed to start child process: %s' % e)
 
 	def run(self, params):
-		# TODO: validate parameters against simulator properties (self.properties)
-		args = { }
+		try:
+			args = { }
+			argv0 = params['executable']
+			argv = [argv0]
 
-		argv0 = params['executable']
-		argv = [argv0]
+			if 'argv' in params:
+				argv += [ str(x) for x in params['argv'] ]
 
-		if 'argv' in params:
-			argv += [ str(x) for x in params['argv'] ]
+			if 'shell' in params:
+				if 'shell' not in self.properties or self.properties['shell'] != True:
+					raise SimulationException(self, 'Shell exeuction is not allowed!')
 
-		if 'shell' in params:
-			if 'shell' not in self.properties or self.properties['shell'] != True:
-				self.logger.error('Shell exeuction is not allowed!')
-				self.change_state('failed')
-				return
+				args['shell'] = params['shell']
 
-			args['shell'] = params['shell']
-		if 'working_directory' in params:
-			args['cwd'] = params['working_directory']
-		if 'environment' in params:
-			args['env'] = params['shell']
+			if 'working_directory' in params:
+				args['cwd'] = params['working_directory']
 
-		valid = False
-		self.logger.info(self.properties)
-		if 'whitelist' in self.properties:
-			for regex in self.properties['whitelist']:
-				self.logger.info("Checking for match: " + regex)
-				if re.match(regex, argv0) is not None:
-					valid = True
-					break
+			if 'environment' in params:
+				args['env'] = params['shell']
 
-		if not valid:
-			self.logger.error('Executable "%s" is not whitelisted!' % argv0)
-			self.change_state('error')
-			return
+			valid = False
+			if 'whitelist' in self.properties:
+				for regex in self.properties['whitelist']:
+					self.logger.info("Checking for match: " + regex)
+					if re.match(regex, argv0) is not None:
+						valid = True
+						break
 
-		if self.change_state('starting'):
+			if not valid:
+				raise SimulationException(self, 'Executable is not whitelisted for this simulator', executable = argv0)
+
 			self.logger.info('Execute: %s' % argv)
 			self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
 
-		if self.change_state('running'):
+			self.change_state('running')
+
 			self.child.wait()
 			if self.child.returncode == 0:
 				self.logger.info('Child process has finished.')
@@ -85,15 +79,15 @@ class GenericSimulator(simulator.Simulator):
 				self.change_state('idle')
 			elif self.child.returncode > 0:
 				self.return_code = self.child.returncode
-				self.logger.info('Child process exited with code: %d' % self.return_code)
-				self.change_state('error')
+				raise SimulationException(self, 'Child process exited', code = self.return_code)
 			elif self.child.returncode == -signal.SIGTERM:
-				self.logger.info('Child process was terminated')
+				self.logger.info('Child process was terminated successfully')
 				self.change_state('idle')
 			else:
 				sig = signal.Signals(-self.child.returncode)
-				self.logger.error('Child process caught signal: %s', sig.name)
-				self.change_state('error')
+				raise SimulationException(self, 'Child process caught signal', signal = -self.child.returncode, signal_name = sig.name)
+		except SimulationException as se:
+			self.change_state('error', msg = se.msg, **se.info)
 
 		self.child = None
 
@@ -112,52 +106,38 @@ class GenericSimulator(simulator.Simulator):
 		send_cont = False
 
 		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+			raise SimulationException(self, 'No child process is running')
 
 		if self._state == 'paused':
 			send_cont = True
 
 		# Stop the external command (SIGTERM)
-		if self.change_state('stopping'):
-			self.child.terminate()
-			self.logger.info('Send termination signal to child process')
-			# If the process has been paused, we must resume it
-			# so that it can process the SIGTERM and exit
-			if send_cont:
-				self.child.send_signal(signal.SIGCONT)
+		self.child.terminate()
+		self.logger.info('Send termination signal to child process')
+
+		# If the process has been paused, we must resume it
+		# so that it can process the SIGTERM and exit
+		if send_cont:
+			self.child.send_signal(signal.SIGCONT)
 
 		# final transition to idle state occurs in run thread
 
 	def pause(self, message):
 		# Suspend command
 		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+			raise SimulationException(self, 'No child process is running')
 
-		if self.change_state('pausing'):
-			self.child.send_signal(signal.SIGSTOP)
-		if self.change_state('paused'):
-			self.logger.info('Child process has been paused')
+		self.child.send_signal(signal.SIGSTOP)
+
+		self.change_state('paused')
+		self.logger.info('Child process has been paused')
 
 	def resume(self, message):
 		# Let process run
 		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+			raise SimulationException(self, 'No child process is running')
 
-		if self.change_state('resuming'):
-			self.child.send_signal(signal.SIGCONT)
-		if self.change_state('running'):
-			self.logger.info('Child process has resumed')
+		self.child.send_signal(signal.SIGCONT)
 
-	def ping(self, message):
-		if (self.child):
-			poll_result = self.child.poll()
-			if (poll_result != None):
-				self.return_code = poll_result
-
-		self.publish_state()
+		self.change_state('running')
+		self.logger.info('Child process has resumed')
