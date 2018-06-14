@@ -14,6 +14,7 @@ class Simulator(object):
 	def __init__(self, **args):
 		self.realm = args['realm']
 		self.type = args['type']
+		self.name = args['name']
 		self.uuid = args['uuid'] or uuid.uuid4()
 		self.started = time.time()
 
