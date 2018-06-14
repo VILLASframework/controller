@@ -63,7 +63,8 @@ setup(
 	],
 	install_requires = [
 		'kombu',
-		'termcolor'
+		'termcolor',
+		'pyrtds'
 	],
 	data_files = [
 		('/etc/villas/controller', glob('etc/*.json')),
