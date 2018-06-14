@@ -1,6 +1,3 @@
-import time
-import socket
-import os
 import sys
 import threading
 import re
@@ -11,8 +8,6 @@ import subprocess, signal
 class GenericSimulator(simulator.Simulator):
 
 	def __init__(self, **args):
-		self.started = time.time()
-		self.sim = None
 		self.child = None
 		self.return_code = None
 
@@ -22,10 +17,6 @@ class GenericSimulator(simulator.Simulator):
 	def state(self):
 		state = super().state
 
-		state['uptime'] = time.time() - self.started
-		state['version'] = '0.1.0'
-		state['host'] = socket.getfqdn()
-		state['kernel'] = os.uname()
 		state['return_code'] = self.return_code
 
 		return state

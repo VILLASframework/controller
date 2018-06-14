@@ -3,6 +3,11 @@ import kombu
 import uuid
 import pycurl
 from io import BytesIO
+import time
+import socket
+import os
+
+from villas.controller import __version__ as version
 
 class Simulator(object):
 
@@ -10,6 +15,7 @@ class Simulator(object):
 		self.realm = args['realm']
 		self.type = args['type']
 		self.uuid = args['uuid'] or uuid.uuid4()
+		self.started = time.time()
 
 		self.properties = args
 
@@ -82,7 +88,13 @@ class Simulator(object):
 		state = {
 			'state' : self._state,
 			'model' : self.model,
-			'properties' : self.properties
+			'version' : version,
+			'properties' : self.properties,
+			'uptime' : time.time() - self.started,
+			'host' : socket.getfqdn(),
+			'kernel' : os.uname(),
+
+			**self._stateargs
 		}
 
 		return state
