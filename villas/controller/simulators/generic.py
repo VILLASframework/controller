@@ -158,7 +158,7 @@ class GenericSimulator(simulator.Simulator):
 		if self.child is None:
 			raise SimulationException(self, 'No child process is running')
 
-		self.child.send_signal(signal.SIGSTP)
+		self.child.send_signal(signal.SIGTSTP)
 
 		self.change_state('paused')
 		self.logger.info('Child process has been paused')
