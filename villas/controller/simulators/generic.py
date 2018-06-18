@@ -1,10 +1,12 @@
 import sys
 import threading
 import re
+import psutil
+import subprocess
+import signal
 
 from ..exceptions import SimulationException
 from .. import simulator
-import subprocess, signal
 
 class GenericSimulator(simulator.Simulator):
 
@@ -83,20 +85,33 @@ class GenericSimulator(simulator.Simulator):
 			elif self.child.returncode == -signal.SIGTERM:
 				self.logger.info('Child process was terminated successfully')
 				self.change_state('idle')
+			elif self.child.returncode == -signal.SIGKILL and self._state == 'resetting':
+				self.logger.info('Child process was resetted successfully')
+				self.change_state('idle')
 			else:
 				sig = signal.Signals(-self.child.returncode)
 				raise SimulationException(self, 'Child process caught signal', signal = -self.child.returncode, signal_name = sig.name)
+
+		# GenericSimulator.run() is executed in a separate thread.
+		# We therefore want to catch exceptions here.
 		except SimulationException as se:
 			self.change_state('error', msg = se.msg, **se.info)
 
 		self.child = None
 
 	def reset(self, message):
-		self.change_state('idle')
-
 		# Don't send a signal if the child does not exist
 		if self.child is None:
 			return
+
+		# Kill all childs of the simulation process
+		parent = psutil.Process(self.child.pid)
+		children = parent.children(recursive = True)
+
+		for child in children:
+			child.kill()
+
+		parent.kill()
 
 		# Stop the external command (kill)
 		# This is a hard reset!
