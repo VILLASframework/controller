@@ -108,25 +108,16 @@ if __name__ == '__main__':
 	else:
 		broker = 'amqp://guest:guest@localhost/%2F'
 
-	LOGGER.info('Connecting to: %s' % broker)
-	with kombu.Connection(broker, connect_timeout=3) as c:
-		try:
+	try:
+		with kombu.Connection(broker, connect_timeout=3) as c:
+			LOGGER.info('Connecting to: %s' % broker)
 			c.connect()
-		except ConnectionRefusedError:
-			LOGGER.error('Connection refused!')
-			sys.exit(-1)
-		except socket.timeout:
-			LOGGER.error('Connection timeout!')
-			sys.exit(-1)
-		except:
-			LOGGER.error('Failed to establish connection to broker!')
-			sys.exit(-1)
-
-		try:
-			if c.connected:
-				LOGGER.info('Connection established!')
 
 			args.func(c, args)
 
-		except KeyboardInterrupt:
-			LOGGER.info('Ctrl-C... Abort')
+	except ConnectionRefusedError:
+		LOGGER.error('Connection refused!')
+	except socket.timeout:
+		LOGGER.error('Connection timeout!')
+	else:
+		LOGGER.info('Goodbye')

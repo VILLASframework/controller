@@ -1,18 +1,14 @@
-import time
-import socket
-import os
 import sys
 import threading
 import re
 
+from ..exceptions import SimulationException
 from .. import simulator
 import subprocess, signal
 
 class GenericSimulator(simulator.Simulator):
 
 	def __init__(self, **args):
-		self.started = time.time()
-		self.sim = None
 		self.child = None
 		self.return_code = None
 
@@ -22,10 +18,6 @@ class GenericSimulator(simulator.Simulator):
 	def state(self):
 		state = super().state
 
-		state['uptime'] = time.time() - self.started
-		state['version'] = '0.1.0'
-		state['host'] = socket.getfqdn()
-		state['kernel'] = os.uname()
 		state['return_code'] = self.return_code
 
 		return state
@@ -33,122 +25,119 @@ class GenericSimulator(simulator.Simulator):
 	def start(self, message):
 		# Start an external command
 		if self.child is not None:
-			self.change_state('error')
-			self.logger.error('Child process is already running');
-			return
+			raise SimulationException(self, 'Child process is already running')
 
 		try:
 			params = message.payload['parameters']
 
 			thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
 			thread.start()
-		except:
-			self.change_state('error')
-
+		except Exception as e:
+			self.change_state('error', msg = 'Failed to start child process: %s' % e)
 
 	def run(self, params):
-		# TODO: validate parameters against simulator properties (self.properties)
-		args = { }
+		try:
+			args = { }
+			argv0 = params['executable']
+			argv = [argv0]
 
-		argv0 = params['executable']
-		argv = [argv0]
+			if 'argv' in params:
+				argv += [ str(x) for x in params['argv'] ]
 
-		if 'argv' in params:
-			argv += [ str(x) for x in params['argv'] ]
+			if 'shell' in params:
+				if 'shell' not in self.properties or self.properties['shell'] != True:
+					raise SimulationException(self, 'Shell exeuction is not allowed!')
 
-		if 'shell' in params:
-			if 'shell' not in self.properties or self.properties['shell'] != True:
-				self.logger.error('Shell exeuction is not allowed!')
-				self.change_state('failed')
-				return
+				args['shell'] = params['shell']
 
-			args['shell'] = params['shell']
-		if 'working_directory' in params:
-			args['cwd'] = params['working_directory']
-		if 'environment' in params:
-			args['env'] = params['shell']
+			if 'working_directory' in params:
+				args['cwd'] = params['working_directory']
 
-		valid = False
-		for regex in self.properties['whitelist']:
-			if re.match(regex, argv0) is not None:
-				valid = True
-				break
+			if 'environment' in params:
+				args['env'] = params['shell']
 
-		if not valid:
-			self.logger.error('Executable "%s" is not whitelisted!' % argv0)
-			self.change_state('failed')
-			return
+			valid = False
+			if 'whitelist' in self.properties:
+				for regex in self.properties['whitelist']:
+					self.logger.info("Checking for match: " + regex)
+					if re.match(regex, argv0) is not None:
+						valid = True
+						break
 
-		self.logger.info('Execute: %s' % argv)
-		self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
+			if not valid:
+				raise SimulationException(self, 'Executable is not whitelisted for this simulator', executable = argv0)
 
-		self.change_state('running')
+			self.logger.info('Execute: %s' % argv)
+			self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
 
-		while self.child.returncode is None:
-			self.child.poll()
+			self.change_state('running')
 
-			# Suspend the thread for some time
-			# TODO: do we really need this?
-			time.sleep(0.1)
-
-		if self.child.returncode >= 0:
-			self.return_code = self.child.returncode
-			self.logger.info('Child process terminated with code: %d' % self.return_code)
-			self.change_state('finished')
-		elif self.child.returncode == -signal.SIGTERM:
-			self.logger.info('Child process has been terminated by a signal')
-			self.change_state('stopped')
-		else:
-			sig = signal.Signals(-self.child.returncode)
-			self.logger.error('Child process caught signal: %s', sig.name)
-			self.change_state('failed')
+			self.child.wait()
+			if self.child.returncode == 0:
+				self.logger.info('Child process has finished.')
+				self.change_state('stopping')
+				self.change_state('idle')
+			elif self.child.returncode > 0:
+				self.return_code = self.child.returncode
+				raise SimulationException(self, 'Child process exited', code = self.return_code)
+			elif self.child.returncode == -signal.SIGTERM:
+				self.logger.info('Child process was terminated successfully')
+				self.change_state('idle')
+			else:
+				sig = signal.Signals(-self.child.returncode)
+				raise SimulationException(self, 'Child process caught signal', signal = -self.child.returncode, signal_name = sig.name)
+		except SimulationException as se:
+			self.change_state('error', msg = se.msg, **se.info)
 
 		self.child = None
 
 	def reset(self, message):
-		# Stop the external command (kill)
+		self.change_state('idle')
+
+		# Don't send a signal if the child does not exist
 		if self.child is None:
 			return
 
+		# Stop the external command (kill)
 		# This is a hard reset!
 		self.child.send_signal(signal.SIGKILL)
 
 	def stop(self, message):
-		# Stop the external command (kill)
-		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+		send_cont = False
 
+		if self.child is None:
+			raise SimulationException(self, 'No child process is running')
+
+		if self._state == 'paused':
+			send_cont = True
+
+		# Stop the external command (SIGTERM)
 		self.child.terminate()
 		self.logger.info('Send termination signal to child process')
+
+		# If the process has been paused, we must resume it
+		# so that it can process the SIGTERM and exit
+		if send_cont:
+			self.child.send_signal(signal.SIGCONT)
+
+		# final transition to idle state occurs in run thread
 
 	def pause(self, message):
 		# Suspend command
 		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+			raise SimulationException(self, 'No child process is running')
 
 		self.child.send_signal(signal.SIGSTOP)
+
 		self.change_state('paused')
 		self.logger.info('Child process has been paused')
 
 	def resume(self, message):
 		# Let process run
 		if self.child is None:
-			self.change_state('error')
-			self.logger.error('No child process is running')
-			return
+			raise SimulationException(self, 'No child process is running')
 
 		self.child.send_signal(signal.SIGCONT)
-		self.change_state('resumed')
-		self.logger.info('Child process has been resumed')
 
-	def ping(self, message):
-		if (self.child):
-			poll_result = self.child.poll()
-			if (poll_result != None):
-				self.return_code = poll_result
-
-		self.publish_state()
+		self.change_state('running')
+		self.logger.info('Child process has resumed')
