@@ -35,7 +35,7 @@ class GenericSimulator(simulator.Simulator):
 			thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
 			thread.start()
 		except Exception as e:
-			self.change_state('error', msg = 'Failed to start child process: %s' % e)
+			raise SimulationException(self, msg = 'Failed to start child process: %s' % e)
 
 	def check_state(self, state):
 		if self._state != state:
