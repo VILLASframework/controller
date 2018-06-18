@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
 	if args.broker is not None:
 		broker = args.broker
-	elif 'broker' in args.config.json and 'url' in args.config.json['broker']:
+	elif args.config is not None and 'broker' in args.config.json and 'url' in args.config.json['broker']:
 		broker = args.config.json['broker']['url']
 	else:
 		broker = 'amqp://guest:guest@localhost/%2F'
