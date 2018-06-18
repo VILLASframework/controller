@@ -37,6 +37,14 @@ class GenericSimulator(simulator.Simulator):
 		except Exception as e:
 			self.change_state('error', msg = 'Failed to start child process: %s' % e)
 
+	def check_state(self, state):
+		if self._state != state:
+			self.change_state('error', msg = 'Failed to transition to state "%s"!' % state)
+
+	def check_state_deferred(self, state, timeout = 5):
+		t = threading.Timer(timeout, self.check_state, args = [state])
+		t.start()
+
 	def run(self, params):
 		try:
 			args = { }
@@ -117,6 +125,11 @@ class GenericSimulator(simulator.Simulator):
 		# This is a hard reset!
 		self.child.send_signal(signal.SIGKILL)
 
+		# Final transition to idle state occurs in run thread
+		# If this transition does not occur within 5 seconds,
+		# we will transition into the error state
+		self.check_state_deferred('idle', 5)
+
 	def stop(self, message):
 		send_cont = False
 
@@ -135,7 +148,10 @@ class GenericSimulator(simulator.Simulator):
 		if send_cont:
 			self.child.send_signal(signal.SIGCONT)
 
-		# final transition to idle state occurs in run thread
+		# Final transition to idle state occurs in run thread
+		# If this transition does not occur within 5 seconds,
+		# we will transition into the error state
+		self.check_state_deferred('stopped', 5)
 
 	def pause(self, message):
 		# Suspend command
