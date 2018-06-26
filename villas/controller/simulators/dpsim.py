@@ -3,7 +3,6 @@ import dpsim.components.dp as dp
 import time
 import socket
 import os
-import tempfile
 
 from .. import simulator
 
@@ -37,49 +36,28 @@ class DPsimSimulator(simulator.Simulator):
 
 		return state
 
-	def change_state(self, state):
-		self.logger.info('Simulation dpsim')
-		self._state = state
-		self.publish_state()
-
-	def loadCIMURL(self, url):
-		buffer = self.downloadURL(url)
-		if buffer != None:
+	def loadCIM(self, fp):
+		if fp != None:
 			try:
-				fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
-				fp.write(buffer.getvalue())
-				fp.close()
-				dpsim.load_cim(fp.name)
+				self.sim = dpsim.load_cim(fp.name)
+				self.logger.info(simulation)
 				os.unlink(fp.name)
 			except IOError:
 				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
 
 	def start(self, message):
-		if message.properties:
-			if message.properties['application_headers']:
-				if message.properties['application_headers']['uuid']:
-					self.logger.info('Starting simulation for url: ' + str(message.properties['application_headers']['uuid']))
-					self.loadCIMURL(str(message.properties['application_headers']['uuid']))
+		fp = self.check_download(message)
+		if (fp):
+			self.loadCIM(fp)
 
-		if self._state not in ['stopped', 'unknown'] :
+		if self.change_state('starting'):
 			self.logger.info('Starting simulation...')
-			self.change_state('starting')
 
-			self.sim = dpsim.Simulation('IdealVS_R1',
-				[
-					dp.VoltageSource("v_in", 1, 0, 10),
-					dp.Resistor("r_1", 0, -1, 1),
-					dp.Resistor("r_2", 1, -1, 1),
-					dp.Resistor("r_3", 1, -1, 1)
-				],
-				duration=3000.0
-			)
-
+			self.logger.info(self.sim)
 			if (self.sim.start() == None):
 				self.change_state('running')
-				self.logger.warn('State changed to ' + self._state)
 			else:
-				self.change_state('unknown')
+				self.change_state('error')
 				self.logger.warn('Attempt to start simulator failed. State is ' + self._state)
 		else:
 			self.logger.warn('Attempted to start non-stopped simulator. State is ' + self._state)

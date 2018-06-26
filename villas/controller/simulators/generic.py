@@ -1,6 +1,7 @@
 import sys
 import threading
 import re
+import os
 
 from ..exceptions import SimulationException
 from .. import simulator
@@ -23,15 +24,27 @@ class GenericSimulator(simulator.Simulator):
 		return state
 
 	def start(self, message):
+		path = self.check_download(message)
+		if os.path.isfile(path):
+			with open(path) as f:
+				self.logger.info(f.read())
+		elif os.path.isdir(path):
+			with os.scandir(path) as it:
+				for entry in it:
+					if not entry.name.startswith('.') and entry.is_file():
+						self.logger.info(entry.name)
+
 		# Start an external command
 		if self.child is not None:
 			raise SimulationException(self, 'Child process is already running')
 
 		try:
-			params = message.payload['parameters']
+			if 'parameters' in message.payload:
+				params = message.payload['parameters']
+				self.logger.info(params)
+				thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
+				thread.start()
 
-			thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
-			thread.start()
 		except Exception as e:
 			self.change_state('error', msg = 'Failed to start child process: %s' % e)
 

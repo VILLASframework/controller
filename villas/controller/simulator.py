@@ -6,6 +6,8 @@ from io import BytesIO
 import time
 import socket
 import os
+import tempfile
+import zipfile
 
 from .exceptions import SimulationException
 from . import __version__ as version
@@ -198,6 +200,35 @@ class Simulator(object):
 
 	def reset(self, message):
 		self.started = time.time()
+
+	def writeBufferToTemporaryFile(self, buf):
+		if buf != None:
+			try:
+				fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
+				fp.write(buf.getvalue())
+				fp.close()
+				return fp.name
+			except IOError:
+				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
+		return None
+
+	def unzipFile(self, filename):
+		if zipfile.is_zipfile(filename):
+			with zipfile.ZipFile(filename,"r") as zip_ref:
+				zipdir = tempfile.mkdtemp()
+				zip_ref.extractall(zipdir)
+				return zipdir
+		else:
+			return filename
+
+	def check_download(self, message):
+		if message.properties:
+			if message.properties['application_headers']:
+				if message.properties['application_headers']['uuid']:
+					url = message.properties['application_headers']['uuid']
+					buf = self.downloadURL(url)
+					filename = self.writeBufferToTemporaryFile(buf)
+					return self.unzipFile(filename)
 
 	def downloadURL(self, url):
 		try:
