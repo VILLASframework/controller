@@ -44,6 +44,8 @@ class GenericSimulator(simulator.Simulator):
 				self.logger.info(params)
 				thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
 				thread.start()
+			else:
+				self.change_state('error', msg = 'No command specified')
 
 		except Exception as e:
 			self.change_state('error', msg = 'Failed to start child process: %s' % e)
