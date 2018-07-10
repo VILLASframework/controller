@@ -2,6 +2,7 @@ import sys
 import threading
 import re
 import os
+import uuid
 
 from ..exceptions import SimulationException
 from .. import simulator
@@ -23,7 +24,13 @@ class GenericSimulator(simulator.Simulator):
 
 		return state
 
+	def upload_results(self):
+                super().upload_results()
+
 	def start(self, message):
+		super().start(message)
+
+		self.logger.info("Working directory: %s" % os.getcwd())
 		path = self.check_download(message)
 		if os.path.isfile(path):
 			with open(path) as f:
@@ -40,15 +47,14 @@ class GenericSimulator(simulator.Simulator):
 
 		try:
 			if 'parameters' in message.payload:
-				params = message.payload['parameters']
-				self.logger.info(params)
-				thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
+				self.params = message.payload['parameters']
+				thread = threading.Thread(target = GenericSimulator.run, args = (self, self.params))
 				thread.start()
 			else:
 				self.change_state('error', msg = 'No command specified')
 
 		except Exception as e:
-			self.change_state('error', msg = 'Failed to start child process: %s' % e)
+			raise SimulationException(self, 'Failed to start child process: %s' % e)
 
 	def run(self, params):
 		try:

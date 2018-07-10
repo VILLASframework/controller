@@ -177,6 +177,12 @@ class Simulator(object):
 
 		self.logger.info('Changing state to %s', state)
 
+		if 'msg' in kwargs:
+			self.logger.info('Message is: %s', kwargs['msg'])
+
+		if state == 'stopping':
+			self.upload_results()
+
 		self.publish_state()
 
 	# Actions
@@ -184,7 +190,16 @@ class Simulator(object):
 		self.publish_state()
 
 	def start(self, message):
-		pass
+		self.started = time.time()
+		self.simuuid = uuid.uuid4();
+		self.workdir = "/var/villas/controller/simulators/" + \
+			str(self.uuid) + "/simulation/" + str(self.simuuid) + "/";
+		self.logger.info("Target working directory: %s" % self.workdir)
+		try:
+			os.makedirs(self.workdir)
+			os.chdir(self.workdir)
+		except Exception as e:
+			raise SimulationException(self, 'Failed to create and change to working directory: %s ( %s )' % (self.workdir, e))
 
 	def stop(self, message):
 		pass
@@ -199,7 +214,16 @@ class Simulator(object):
 		pass
 
 	def reset(self, message):
-		self.started = time.time()
+		pass
+
+	def upload_results(self):
+		self.logger.info("Upload results. %s" % self.params)
+		try:
+			with zipfile.ZipFile(self.workdir + 'results.zip', 'w') as results_zip:
+				results_zip.write(self.workdir + 'Logs');
+				results_zip.close();
+		except Exception as e:
+			self.logger.error('Zip failed: %s' % str(e))
 
 	def writeBufferToTemporaryFile(self, buf):
 		if buf != None:
@@ -208,8 +232,8 @@ class Simulator(object):
 				fp.write(buf.getvalue())
 				fp.close()
 				return fp.name
-			except IOError:
-				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
+			except IOError as e:
+				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name + str(e))
 		return None
 
 	def unzipFile(self, filename):
