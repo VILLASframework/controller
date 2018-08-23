@@ -21,22 +21,24 @@ class Simulator(object):
 		self.type = args['type']
 		self.name = args['name']
 		self.enabled = args['enabled'] if 'enabled' in args else True
-		self.uuid = args['uuid'] if 'uuid' in args else uuid.uuid4()
 		self.started = time.time()
-
 		self.properties = args
 
 		self.model = None
 		self._state = 'idle'
 		self._stateargs = {}
 
-		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
-
 		self.exchange = kombu.Exchange(
 			name = 'villas',
 			type = 'headers',
 			durable = True
 		)
+		try:
+			self.uuid = args['uuid'] if 'uuid' in args else uuid.uuid4()
+		except Exception as e:
+			self.logger = logging.getLogger("villas.controller.simulator:")
+			self.logger.info(e.msg)
+		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
 	def set_connection(self, connection):
 		self.connection = connection
@@ -123,7 +125,8 @@ class Simulator(object):
 				self.change_state('starting')
 				self.start(message)
 			elif action == 'stop':
-				self.change_state('stopping')
+				# state changed to stopping after the simulation
+				# has ended, to avoid missing log entries
 				self.stop(message)
 			elif action == 'pause':
 				self.change_state('pausing')
@@ -192,14 +195,21 @@ class Simulator(object):
 	def start(self, message):
 		self.started = time.time()
 		self.simuuid = uuid.uuid4();
+		if 'parameters' in message.payload:
+			self.params = message.payload['parameters']
+		if 'model' in message.payload:
+			self.model = message.payload['model']
+		if 'results' in message.payload:
+			self.results = message.payload['results']
 		self.workdir = "/var/villas/controller/simulators/" + \
-			str(self.uuid) + "/simulation/" + str(self.simuuid) + "/";
+			str(self.uuid) + "/simulation/" + str(self.simuuid);
+		self.logdir = self.workdir + "/Logs/"
 		self.logger.info("Target working directory: %s" % self.workdir)
 		try:
-			os.makedirs(self.workdir)
-			os.chdir(self.workdir)
+			os.makedirs(self.logdir)
+			os.chdir(self.logdir)
 		except Exception as e:
-			raise SimulationException(self, 'Failed to create and change to working directory: %s ( %s )' % (self.workdir, e))
+			raise SimulationException(self, 'Failed to create and change to working directory: %s ( %s )' % (self.logdir, e))
 
 	def stop(self, message):
 		pass
@@ -216,14 +226,35 @@ class Simulator(object):
 	def reset(self, message):
 		pass
 
-	def upload_results(self):
-		self.logger.info("Upload results. %s" % self.params)
+	def pycurl_upload(self, filename):
 		try:
-			with zipfile.ZipFile(self.workdir + 'results.zip', 'w') as results_zip:
-				results_zip.write(self.workdir + 'Logs');
+			c = pycurl.Curl()
+			url = self.results['url']
+			c.setopt(pycurl.URL, url)
+			c.setopt(pycurl.UPLOAD, 1)
+			c.setopt(pycurl.READFUNCTION, open(filename, 'rb').read)
+			filesize = os.path.getsize(filename)
+			c.setopt(pycurl.INFILESIZE, filesize)
+			self.logger.info('Uploading %d bytes of file %s to url %s' % (filesize, filename, url))
+			c.perform()
+			c.close()
+
+		except Exception as e:
+			self.logger.error('Curl failed: %s' % str(e))
+
+	def upload_results(self):
+		try:
+			filename = self.workdir + '/results.zip'
+			with zipfile.ZipFile(filename, 'w') as results_zip:
+				for sub in os.scandir(self.logdir):
+					results_zip.write(sub);
 				results_zip.close();
+
 		except Exception as e:
 			self.logger.error('Zip failed: %s' % str(e))
+
+		if 'url' in self.results:
+			self.pycurl_upload(filename)
 
 	def writeBufferToTemporaryFile(self, buf):
 		if buf != None:
@@ -237,22 +268,25 @@ class Simulator(object):
 		return None
 
 	def unzipFile(self, filename):
-		if zipfile.is_zipfile(filename):
-			with zipfile.ZipFile(filename,"r") as zip_ref:
-				zipdir = tempfile.mkdtemp()
-				zip_ref.extractall(zipdir)
-				return zipdir
-		else:
-			return filename
+		if filename is not None:
+			if zipfile.is_zipfile(filename):
+				with zipfile.ZipFile(filename,"r") as zip_ref:
+					zipdir = tempfile.mkdtemp()
+					zip_ref.extractall(zipdir)
+					return zipdir
+			else:
+				return filename
 
 	def check_download(self, message):
-		if message.properties:
-			if message.properties['application_headers']:
-				if message.properties['application_headers']['uuid']:
-					url = message.properties['application_headers']['uuid']
-					buf = self.downloadURL(url)
-					filename = self.writeBufferToTemporaryFile(buf)
-					return self.unzipFile(filename)
+		self.logger.info(self.model)
+		if self.model:
+			if 'url' in self.model:
+				buf = self.downloadURL(self.model['url'])
+				filename = self.writeBufferToTemporaryFile(buf)
+				return self.unzipFile(filename)
+			else:
+				self.logger.info("No url in message.properties['application_headers']:")
+				self.logger.info(message.properties['application_headers'])
 
 	def downloadURL(self, url):
 		try:

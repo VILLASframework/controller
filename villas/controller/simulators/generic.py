@@ -29,26 +29,16 @@ class GenericSimulator(simulator.Simulator):
 
 	def start(self, message):
 		super().start(message)
-
 		self.logger.info("Working directory: %s" % os.getcwd())
 		path = self.check_download(message)
-		if os.path.isfile(path):
-			with open(path) as f:
-				self.logger.info(f.read())
-		elif os.path.isdir(path):
-			with os.scandir(path) as it:
-				for entry in it:
-					if not entry.name.startswith('.') and entry.is_file():
-						self.logger.info(entry.name)
 
 		# Start an external command
 		if self.child is not None:
 			raise SimulationException(self, 'Child process is already running')
 
 		try:
-			if 'parameters' in message.payload:
-				self.params = message.payload['parameters']
-				thread = threading.Thread(target = GenericSimulator.run, args = (self, self.params))
+			if self.params:
+				thread = threading.Thread(target = GenericSimulator.run, args = (self, self.params, path))
 				thread.start()
 			else:
 				self.change_state('error', msg = 'No command specified')
@@ -56,19 +46,22 @@ class GenericSimulator(simulator.Simulator):
 		except Exception as e:
 			raise SimulationException(self, 'Failed to start child process: %s' % e)
 
-	def run(self, params):
+	def run(self, params, path):
 		try:
 			args = { }
 			argv0 = params['executable']
 			argv = [argv0]
 
 			if 'argv' in params:
-				argv += [ str(x) for x in params['argv'] ]
+				# Substitute the path location into the command if necessary
+				if path is not None:
+					argv += [ str(x).replace('%PATH%', path) for x in params['argv'] ]
+				else:
+					argv += [ str(x) for x in params['argv'] ]
 
 			if 'shell' in params:
-				if 'shell' not in self.properties or self.properties['shell'] != True:
-					raise SimulationException(self, 'Shell exeuction is not allowed!')
-
+				if 'shell' not in self.properties or not self.properties['shell']:
+					raise SimulationException(self, 'Shell execution is not allowed!')
 				args['shell'] = params['shell']
 
 			if 'working_directory' in params:
@@ -89,11 +82,18 @@ class GenericSimulator(simulator.Simulator):
 				raise SimulationException(self, 'Executable is not whitelisted for this simulator', executable = argv0)
 
 			self.logger.info('Execute: %s' % argv)
-			self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
+			logfile = None
+			if 'stdout_logfile' in params:
+				logfile = open(self.params['stdout_logfile'], "w")
+				self.child = subprocess.Popen(argv, **args, stdout = logfile, stderr = subprocess.STDOUT)
+			else:
+				self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
 
 			self.change_state('running')
 
 			self.child.wait()
+			if logfile is not None:
+				logfile.close()
 			if self.child.returncode == 0:
 				self.logger.info('Child process has finished.')
 				self.change_state('stopping')
@@ -103,6 +103,7 @@ class GenericSimulator(simulator.Simulator):
 				raise SimulationException(self, 'Child process exited', code = self.return_code)
 			elif self.child.returncode == -signal.SIGTERM:
 				self.logger.info('Child process was terminated successfully')
+				self.change_state('stopping')
 				self.change_state('idle')
 			else:
 				sig = signal.Signals(-self.child.returncode)
@@ -149,7 +150,6 @@ class GenericSimulator(simulator.Simulator):
 			raise SimulationException(self, 'No child process is running')
 
 		self.child.send_signal(signal.SIGSTOP)
-
 		self.change_state('paused')
 		self.logger.info('Child process has been paused')
 

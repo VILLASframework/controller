@@ -117,7 +117,10 @@ class SimulatorStartCommand(command.Command):
 	@staticmethod
 	def add_parser(subparsers):
 		parser = subparsers.add_parser('start', help = 'Start a remote simulator')
+		parser.add_argument('-m', '--model', metavar = 'JSON')
 		parser.add_argument('-p', '--parameters', metavar = 'JSON')
+		parser.add_argument('-r', '--results', metavar = 'JSON')
+		parser.add_argument('-w', '--when', metavar = 'JSON')
 		parser.set_defaults(func = SimulatorStartCommand.run)
 
 	@staticmethod
@@ -140,6 +143,10 @@ class SimulatorStartCommand(command.Command):
 		try:
 			if args.parameters is not None:
 				message['parameters'] = json.loads(args.parameters)
+			if args.model is not None:
+				message['model'] = json.loads(args.model)
+			if args.results is not None:
+				message['results'] = json.loads(args.results)
 		except json.JSONDecodeError as e:
 			LOGGER.error('Failed to parse parameters: %s at line %d column %d' % (e.msg, e.lineno, e.colno))
 
