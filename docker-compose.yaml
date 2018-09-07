@@ -1,0 +1,17 @@
+version: '2'
+services:
+  villas:
+    container_name: "villas"
+    image: "villas"
+    depends_on: [ rabbitmq ]
+    volumes:
+      - ./config.json.dpsim:/home/vc/config.json
+      - ./example.xml:/home/vc/example.xml
+  rabbitmq:
+    container_name: "rabbitmq"
+    ports:
+     - "5672:5672"
+     - "15672:15672"
+    image: "rabbitmq:management"
+
+

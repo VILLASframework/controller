@@ -1,0 +1,23 @@
+
+FROM dpsim
+
+RUN dnf -y install curl libcurl-devel openssl-devel
+RUN pip3 install --upgrade pip
+ENV PYCURL_SSL_LIBRARY openssl
+RUN pip3 install pycurl gitpython
+
+RUN useradd -m vc
+COPY bin /home/vc/bin/
+COPY setup.py /home/vc
+COPY villas /home/vc/villas/
+COPY .git /home/vc/.git
+COPY README.md /home/vc/README.md
+COPY villas-controller.service /home/vc/villas-controller.service
+COPY config.json /home/vc/config.json
+WORKDIR /home/vc
+
+RUN python3.6 setup.py install
+
+USER vc
+
+CMD sleep 10 && villas-ctl -b "amqp://guest:guest@rabbitmq/%2F" --config config.json daemon

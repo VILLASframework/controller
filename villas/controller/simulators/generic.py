@@ -1,9 +1,11 @@
+import os
 import sys
 import threading
 import re
 import psutil
 import subprocess
 import signal
+import uuid
 
 from ..exceptions import SimulationException
 from .. import simulator
@@ -24,7 +26,14 @@ class GenericSimulator(simulator.Simulator):
 
 		return state
 
+	def upload_results(self):
+                super().upload_results()
+
 	def start(self, message):
+		super().start(message)
+		self.logger.info("Working directory: %s" % os.getcwd())
+		path = self.check_download(message)
+
 		# Start an external command
 		if self.child is not None:
 			raise SimulationException(self, 'Child process is already running')
@@ -32,7 +41,7 @@ class GenericSimulator(simulator.Simulator):
 		try:
 			params = message.payload['parameters']
 
-			thread = threading.Thread(target = GenericSimulator.run, args = (self, params))
+			thread = threading.Thread(target = GenericSimulator.run, args = (self, params, path))
 			thread.start()
 		except Exception as e:
 			raise SimulationException(self, msg = 'Failed to start child process: %s' % e)
@@ -52,12 +61,15 @@ class GenericSimulator(simulator.Simulator):
 			argv = [argv0]
 
 			if 'argv' in params:
-				argv += [ str(x) for x in params['argv'] ]
+				# Substitute the path location into the command if necessary
+				if path is not None:
+					argv += [ str(x).replace('%PATH%', path) for x in params['argv'] ]
+				else:
+					argv += [ str(x) for x in params['argv'] ]
 
 			if 'shell' in params:
-				if 'shell' not in self.properties or self.properties['shell'] != True:
-					raise SimulationException(self, 'Shell exeuction is not allowed!')
-
+				if 'shell' not in self.properties or not self.properties['shell']:
+					raise SimulationException(self, 'Shell execution is not allowed!')
 				args['shell'] = params['shell']
 
 			if 'working_directory' in params:
@@ -78,11 +90,18 @@ class GenericSimulator(simulator.Simulator):
 				raise SimulationException(self, 'Executable is not whitelisted for this simulator', executable = argv0)
 
 			self.logger.info('Execute: %s' % argv)
-			self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
+			logfile = None
+			if 'stdout_logfile' in params:
+				logfile = open(self.params['stdout_logfile'], "w")
+				self.child = subprocess.Popen(argv, **args, stdout = logfile, stderr = subprocess.STDOUT)
+			else:
+				self.child = subprocess.Popen(argv, **args, stdout = sys.stdout, stderr = subprocess.STDOUT)
 
 			self.change_state('running')
 
 			self.child.wait()
+			if logfile is not None:
+				logfile.close()
 			if self.child.returncode == 0:
 				self.logger.info('Child process has finished.')
 				self.change_state('stopping')

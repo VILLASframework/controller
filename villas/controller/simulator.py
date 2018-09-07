@@ -4,9 +4,17 @@ import uuid
 import time
 import socket
 import os
+import pycurl
+import io
+import tempfile
+import zipfile
 
 from .exceptions import SimulationException
 from . import __version__ as version
+
+from .exceptions import SimulationException
+from . import __version__ as version
+import pycurl
 
 class Simulator(object):
 
@@ -31,6 +39,12 @@ class Simulator(object):
 			type = 'headers',
 			durable = True
 		)
+		try:
+			self.uuid = args['uuid'] if 'uuid' in args else uuid.uuid4()
+		except Exception as e:
+			self.logger = logging.getLogger("villas.controller.simulator:")
+			self.logger.info(e.msg)
+		self.logger = logging.getLogger("villas.controller.simulator:" + self.uuid)
 
 	def set_connection(self, connection):
 		self.connection = connection
@@ -117,7 +131,8 @@ class Simulator(object):
 				self.change_state('starting')
 				self.start(message)
 			elif action == 'stop':
-				self.change_state('stopping')
+				# state changed to stopping after the simulation
+				# has ended, to avoid missing log entries
 				self.stop(message)
 			elif action == 'pause':
 				self.change_state('pausing')
@@ -171,6 +186,12 @@ class Simulator(object):
 
 		self.logger.info('Changing state to %s', state)
 
+		if 'msg' in kwargs:
+			self.logger.info('Message is: %s', kwargs['msg'])
+
+		if state == 'stopping':
+			self.upload_results()
+
 		self.publish_state()
 
 	# Actions
@@ -178,7 +199,23 @@ class Simulator(object):
 		self.publish_state()
 
 	def start(self, message):
-		pass
+		self.started = time.time()
+		self.simuuid = uuid.uuid4();
+		if 'parameters' in message.payload:
+			self.params = message.payload['parameters']
+		if 'model' in message.payload:
+			self.model = message.payload['model']
+		if 'results' in message.payload:
+			self.results = message.payload['results']
+		self.workdir = "/var/villas/controller/simulators/" + \
+			str(self.uuid) + "/simulation/" + str(self.simuuid);
+		self.logdir = self.workdir + "/Logs/"
+		self.logger.info("Target working directory: %s" % self.workdir)
+		try:
+			os.makedirs(self.logdir)
+			os.chdir(self.logdir)
+		except Exception as e:
+			raise SimulationException(self, 'Failed to create and change to working directory: %s ( %s )' % (self.logdir, e))
 
 	def stop(self, message):
 		pass
@@ -194,6 +231,82 @@ class Simulator(object):
 
 	def reset(self, message):
 		self.started = time.time()
+
+	def pycurl_upload(self, filename):
+		try:
+			c = pycurl.Curl()
+			url = self.results['url']
+			c.setopt(pycurl.URL, url)
+			c.setopt(pycurl.UPLOAD, 1)
+			c.setopt(pycurl.READFUNCTION, open(filename, 'rb').read)
+			filesize = os.path.getsize(filename)
+			c.setopt(pycurl.INFILESIZE, filesize)
+			self.logger.info('Uploading %d bytes of file %s to url %s' % (filesize, filename, url))
+			c.perform()
+			c.close()
+
+		except Exception as e:
+			self.logger.error('Curl failed: %s' % str(e))
+
+	def upload_results(self):
+		try:
+			filename = self.workdir + '/results.zip'
+			with zipfile.ZipFile(filename, 'w') as results_zip:
+				for sub in os.scandir(self.logdir):
+					results_zip.write(sub);
+				results_zip.close();
+
+		except Exception as e:
+			self.logger.error('Zip failed: %s' % str(e))
+
+		if 'url' in self.results:
+			self.pycurl_upload(filename)
+
+	def writeBufferToTemporaryFile(self, buf):
+		if buf != None:
+			try:
+				fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xml")
+				fp.write(buf.getvalue())
+				fp.close()
+				return fp.name
+			except IOError as e:
+				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name + str(e))
+		return None
+
+	def unzipFile(self, filename):
+		if filename is not None:
+			if zipfile.is_zipfile(filename):
+				with zipfile.ZipFile(filename,"r") as zip_ref:
+					zipdir = tempfile.mkdtemp()
+					zip_ref.extractall(zipdir)
+					return zipdir
+			else:
+				return filename
+
+	def check_download(self, message):
+		self.logger.info(self.model)
+		if self.model:
+			if 'url' in self.model:
+				buf = self.downloadURL(self.model['url'])
+				filename = self.writeBufferToTemporaryFile(buf)
+				return self.unzipFile(filename)
+			else:
+				self.logger.info("No url in message.properties['application_headers']:")
+				self.logger.info(message.properties['application_headers'])
+
+	def downloadURL(self, url):
+		try:
+			buffer = io.BytesIO()
+			c = pycurl.Curl()
+			c.setopt(c.URL, url)
+			c.setopt(c.WRITEDATA, buffer)
+			c.perform()
+			c.close()
+		except pycurl.error as e:
+			self.logger.error('Failed to load url: ' + url + " error: " + str(e))
+			return None
+
+		return buffer
 
 	def __str__(self):
 		return "%sSimulator <%s: %s>" % (self.type, self.name, self.uuid)
