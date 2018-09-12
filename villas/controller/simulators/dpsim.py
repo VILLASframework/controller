@@ -36,7 +36,7 @@ class DPsimSimulator(simulator.Simulator):
 
 		return state
 
-	def loadCIM(self, fp):
+	def load_cim(self, fp):
 		if fp != None:
 			try:
 				self.sim = dpsim.load_cim(fp.name)
@@ -48,7 +48,7 @@ class DPsimSimulator(simulator.Simulator):
 	def start(self, message):
 		fp = self.check_download(message)
 		if (fp):
-			self.loadCIM(fp)
+			self.load_cim(fp)
 
 		if self.change_state('starting'):
 			self.logger.info('Starting simulation...')
