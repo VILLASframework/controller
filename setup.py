@@ -55,20 +55,21 @@ setup(
 	maintainer_email = 'stvogel@eonerc.rwth-aachen.de',
 	license = 'GPL-3.0',
 	keywords = 'simulation controller villas',
-	classifiers = [  # Optional
+	classifiers = [
 		'Development Status :: 3 - Alpha',
 		'License :: OSI Approved :: GPL3',
 		'Programming Language :: Python :: 3'
 	],
 	packages = find_packages(),
 	setup_requires = [
-        	'm2r',
+		'm2r',
 		'gitpython'
 	],
 	install_requires = [
 		'kombu',
 		'termcolor',
-		'psutils'
+		'psutil',
+		'pycurl'
 	],
 	data_files = [
 		('/etc/villas/controller', glob('etc/*.json')),
