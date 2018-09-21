@@ -27,7 +27,7 @@ class GenericSimulator(simulator.Simulator):
 		return state
 
 	def upload_results(self):
-                super().upload_results()
+		super().upload_results()
 
 	def start(self, message):
 		super().start(message)
