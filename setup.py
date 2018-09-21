@@ -4,20 +4,24 @@ from glob import glob
 import subprocess
 import re
 import os
-import git
 
 def git_version():
 	"""Return version with local version identifier."""
 
-	repo = git.Repo('.git')
-	repo.git.status()
+	try:
+		import git
 
-	latest_tag = repo.git.describe(match='v[0-9]*', tags=True, abbrev=0)
-	sha = repo.head.commit.hexsha[:6]
+		repo = git.Repo('.git')
+		repo.git.status()
 
-	version = latest_tag.lstrip('v')
+		latest_tag = repo.git.describe(match='v[0-9]*', tags=True, abbrev=0)
+		sha = repo.head.commit.hexsha[:6]
 
-	return '{v}-{sha}'.format(v = version, sha = sha)
+		version = latest_tag.lstrip('v')
+
+		return '{v}-{sha}'.format(v = version, sha = sha)
+	except:
+		return 'unknown'
 
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
