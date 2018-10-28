@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from pkg_resources import parse_version  # part of `setuptools`
 from glob import glob
 import subprocess
@@ -60,7 +60,7 @@ setup(
 		'License :: OSI Approved :: GPL3',
 		'Programming Language :: Python :: 3'
 	],
-	packages = find_packages(),
+	packages = [ 'villas.controller' ],
 	setup_requires = [
 		'm2r',
 		'gitpython'
