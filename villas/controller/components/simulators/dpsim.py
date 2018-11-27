@@ -40,13 +40,13 @@ class DPsimSimulator(simulator.Simulator):
 		if fp != None:
 			try:
 				self.sim = dpsim.load_cim(fp.name)
-				self.logger.info(simulation)
+				self.logger.info(self.sim)
 				os.unlink(fp.name)
 			except IOError:
 				self.logger.error('Failed to process url: ' + url + ' in temporary file: ' + fp.name)
 
 	def start(self, message):
-		fp = self.check_download(message)
+		fp = self.download_model(message)
 		if (fp):
 			self.load_cim(fp)
 

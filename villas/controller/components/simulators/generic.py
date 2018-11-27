@@ -7,16 +7,25 @@ import subprocess
 import signal
 import uuid
 
-from ..exceptions import SimulationException
+from ...exceptions import SimulationException
 from .. import simulator
 
 class GenericSimulator(simulator.Simulator):
 
 	def __init__(self, **args):
+		super().__init__(**args)
+
 		self.child = None
 		self.return_code = None
+		self.timer = None
+		self.thread = None
 
-		super().__init__(**args)
+	def __del__(self):
+		if self.timer:
+			self.timer.cancel()
+
+		if self.thread:
+			self
 
 	@property
 	def state(self):
@@ -25,9 +34,6 @@ class GenericSimulator(simulator.Simulator):
 		state['return_code'] = self.return_code
 
 		return state
-
-	def upload_results(self):
-		super().upload_results()
 
 	def start(self, message):
 		super().start(message)
@@ -41,8 +47,8 @@ class GenericSimulator(simulator.Simulator):
 		try:
 			params = message.payload['parameters']
 
-			thread = threading.Thread(target = GenericSimulator.run, args = (self, params, path))
-			thread.start()
+			self.thread = threading.Thread(target = GenericSimulator.run, args = (self, params, path))
+			self.thread.start()
 		except Exception as e:
 			raise SimulationException(self, msg = 'Failed to start child process: %s' % e)
 
@@ -51,8 +57,8 @@ class GenericSimulator(simulator.Simulator):
 			self.change_state('error', msg = 'Failed to transition to state "%s"!' % state)
 
 	def check_state_deferred(self, state, timeout = 5):
-		t = threading.Timer(timeout, self.check_state, args = [state])
-		t.start()
+		self.timer = threading.Timer(timeout, self.check_state, args = [state])
+		self.timer.start()
 
 	def run(self, params):
 		try:

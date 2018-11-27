@@ -4,9 +4,18 @@ from .. import simulator
 
 class DummySimulator(simulator.Simulator):
 
+	def __init__(self, **args):
+		super().__init__(**args)
+
+		self.timer = None
+
+	def __del__(self):
+		if self.timer:
+			self.timer.cancel()
+
 	def _schedule_state_transition(self, state, time = 1.0):
-		t = threading.Timer(time, self.change_state, args=[state])
-		t.start()
+		self.timer = threading.Timer(time, self.change_state, args=[state])
+		self.timer.start()
 
 	def start(self, message):
 		self._schedule_state_transition('running')
