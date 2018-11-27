@@ -1,7 +1,10 @@
 from .. import command
 
 import logging
+import functools as ft
 import villas.controller.controller
+from villas.controller.components.gateways.villas_node import VILLASnodeGateway
+from villas.node.node import Node
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,8 +17,18 @@ class DaemonCommand(command.Command):
 
 	@staticmethod
 	def run(connection, args):
+		components = args.config.components
+
+		# Automatically create a VILLASnode Gateway if not present in config
+		node_present = ft.reduce(lambda present, comp: present or type(comp) is VILLASnodeGateway, components, False)
+		if not node_present:
+			LOGGER.info('Creating default VILLASnodeGateway component')
+			node_comp = VILLASnodeGateway()
+
+			components.append(node_comp)
+
 		try:
-			d = villas.controller.controller.Controller(connection, args.config.simulators)
+			d = villas.controller.controller.Controller(connection, components)
 			d.run()
 		except KeyboardInterrupt:
 			pass
