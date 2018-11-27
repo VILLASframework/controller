@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 
-from . import simulator
+from .component import Component
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,5 +35,5 @@ class Config(object):
 				return path
 
 	@property
-	def simulators(self):
-		return [ simulator.Simulator.from_json(js) for js in self.json['simulators'] ]
+	def components(self):
+		return [ Component.from_json(js) for js in self.json['components'] ]
