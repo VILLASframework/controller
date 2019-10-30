@@ -25,7 +25,11 @@ class Config(object):
 	def __init__(self, fp = None):
 		if fp is None:
 			f = self.find_default_path()
-			fp = open(f)
+			if f:
+				fp = open(f)
+
+		if fp is None:
+			raise RuntimeError('Failed to load configuration')
 
 		self.json = json.load(fp)
 
