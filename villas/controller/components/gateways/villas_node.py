@@ -88,6 +88,9 @@ class VILLASnodeGateway(Gateway):
 			self.check_state()
 
 	def check_state(self):
+		if not self.enabled:
+			return
+
 		try:
 			for node in self.node.nodes:
 				found = False
