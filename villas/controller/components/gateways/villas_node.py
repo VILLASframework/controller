@@ -93,8 +93,15 @@ class VILLASnodeGateway(Gateway):
 
 		try:
 			for node in self.node.nodes:
+				self.logger.debug("Found node %s on gateway: %s", node['name'], node)
+
+				if 'uuid' not in node:
+					self.logger.warn('Node %s has no uuid. Skipping', node['name'])
+					continue
+
 				found = False
 				for comp in self.controller.components:
+
 					if comp.uuid == node['uuid']:
 						found = True
 						break
