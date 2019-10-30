@@ -38,7 +38,7 @@ class GenericSimulator(simulator.Simulator):
 	def start(self, message):
 		super().start(message)
 		self.logger.info("Working directory: %s" % os.getcwd())
-		path = self.check_download(message)
+		path = self.download_model()
 
 		# Start an external command
 		if self.child is not None:
@@ -60,7 +60,7 @@ class GenericSimulator(simulator.Simulator):
 		self.timer = threading.Timer(timeout, self.check_state, args = [state])
 		self.timer.start()
 
-	def run(self, params):
+	def run(self, params, path):
 		try:
 			args = { }
 			argv0 = params['executable']
