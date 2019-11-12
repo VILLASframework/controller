@@ -29,7 +29,8 @@ setup(
 		'kombu',
 		'termcolor',
 		'psutil',
-		'pycurl'
+		'pycurl',
+		'villas-node'
 	],
 	data_files = [
 		('/etc/villas/controller', glob('etc/*.json')),
