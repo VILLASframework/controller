@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_namespace_packages
 from glob import glob
 
 with open('README.md') as f:
@@ -6,7 +6,7 @@ with open('README.md') as f:
 
 setup(
 	name = 'villas-controller',
-	version = '0.3.0',
+	version = '0.3.1',
 	description = 'A controller/orchestration API for real-time power system simulators',
 	long_description = long_description,
 	long_description_content_type = 'text/markdown',
@@ -20,17 +20,13 @@ setup(
 		'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
 		'Programming Language :: Python :: 3'
 	],
-	packages = [ 'villas.controller' ],
-	setup_requires = [
-		'm2r',
-		'gitpython'
-	],
+	packages = find_namespace_packages(include=['villas.*']),
 	install_requires = [
 		'kombu',
 		'termcolor',
 		'psutil',
 		'pycurl',
-		'villas-node'
+		'villas-node>=0.9.0'
 	],
 	data_files = [
 		('/etc/villas/controller', glob('etc/*.json')),

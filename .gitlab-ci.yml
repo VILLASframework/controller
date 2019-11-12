@@ -15,6 +15,17 @@ build:docker:
     - shell
     - linux
 
+build:dist:
+  stage: build
+  image: python:3.8
+  script:
+    - python3 setup.py sdist
+  artifacts:
+    paths:
+      - dist/
+  tags:
+    - docker
+
 # Stage: deploy
 ##############################################################################
 
