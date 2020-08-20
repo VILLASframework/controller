@@ -17,8 +17,12 @@ build:docker:
 
 build:flake8:
   stage: build
-  image: alpine/flake8
-  script: flake8
+  image: python:3.8
+  script:
+  - pip3 install flake8
+  - flake8 .
+  tags:
+    - docker
 
 build:dist:
   stage: build
