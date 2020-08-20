@@ -9,11 +9,11 @@ stages:
 
 build:docker:
   stage: build
+  image: docker
   script:
     - docker build --tag ${DOCKER_IMAGE} .
   tags:
-    - shell
-    - linux
+    - docker
 
 build:flake8:
   stage: build
