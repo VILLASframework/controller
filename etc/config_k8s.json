@@ -1,0 +1,43 @@
+{
+	"skip_node": true,
+	"broker" : {
+		"url" : "amqp://admin:Haegiethu0rohtee@localhost:5672/%2F"
+	},
+	"directories" : {
+		"results" : "/var/lib/villas/results",
+		"models" : "/var/lib/villas/models"
+	},
+	"components" : [
+		{
+			"name": "Kubernetes Service",
+			"category": "controller",
+			"type": "kubernetes",
+			"realm": "de.rwth-aachen.eonerc.acs",
+			"location": "EONERC Kubernetes Cluster",
+			"owner": "svg",
+			"namespace": "villas-demo",
+			"job": {
+				"apiVersion": "batch/v1",
+				"kind": "Job",
+				"metadata": {
+					"name": "pi"
+				},
+				"spec": {
+					"template": {
+					"spec": {
+						"containers": [
+							{
+								"name": "pi",
+								"image": "perl",
+								"command": [ "perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+							}
+						],
+						"restartPolicy": "Never"
+					}
+					},
+					"backoffLimit": 4
+				}
+			}
+		}
+	]
+}

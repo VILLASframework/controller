@@ -1,0 +1,19 @@
+{
+    "broker" : {
+        "url" : "amqp://guest:guest@172.17.0.3/%2F"
+    },
+    "directories" : {
+        "results" : "/var/lib/villas/results",
+        "models" : "/var/lib/villas/models"
+    },
+    "simulators" : [
+        {
+            "name" : "DPsim Simulator #1",
+            "type" : "dpsim",
+            "realm" : "de.rwth-aachen.eonerc.acs",
+            "uuid" : "e15f5ad4-241f-11e8-9bf3-23372608bf60",
+            "location" : "Richard's PC",
+            "owner" : "rmr"
+        }
+    ]
+}

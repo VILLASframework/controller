@@ -15,6 +15,11 @@ build:docker:
     - shell
     - linux
 
+build:flake8:
+  stage: build
+  image: alpine/flake8
+  script: flake8
+
 build:dist:
   stage: build
   image: python:3.8

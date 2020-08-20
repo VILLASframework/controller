@@ -1,12 +1,13 @@
 {
+	"skip_node": true,
 	"broker" : {
-		"url" : "amqp://villas:s3c0sim4!@137.226.248.91/%2F"
+		"url" : "amqp://admin:Haegiethu0rohtee@localhost:5672/%2F"
 	},
 	"directories" : {
 		"results" : "/var/lib/villas/results",
 		"models" : "/var/lib/villas/models"
 	},
-	"components" : [
+	"components": [
 		{
 			"name" : "Generic Simulator #1",
 			"category": "simulator",
