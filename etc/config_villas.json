@@ -1,7 +1,7 @@
 {
 	"skip_node": true,
 	"broker" : {
-		"url" : "amqp://admin:Haegiethu0rohtee@localhost:5672/%2F"
+		"url" : "amqp://admin:Haegiethu0rohtee@lb-20.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
 	},
 	"directories" : {
 		"results" : "/var/lib/villas/results",
