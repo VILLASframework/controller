@@ -35,5 +35,10 @@ setup(
         ('/etc/villas/controller', glob('etc/*.json')),
         ('/etc/systemd/system', ['villas-controller.service'])
     ],
-    scripts=glob('bin/*')
+    entry_points={
+        'console_scripts': [
+            'villas-ctl=villas.controller.main:main',
+            'villas-controller=villas.controller.main:main'
+        ],
+    }
 )
