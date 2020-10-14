@@ -7,7 +7,7 @@ sleep 2
 
 CONFIG="etc/config.json"
 
-villas-ctl -c ${CONFIG} -b ${BROKER} daemon
+villas-ctl -c ${CONFIG} daemon
 
 kill $PF1 $PF2
 wait $PF1 $PF2
