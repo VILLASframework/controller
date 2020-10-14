@@ -9,6 +9,25 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 
+def _get_parameters(args):
+    parameters = {}
+
+    try:
+        if args.parameters is not None:
+            parameters.update(json.loads(args.parameters))
+        if args.parameters_file is not None:
+            with open(args.parameters_file) as f:
+                parameters.update(json.load(f))
+
+        return parameters
+    except OSError as e:
+        LOGGER.error('Failed to open parameter file: %s',
+                      e.strerror)
+    except json.JSONDecodeError as e:
+        LOGGER.error('Failed to parse parameters: %s at line %d column %d',
+                     e.msg, e.lineno, e.colno)
+
+
 class SimulatorCommand(command.Command):
 
     @staticmethod
@@ -101,7 +120,7 @@ class SimulatorPingCommand(command.Command):
     @staticmethod
     def on_message(message):
         if 'state' in message.payload:
-            sys.stdout.write("%s\n" % json.dumps(message.payload))
+            sys.stdout.write('%s\n' % json.dumps(message.payload))
             sys.stdout.flush()
 
 
@@ -111,8 +130,9 @@ class SimulatorStartCommand(command.Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('start',
                                        help='Start a remote simulator')
-        parser.add_argument('-m', '--model', metavar='JSON')
         parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-P', '--parameters-file', metavar='FILE')
+        parser.add_argument('-m', '--model', metavar='JSON')
         parser.add_argument('-r', '--results', metavar='JSON')
         parser.add_argument('-w', '--when', metavar='JSON')
         parser.set_defaults(func=SimulatorStartCommand.run)
@@ -129,9 +149,10 @@ class SimulatorStartCommand(command.Command):
 
         message = {'action': 'start'}
 
+        if args.parameters is not None:
+            message['parameters'] = _get_parameters(args)
+
         try:
-            if args.parameters is not None:
-                message['parameters'] = json.loads(args.parameters)
             if args.model is not None:
                 message['model'] = json.loads(args.model)
             if args.results is not None:
@@ -228,6 +249,53 @@ class SimulatorResetCommand(command.Command):
         producer = kombu.Producer(channel, exchange=exchange)
 
         message = {'action': 'reset'}
+
+        producer.publish(message,
+                         headers=SimulatorCommand.get_headers(args))
+
+
+class SimulatorCreateCommand(command.Command):
+
+    @staticmethod
+    def add_parser(subparsers):
+        parser = subparsers.add_parser('create',
+                                       help='Create a new simulator')  # noqa F501
+        parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-P', '--parameters-file', metavar='FILE')
+        parser.set_defaults(func=SimulatorCreateCommand.run)
+
+    @staticmethod
+    def run(connection, args):
+        channel = connection.channel()
+
+        exchange = kombu.Exchange('villas', type='headers', durable=True)
+        producer = kombu.Producer(channel, exchange=exchange)
+
+        message = {
+            'action': 'create',
+            'parameters': _get_parameters(args)
+        }
+
+        producer.publish(message,
+                         headers=SimulatorCommand.get_headers(args))
+
+
+class SimulatorDeleteCommand(command.Command):
+
+    @staticmethod
+    def add_parser(subparsers):
+        parser = subparsers.add_parser('delete',
+                                       help='Delete a simulator')  # noqa F501
+        parser.set_defaults(func=SimulatorDeleteCommand.run)
+
+    @staticmethod
+    def run(connection, args):
+        channel = connection.channel()
+
+        exchange = kombu.Exchange('villas', type='headers', durable=True)
+        producer = kombu.Producer(channel, exchange=exchange)
+
+        message = {'action': 'delete'}
 
         producer.publish(message,
                          headers=SimulatorCommand.get_headers(args))
