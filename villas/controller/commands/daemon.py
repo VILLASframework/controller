@@ -35,4 +35,4 @@ class DaemonCommand(command.Command):
         except KeyboardInterrupt:
             pass
         except ConnectionError:
-            LOGGER.error("Failed to connect to broker.")
+            LOGGER.error('Failed to connect to broker.')

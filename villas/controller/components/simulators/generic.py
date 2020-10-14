@@ -37,7 +37,7 @@ class GenericSimulator(simulator.Simulator):
 
     def start(self, message):
         super().start(message)
-        self.logger.info("Working directory: %s" % os.getcwd())
+        self.logger.info('Working directory: %s', os.getcwd())
         path = self.download_model()
 
         # Start an external command
@@ -94,7 +94,7 @@ class GenericSimulator(simulator.Simulator):
             valid = False
             if 'whitelist' in self.properties:
                 for regex in self.properties['whitelist']:
-                    self.logger.info("Checking for match: " + regex)
+                    self.logger.info('Checking for match: %s', regex)
                     if re.match(regex, argv0) is not None:
                         valid = True
                         break
@@ -104,10 +104,10 @@ class GenericSimulator(simulator.Simulator):
                                           ' for this simulator',
                                           executable=argv0)
 
-            self.logger.info('Execute: %s' % argv)
+            self.logger.info('Execute: %s', argv)
             logfile = None
             if 'stdout_logfile' in params:
-                logfile = open(self.params['stdout_logfile'], "w")
+                logfile = open(self.params['stdout_logfile'], 'w')
                 self.child = subprocess.Popen(argv, **args,
                                               stdout=logfile,
                                               stderr=subprocess.STDOUT)

@@ -49,5 +49,5 @@ class MonitorCommand(command.Command):
 
         entry.update(message.properties)
 
-        sys.stdout.write("%s\n" % json.dumps(entry))
+        sys.stdout.write('%s\n' % json.dumps(entry))
         sys.stdout.flush()

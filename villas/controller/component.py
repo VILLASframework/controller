@@ -138,7 +138,7 @@ class Component(object):
         if self._state == state:
             return
 
-        self.logger.info('State transition: %s => %s' % (self._state, state))
+        self.logger.info(f'State transition: {self._state} => {state} {kwargs}')
 
         self._state = state
         self._stateargs = kwargs

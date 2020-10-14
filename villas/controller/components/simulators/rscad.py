@@ -11,7 +11,7 @@ class RscadSimulator(simulator.Simulator):
     def __init__(self, host, number):
         # Rack.__init__(self, host, number)
 
-        self.name = '%s(%d)' % (host, number)
+        self.name = f'{host}({number})'
 
     @property
     def state(self):

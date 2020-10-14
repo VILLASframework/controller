@@ -53,16 +53,16 @@ def setup_logging(args):
 
 def setup_argparse():
     # Main parser
-    ver = termcolor.colored(version, "blue")
+    ver = termcolor.colored(version, 'blue')
     year = datetime.date.today().year
 
     parser = argparse.ArgumentParser(
         prog=os.path.basename(sys.argv[0]),
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog=(f"VILLAScontroller {ver}\n"
-                f" Copyright 2014-{year}, Institute for Automation "
-                "of Complex Power Systems, EONERC\n"
-                " Steffen Vogel <svogel2@eonerc.rwth-aachen.de>\n")
+        epilog=(f'VILLAScontroller {ver}\n'
+                f' Copyright 2014-{year}, Institute for Automation '
+                'of Complex Power Systems, EONERC\n'
+                ' Steffen Vogel <svogel2@eonerc.rwth-aachen.de>\n')
     )
 
     parser.add_argument('-b', '--broker',
