@@ -1,10 +1,10 @@
-from .. import command
-
 import kombu
 import socket
 import json
 import sys
 import logging
+
+from villas.controll.command import Command
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def _get_parameters(args):
                      e.msg, e.lineno, e.colno)
 
 
-class SimulatorCommand(command.Command):
+class SimulatorCommand(Command):
 
     @staticmethod
     def run(connection, args):
@@ -81,7 +81,7 @@ class SimulatorCommand(command.Command):
         return headers
 
 
-class SimulatorPingCommand(command.Command):
+class SimulatorPingCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -124,7 +124,7 @@ class SimulatorPingCommand(command.Command):
             sys.stdout.flush()
 
 
-class SimulatorStartCommand(command.Command):
+class SimulatorStartCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -164,7 +164,7 @@ class SimulatorStartCommand(command.Command):
         producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorStopCommand(command.Command):
+class SimulatorStopCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -187,7 +187,7 @@ class SimulatorStopCommand(command.Command):
         producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorPauseCommand(command.Command):
+class SimulatorPauseCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -210,7 +210,7 @@ class SimulatorPauseCommand(command.Command):
         producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorResumeCommand(command.Command):
+class SimulatorResumeCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -233,7 +233,7 @@ class SimulatorResumeCommand(command.Command):
         producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorResetCommand(command.Command):
+class SimulatorResetCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -254,7 +254,7 @@ class SimulatorResetCommand(command.Command):
                          headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorCreateCommand(command.Command):
+class SimulatorCreateCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):
@@ -280,7 +280,7 @@ class SimulatorCreateCommand(command.Command):
                          headers=SimulatorCommand.get_headers(args))
 
 
-class SimulatorDeleteCommand(command.Command):
+class SimulatorDeleteCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):

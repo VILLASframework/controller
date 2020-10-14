@@ -6,11 +6,11 @@ import psutil
 import subprocess
 import signal
 
-from ...exceptions import SimulationException
-from .. import simulator
+from villas.controller.exceptions import SimulationException
+from villas.controller.simulator import Simulator
 
 
-class GenericSimulator(simulator.Simulator):
+class GenericSimulator(Simulator):
 
     def __init__(self, **args):
         super().__init__(**args)

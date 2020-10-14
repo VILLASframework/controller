@@ -1,4 +1,4 @@
-from ..controller import Controller
+from villas.controller.controller import Controller
 
 
 class PlaybackController(Controller):

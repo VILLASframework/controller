@@ -1,4 +1,5 @@
-from ..component import Component
+from villas.controller.component import Component
+from villas.controller.controllers import playback, kubernetes, villas_node, villas_relay
 
 
 class Controller(Component):
@@ -8,11 +9,13 @@ class Controller(Component):
 
     @staticmethod
     def from_json(json):
-        from .controllers import playback, kubernetes
-
         if json['type'] == 'playback':
             return playback.PlaybackController(**json)
         if json['type'] == 'kubernetes':
             return kubernetes.KubernetesController(**json)
+        if json['type'] == 'villas-node':
+            return villas_node.VILLASnodeController(**json)
+        if json['type'] == 'villas-relay':
+            return villas_relay.VILLASrelayController(**json)
         else:
             return None

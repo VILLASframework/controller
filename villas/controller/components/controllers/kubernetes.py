@@ -1,9 +1,9 @@
-from ..controller import Controller
-
 import signal
 import time
 import threading
 import kubernetes as k8s
+
+from villas.controller.controller import Controller
 
 
 class KubernetesController(Controller):

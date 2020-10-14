@@ -1,9 +1,9 @@
 import threading
 
-from .. import simulator
+from villas.controller.simulator import Simulator
 
 
-class DummySimulator(simulator.Simulator):
+class DummySimulator(Simulator):
 
     def __init__(self, **args):
         super().__init__(**args)

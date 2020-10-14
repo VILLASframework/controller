@@ -1,3 +1,5 @@
+from villas.controller import commands  # noqa: F401
+
 class Command(object):
 
     @staticmethod
@@ -11,8 +13,6 @@ class Command(object):
                                            help='Available subcommands:')
         subparsers.required = True
         subparsers.dest = 'command'
-
-        from . import commands  # noqa: F401
 
         for subcommand in Command.__subclasses__():
             subcommand.add_parser(subparsers)

@@ -1,12 +1,12 @@
 import socket
 import time
 
-from .. import simulator
+from villas.controller.simulator import Simulator
 
 # from rtds.rack.rack import Rack
 
 
-class RscadSimulator(simulator.Simulator):
+class RscadSimulator(Simulator):
 
     def __init__(self, host, number):
         # Rack.__init__(self, host, number)

@@ -1,14 +1,13 @@
-from .. import command
-
 import kombu
 import time
 import json
 import sys
 
-from . import simulator
+from villas.controller import simulator
+from villas.controller.command import Command
 
 
-class MonitorCommand(command.Command):
+class MonitorCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):

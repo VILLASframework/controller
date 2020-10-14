@@ -1,4 +1,4 @@
-from ..component import Component
+from villas.controller.component import Component
 
 
 class Gateway(Component):
@@ -8,9 +8,4 @@ class Gateway(Component):
 
     @staticmethod
     def from_json(json):
-        from .gateways import villas_node
-
-        if json['type'] == 'villas-node':
-            return villas_node.VILLASnodeGateway(**json)
-        else:
-            return None
+        return None

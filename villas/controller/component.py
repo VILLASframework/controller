@@ -5,8 +5,11 @@ import socket
 import os
 import uuid
 
-from . import __version__ as version
-from .exceptions import SimulationException
+from villas.controller import __version__ as version
+from villas.controller.exceptions import SimulationException
+from villas.controller.components.simulator import Simulator
+from villas.controller.components.gateway import Gateway
+from villas.controller.components.controller import Controller
 
 
 class Component(object):
@@ -39,6 +42,9 @@ class Component(object):
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
                                        durable=True)
+
+    def __del__(self):
+        self.change_state('gone')
 
     def on_ready(self):
         pass
@@ -169,10 +175,6 @@ class Component(object):
 
     @staticmethod
     def from_json(json):
-        from .components.simulator import Simulator
-        from .components.gateway import Gateway
-        from .components.controller import Controller
-
         if json['category'] == 'simulator':
             return Simulator.from_json(json)
         elif json['category'] == 'gateway':

@@ -6,8 +6,9 @@ import io
 import tempfile
 import zipfile
 
-from ..component import Component
-from ..exceptions import SimulationException
+from villas.controller.component import Component
+from villas.controller.exceptions import SimulationException
+from villas.controller.simulators import dummy, generic, rtlab, rscad, dpsim
 
 
 class Simulator(Component):
@@ -29,14 +30,11 @@ class Simulator(Component):
 
     @staticmethod
     def from_json(json):
-        from .simulators import dummy, generic, rtlab, rscad
-
         if json['type'] == 'dummy':
             return dummy.DummySimulator(**json)
         if json['type'] == 'generic':
             return generic.GenericSimulator(**json)
         elif json['type'] == 'dpsim':
-            from .simulators import dpsim
             return dpsim.DPsimSimulator(**json)
         elif json['type'] == 'rtlab':
             return rtlab.RTLabSimulator(**json)

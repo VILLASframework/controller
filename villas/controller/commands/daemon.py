@@ -1,14 +1,14 @@
-from .. import command
 
 import logging
 import functools as ft
 import villas.controller.controller
 from villas.controller.components.gateways.villas_node import VILLASnodeGateway
+from villas.controller.command import Command
 
 LOGGER = logging.getLogger(__name__)
 
 
-class DaemonCommand(command.Command):
+class DaemonCommand(Command):
 
     @staticmethod
     def add_parser(subparsers):

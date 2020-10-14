@@ -3,10 +3,10 @@ import time
 import socket
 import os
 
-from .. import simulator
+from villas.controller.simulator import Simulator
 
 
-class DPsimSimulator(simulator.Simulator):
+class DPsimSimulator(Simulator):
 
     def __init__(self, **args):
         args['type'] = 'dpsim'

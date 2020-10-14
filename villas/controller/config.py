@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 
-from .component import Component
+from villas.controller.component import Component
 
 LOGGER = logging.getLogger(__name__)
 

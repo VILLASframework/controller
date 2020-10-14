@@ -1,7 +1,7 @@
-from .. import simulator
+from villas.controller.simulator import Simulator
 
 
-class RtlabSimulator(simulator.Simulator):
+class RtlabSimulator(Simulator):
 
     def __init__(self):
         pass
