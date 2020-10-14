@@ -1,7 +1,7 @@
 {
 	"skip_node": true,
 	"broker" : {
-		"url" : "amqp://admin:Haegiethu0rohtee@localhost:5672/%2F"
+		"url" : "amqp://admin:Haegiethu0rohtee@lb-20.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
 	},
 	"directories" : {
 		"results" : "/var/lib/villas/results",
@@ -15,13 +15,15 @@
 			"realm" : "de.rwth-aachen.eonerc.acs",
 			"uuid" : "4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c",
 			"location" : "Richard's PC",
+			"ws_url" : "https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1",
+			"api_url" : "https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1",
 			"owner" : "rmr",
 			"whitelist" : [
 				"/sbin/ping",
 				"^echo"
 			],
 			"shell" : true,
-			"enabled" : false
+			"enabled" : true
 		},
 		{
 			"name" : "Generic Simulator #2",
@@ -36,7 +38,7 @@
 				"^echo"
 			],
 			"shell" : true,
-			"enabled" : false
+			"enabled" : true
 		},
 		{
 			"name" : "Dummy Simulator #1",
@@ -46,9 +48,10 @@
 			"uuid" : "e15f5ad4-041f-11e8-9bf3-23372608bf60",
 			"location" : "Steffen's Laptop",
 			"owner" : "svg",
-			"enabled" : false
+			"enabled" : true
 		},
 		{
+			"enabled": false,
 			"name" : "VILLASnode local",
 			"category" : "gateway",
 			"type" : "villas-node",
@@ -56,7 +59,6 @@
 			"uuid" : "7e5e1b2a-eff9-11e8-9425-320084a2b301",
 			"location" : "Steffen's Laptop",
 			"owner" : "svg",
-			"enabled" : true,
 			"autostart" : true,
 			"executable" : "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/src/villas-node",
 			"api" : "http://localhost:8080",
