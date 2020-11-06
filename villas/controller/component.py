@@ -7,9 +7,6 @@ import uuid
 
 from villas.controller import __version__ as version
 from villas.controller.exceptions import SimulationException
-from villas.controller.components.simulator import Simulator
-from villas.controller.components.gateway import Gateway
-from villas.controller.components.controller import Controller
 
 
 class Component(object):
@@ -175,6 +172,10 @@ class Component(object):
 
     @staticmethod
     def from_json(json):
+        from villas.controller.components.controller import Controller
+        from villas.controller.components.simulator import Simulator
+        from villas.controller.components.gateway import Gateway
+
         if json['category'] == 'simulator':
             return Simulator.from_json(json)
         elif json['category'] == 'gateway':

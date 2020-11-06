@@ -4,7 +4,7 @@ import json
 import sys
 import logging
 
-from villas.controll.command import Command
+from villas.controller.command import Command
 
 LOGGER = logging.getLogger(__name__)
 
