@@ -1,16 +1,7 @@
-FROM fedora:30
+FROM python:3.8
 
-ENV PYCURL_SSL_LIBRARY openssl
-
-RUN dnf -y install \
-	gcc \
-	curl \
-	python3 \
-	python3-pip \
-	python3-devel \
-	libcurl-devel \
-	openssl-devel \
-	nmap-ncat
+COPY requirements.txt /tmp
+RUN pip3 install -r /tmp/requirements.txt
 
 COPY . /tmp/controller
 RUN cd /tmp/controller && \
@@ -18,6 +9,4 @@ RUN cd /tmp/controller && \
 	pip3 install dist/*.tar.gz && \
 	rm -rf /tmp/controller
 
-ADD https://raw.githubusercontent.com/eficode/wait-for/master/wait-for /usr/bin/wait-for
-RUN chmod +x /usr/bin/wait-for
-
+ENTRYPOINT [ "villas-controller" ]
