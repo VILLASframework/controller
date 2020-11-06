@@ -1,7 +1,7 @@
 import uuid
 import time
 import os
-import pycurl
+import requests
 import io
 import tempfile
 import zipfile
@@ -112,45 +112,19 @@ class Simulator(Component):
                                             'working directory: %s ( %s )' %
                                             (self.logdir, e))
 
-    def _pycurl_upload(self, filename):
-        try:
-            c = pycurl.Curl()
-            url = self.results['url']
-            c.setopt(pycurl.URL, url)
-            c.setopt(pycurl.UPLOAD, 1)
-            c.setopt(pycurl.READFUNCTION, open(filename, 'rb').read)
-            filesize = os.path.getsize(filename)
-            c.setopt(pycurl.INFILESIZE, filesize)
-            self.logger.info('Uploading %d bytes of file %s to url %s',
-                             filesize, filename, url)
-            c.perform()
-            c.close()
+    def _upload(self, filename):
+        with open(filename, 'rb') as f:
+            with requests.put(self.results['url'], body=f) as r:
+                self.logger.info(f'Uploaded file {filename} to {url}')
 
-        except Exception as e:
-            self.logger.error('Curl failed: %s' % str(e))
+    def _download(self, url):
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.xml') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
 
-    def _pycurl_download(self, url):
-        try:
-            buffer = io.BytesIO()
-            c = pycurl.Curl()
-            c.setopt(c.URL, url)
-            c.setopt(c.WRITEDATA, buffer)
-            c.perform()
-            c.close()
-
-            fp = tempfile.NamedTemporaryFile(delete=False, suffix='.xml')
-            fp.write(buffer.getvalue())
-            fp.close()
-
-        except pycurl.error as e:
-            self.logger.error('Failed to load url: %s error: %s', url, e)
-            return None
-        except IOError as e:
-            self.logger.error('Failed to process: %s in temporary file: %s',
-                              url, fp.name + str(e))
-            return None
-        finally:
-            return fp.name
+                return f.name
 
     def _zip_files(self, folder):
         pass
@@ -178,7 +152,7 @@ class Simulator(Component):
             self.logger.error('Zip failed: %s', e)
 
         if 'url' in self.results:
-            self._pycurl_upload(filename)
+            self._upload(filename)
         else:
             self.logger.info('No URL provided for result upload. '
                              'Skipping upload.')
@@ -186,7 +160,7 @@ class Simulator(Component):
     def download_model(self):
         if self.model:
             if 'url' in self.model:
-                filename = self._pycurl_download(self.model['url'])
+                filename = self._download(self.model['url'])
 
                 return self._unzip_files(filename)
             else:

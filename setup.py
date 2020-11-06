@@ -27,7 +27,7 @@ setup(
         'kombu',
         'termcolor',
         'psutil',
-        'pycurl',
+        'requests',
         'villas-node>=0.9.0',
         'kubernetes'
     ],
