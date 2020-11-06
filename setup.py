@@ -6,7 +6,7 @@ with open('README.md') as f:
 
 setup(
     name='villas-controller',
-    version='0.3.1',
+    version='0.3.2',
     description='A controller/orchestration API for real-time '
                 'power system simulators',
     long_description=long_description,
