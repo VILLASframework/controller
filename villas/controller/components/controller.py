@@ -9,8 +9,6 @@ class Controller(Component):
 
     @staticmethod
     def from_json(json):
-        if json['type'] == 'playback':
-            return playback.PlaybackController(**json)
         if json['type'] == 'kubernetes':
             return kubernetes.KubernetesController(**json)
         if json['type'] == 'villas-node':
