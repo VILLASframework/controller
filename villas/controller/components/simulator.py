@@ -71,9 +71,6 @@ class Simulator(Component):
             raise SimulationException(self, msg='Invalid state transtion',
                                       current=self._state, next=state)
 
-        self._state = state
-        self._stateargs = kwargs
-
         self.logger.info('Changing state to %s', state)
 
         if 'msg' in kwargs:
@@ -82,7 +79,7 @@ class Simulator(Component):
         if state == 'stopping':
             self.upload_results()
 
-        self.publish_state()
+        super().change_state(state, **kwargs)
 
     # Actions
     def start(self, message):

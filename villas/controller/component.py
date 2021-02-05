@@ -84,13 +84,14 @@ class Component(object):
     @property
     def state(self):
         return {
-            'state': self._state,
-            'version': version,
+            'status': {
+                'state': self._state,
+                'version': version,
+                'uptime': time.time() - self.started,
+                'host': socket.gethostname(),
+                'kernel': os.uname(),
+            },
             'properties': self.properties,
-            'uptime': time.time() - self.started,
-            'host': socket.gethostname(),
-            'kernel': os.uname(),
-
             **self._stateargs
         }
 
