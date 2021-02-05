@@ -3,9 +3,7 @@ from villas.controller.component import Component
 
 class Gateway(Component):
 
-    def __init__(self, **args):
-        super().__init__(**args)
+    def __init__(self, controller, **props):
+        self.controller = controller
 
-    @staticmethod
-    def from_json(json):
-        return None
+        super().__init__(**props)
