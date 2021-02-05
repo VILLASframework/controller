@@ -1,9 +1,9 @@
 
 import logging
 import functools as ft
-import villas.controller.controller
 from villas.controller.components.gateways.villas_node import VILLASnodeGateway
 from villas.controller.command import Command
+from villas.controller.controller import ControllerMixin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class DaemonCommand(Command):
             components.append(node_comp)
 
         try:
-            d = villas.controller.controller.Controller(connection, components)
+            d = ControllerMixin(connection, components)
             d.run()
         except KeyboardInterrupt:
             pass

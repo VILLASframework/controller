@@ -46,9 +46,9 @@ class Component(object):
     def on_ready(self):
         pass
 
-    def set_controller(self, ctrl):
-        self.controller = ctrl
-        self.connection = ctrl.connection
+    def set_mixin(self, mixin):
+        self.mixin = mixin
+        self.connection = mixin.connection
 
         self.producer = kombu.Producer(channel=self.connection.channel(),
                                        exchange=self.exchange)
