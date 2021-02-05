@@ -2,10 +2,6 @@
     "broker" : {
         "url" : "amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
     },
-    "directories" : {
-        "results" : "/var/lib/villas/results",
-        "models" : "/var/lib/villas/models"
-    },
     "simulators" : [
         {
             "name" : "DPsim Simulator #1",
