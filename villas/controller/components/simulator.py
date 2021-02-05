@@ -8,7 +8,6 @@ import zipfile
 
 from villas.controller.component import Component
 from villas.controller.exceptions import SimulationException
-from villas.controller.simulators import dummy, generic, rtlab, rscad, dpsim
 
 
 class Simulator(Component):
@@ -30,15 +29,22 @@ class Simulator(Component):
 
     @staticmethod
     def from_json(json):
-        if json['type'] == 'dummy':
+        type = json.get('type')
+
+        if type == 'dummy':
+            from villas.controller.components.simulators import dummy
             return dummy.DummySimulator(**json)
-        if json['type'] == 'generic':
+        if type == 'generic':
+            from villas.controller.components.simulators import generic
             return generic.GenericSimulator(**json)
-        elif json['type'] == 'dpsim':
+        elif type == 'dpsim':
+            from villas.controller.components.simulators import dpsim
             return dpsim.DPsimSimulator(**json)
-        elif json['type'] == 'rtlab':
+        elif type == 'rtlab':
+            from villas.controller.components.simulators import rtlab
             return rtlab.RTLabSimulator(**json)
-        elif json['type'] == 'rscad':
+        elif type == 'rscad':
+            from villas.controller.components.simulators import rscad
             return rscad.RSCADSimulator(**json)
         else:
             return None

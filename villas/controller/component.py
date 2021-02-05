@@ -154,35 +154,38 @@ class Component(object):
         self.publish_state()
 
     def start(self, message):
-        pass
+        raise SimulationException('The component can not be started')
 
     def stop(self, message):
-        pass
+        raise SimulationException('The component can not be stopped')
 
     def pause(self, message):
-        pass
+        raise SimulationException('The component can not be paused')
 
     def resume(self, message):
-        pass
+        raise SimulationException('The component can not be resumed')
 
     def shutdown(self, message):
-        pass
+        raise SimulationException('The component can not be shut down')
 
     def reset(self, message):
         self.started = time.time()
 
     @staticmethod
     def from_json(json):
-        from villas.controller.components.controller import Controller
-        from villas.controller.components.simulator import Simulator
-        from villas.controller.components.gateway import Gateway
+        category = json.get('category')
 
-        if json['category'] == 'simulator':
+        if category == 'simulator':
+            from villas.controller.components.simulator import Simulator
             return Simulator.from_json(json)
-        elif json['category'] == 'gateway':
-            return Gateway.from_json(json)
-        elif json['category'] == 'controller':
+        elif category == 'controller':
+            from villas.controller.components.controller import Controller
             return Controller.from_json(json)
+        elif category == 'gateway':
+            from villas.controller.components.gateway import Gateway
+            return Gateway.from_json(json)
+        else:
+            raise Exception(f'Unsupported category {category}')
 
     def publish_state(self):
         if self.producer is None:
