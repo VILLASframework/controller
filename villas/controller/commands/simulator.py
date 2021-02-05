@@ -58,6 +58,8 @@ class SimulatorCommand(Command):
         SimulatorResumeCommand.add_parser(sim_subparsers)
         SimulatorPingCommand.add_parser(sim_subparsers)
         SimulatorResetCommand.add_parser(sim_subparsers)
+        SimulatorCreateCommand.add_parser(sim_subparsers)
+        SimulatorDeleteCommand.add_parser(sim_subparsers)
 
     @staticmethod
     def get_headers(args):
@@ -113,7 +115,7 @@ class SimulatorPingCommand(Command):
         with consumer:
             try:
                 while True:
-                    connection.drain_events(timeout=1)
+                    connection.drain_events(timeout=10)
             except socket.timeout:
                 pass
 
@@ -286,6 +288,8 @@ class SimulatorDeleteCommand(Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('delete',
                                        help='Delete a simulator')  # noqa F501
+        parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-P', '--parameters-file', metavar='FILE')
         parser.set_defaults(func=SimulatorDeleteCommand.run)
 
     @staticmethod
@@ -295,7 +299,10 @@ class SimulatorDeleteCommand(Command):
         exchange = kombu.Exchange('villas', type='headers', durable=True)
         producer = kombu.Producer(channel, exchange=exchange)
 
-        message = {'action': 'delete'}
+        message = {
+            'action': 'delete',
+            'parameters': _get_parameters(args)
+        }
 
         producer.publish(message,
                          headers=SimulatorCommand.get_headers(args))
