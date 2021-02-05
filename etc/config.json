@@ -1,59 +1,55 @@
 {
-	"broker" : {
-		"url" : "amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
-	},
-	"components": [
-		{
-			"name" : "Generic Simulator #1",
-			"category": "simulator",
-			"type" : "generic",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c",
-			"location" : "Richard's PC",
-			"ws_url" : "https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1",
-			"api_url" : "https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1",
-			"owner" : "rmr",
-			"whitelist" : [
-				"/sbin/ping",
-				"^echo"
-			],
-			"shell" : true,
-			"enabled" : true
-		},
-		{
-			"name" : "Generic Simulator #2",
-			"category": "simulator",
-			"type" : "generic",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "82b0d882-6b1c-11e8-9708-ffdb6522d53c",
-			"location" : "Steffen's Laptop",
-			"owner" : "svg",
-			"whitelist" : [
-				"/sbin/ping",
-				"^echo"
-			],
-			"shell" : true,
-			"enabled" : true
-		},
-		{
-			"name" : "Dummy Simulator #1",
-			"category" : "simulator",
-			"type" : "dummy",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "e15f5ad4-041f-11e8-9bf3-23372608bf60",
-			"location" : "Steffen's Laptop",
-			"owner" : "svg",
-			"enabled" : true
-		},
-		{
-			"name" : "Playback controller",
-			"category" : "controller",
-			"type" : "playback",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "c7bec168-f006-11e8-9405-320084a2b301",
-			"location" : "Steffen's Laptop",
-			"owner" : "svg",
-			"enabled": true
-		}
-	]
+  "broker": {
+    "url": "amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
+  },
+  "components": [
+    {
+      "category": "controller",
+      "name": "Generic Controller",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "uuid": "f4751894-205e-11eb-aefb-0741ff98abca"
+    },
+    {
+      "api_url": "https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1",
+      "category": "simulator",
+      "enabled": false,
+      "location": "Richard's PC",
+      "name": "Generic Simulator #1",
+      "owner": "rmr",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "shell": true,
+      "type": "generic",
+      "uuid": "4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c",
+      "whitelist": [
+        "/sbin/ping",
+        "^echo"
+      ],
+      "ws_url": "https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1"
+    },
+    {
+      "category": "simulator",
+      "enabled": false,
+      "location": "Steffen's Laptop",
+      "name": "Generic Simulator #2",
+      "owner": "svg",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "shell": true,
+      "type": "generic",
+      "uuid": "82b0d882-6b1c-11e8-9708-ffdb6522d53c",
+      "whitelist": [
+        "/sbin/ping",
+        "^echo"
+      ]
+    },
+    {
+      "category": "simulator",
+      "enabled": false,
+      "location": "Steffen's Laptop",
+      "name": "Dummy Simulator #1",
+      "owner": "svg",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "type": "dummy",
+      "uuid": "e15f5ad4-041f-11e8-9bf3-23372608bf60"
+    }
+  ]
 }

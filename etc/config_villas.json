@@ -1,24 +1,30 @@
 {
-	"broker" : {
-		"url" : "amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
-	},
-	"components": [
-		{
-			"name" : "VILLASnode local",
-			"category" : "gateway",
-			"type" : "villas-node",
-			"realm" : "de.rwth-aachen.eonerc.acs",
-			"uuid" : "7e5e1b2a-eff9-11e8-9425-320084a2b301",
-			"location" : "Steffen's Laptop",
-			"owner" : "svg",
-			"enabled" : true,
-			"autostart" : true,
-			"executable" : "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/src/villas-node",
-			"api" : "http://localhost:8080",
-			"config_filename" : "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/file-playback.conf",
-			"config" : {
-
-			}
-		}
-	]
+  "broker": {
+    "url": "amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F"
+  },
+  "components": [
+    {
+      "api_url": "http://ernie.acs-lab.eonerc.rwth-aachen.de:8080",
+      "category": "controller",
+      "config": {},
+      "config_filename": "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/file-playback.conf",
+      "enabled": true,
+      "executable": "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/src/villas-node",
+      "location": "Steffen's Laptop",
+      "name": "VILLASnode (k8s)",
+      "owner": "svg",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "type": "villas-node"
+    },
+    {
+      "api_url": "https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay",
+      "category": "controller",
+      "enabled": false,
+      "location": "k8s",
+      "name": "VILLASrelay (k8s)",
+      "owner": "svg",
+      "realm": "de.rwth-aachen.eonerc.acs",
+      "type": "villas-relay"
+    }
+  ]
 }
