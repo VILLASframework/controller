@@ -3,6 +3,12 @@ import argparse
 import logging
 import os
 
+from os import getcwd
+from xdg import (
+    xdg_config_dirs,
+    xdg_config_home,
+ )
+
 from villas.controller.component import Component
 
 LOGGER = logging.getLogger(__name__)
@@ -22,25 +28,27 @@ class ConfigType(argparse.FileType):
 
 class Config(object):
 
-    DEFAULT_PATHS = ['config.json',
-                     'etc/config.json',
-                     '/etc/villas/controller/config.json']
+    DEFAULT_PATHS = xdg_config_dirs() + [
+                    xdg_config_home(),
+                    getcwd(),
+                    os.path.join(getcwd(), 'etc'),
+                    '/etc/villas/controller/' ]
 
     def __init__(self, fp=None):
         if fp is None:
-            f = self.find_default_path()
-            if f:
-                fp = open(f)
+            fn = self.find_default_path()
+            if fn:
+                with open(fn) as fp:
+                    self.json = json.load(fp)
 
-        if fp is None:
-            raise RuntimeError('Failed to load configuration')
+        else:
+            self.json = json.load(fp)
 
-        self.json = json.load(fp)
-
-    def find_default_path(self):
+    def find_default_path(self, filename='config.json'):
         for path in Config.DEFAULT_PATHS:
-            if os.access(path, os.R_OK):
-                return path
+            fn = os.path.join(path, filename)
+            if os.access(fn, os.R_OK):
+                return fn
 
     @property
     def components(self):
