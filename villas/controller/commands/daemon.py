@@ -1,7 +1,6 @@
 
 import logging
-import functools as ft
-from villas.controller.components.gateways.villas_node import VILLASnodeGateway
+
 from villas.controller.command import Command
 from villas.controller.controller import ControllerMixin
 
@@ -19,15 +18,6 @@ class DaemonCommand(Command):
     @staticmethod
     def run(connection, args):
         components = args.config.components
-
-        # Automatically create a VILLASnode Gateway if not present in config
-        node_present = ft.reduce(lambda present, comp: present or type(comp)
-                                 is VILLASnodeGateway, components, False)
-        if not node_present and not args.config.json.get('skip_node'):
-            LOGGER.info('Creating default VILLASnodeGateway component')
-            node_comp = VILLASnodeGateway()
-
-            components.append(node_comp)
 
         try:
             d = ControllerMixin(connection, components)
