@@ -22,7 +22,7 @@ def _get_parameters(args):
         return parameters
     except OSError as e:
         LOGGER.error('Failed to open parameter file: %s',
-                      e.strerror)
+                     e.strerror)
     except json.JSONDecodeError as e:
         LOGGER.error('Failed to parse parameters: %s at line %d column %d',
                      e.msg, e.lineno, e.colno)

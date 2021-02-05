@@ -3,8 +3,8 @@ import time
 import json
 import sys
 
-from villas.controller import simulator
 from villas.controller.command import Command
+from villas.controller.commands.simulator import SimulatorCommand
 
 
 class MonitorCommand(Command):
@@ -25,7 +25,7 @@ class MonitorCommand(Command):
         exchange = kombu.Exchange(name='villas', type='headers')
 
         queue = kombu.Queue(exchange=exchange,
-                            binding_arguments=simulator.SimulatorCommand.get_headers(args),  # noqa F501
+                            binding_arguments=SimulatorCommand.get_headers(args),  # noqa F501
                             durable=False)
 
         consumer = kombu.Consumer(connection,

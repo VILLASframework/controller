@@ -1,5 +1,3 @@
-from villas.controller import commands  # noqa: F401
-
 class Command(object):
 
     @staticmethod
@@ -13,6 +11,10 @@ class Command(object):
                                            help='Available subcommands:')
         subparsers.required = True
         subparsers.dest = 'command'
+
+        import villas.controller.commands.daemon # noqa F401
+        import villas.controller.commands.simulator # noqa F401
+        import villas.controller.commands.monitor # noqa F401
 
         for subcommand in Command.__subclasses__():
             subcommand.add_parser(subparsers)

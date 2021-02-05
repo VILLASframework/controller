@@ -1,9 +1,7 @@
 import socket
 import time
 
-from villas.controller.simulator import Simulator
-
-# from rtds.rack.rack import Rack
+from villas.controller.components.simulator import Simulator
 
 
 class RscadSimulator(Simulator):

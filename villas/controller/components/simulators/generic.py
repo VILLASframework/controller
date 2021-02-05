@@ -7,7 +7,7 @@ import subprocess
 import signal
 
 from villas.controller.exceptions import SimulationException
-from villas.controller.simulator import Simulator
+from villas.controller.components.simulator import Simulator
 
 
 class GenericSimulator(Simulator):
