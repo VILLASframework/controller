@@ -33,7 +33,7 @@ class Component(object):
         self._stateargs = {}
 
         self.logger = logging.getLogger(
-            f'villas.controller:{self.category}:{self.name}')
+            f'villas.controller.{self.category}.{self.type}:{self.name}')
 
         self.producer = None
         self.exchange = kombu.Exchange(name='villas',
