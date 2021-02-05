@@ -32,7 +32,7 @@ class Config(object):
                     xdg_config_home(),
                     getcwd(),
                     os.path.join(getcwd(), 'etc'),
-                    '/etc/villas/controller/' ]
+                    '/etc/villas/controller/']
 
     def __init__(self, fp=None):
         if fp is None:

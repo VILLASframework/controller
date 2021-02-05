@@ -142,7 +142,7 @@ class Component(object):
         if self._state == state:
             return
 
-        self.logger.info(f'State transition: {self._state} => {state} {kwargs}')
+        self.logger.info(f'State transition: {self._state} => {state} {kwargs}')  # noqa E501
 
         self._state = state
         self._stateargs = kwargs

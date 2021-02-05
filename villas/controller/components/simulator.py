@@ -2,7 +2,6 @@ import uuid
 import time
 import os
 import requests
-import io
 import tempfile
 import zipfile
 
@@ -116,9 +115,12 @@ class Simulator(Component):
                                             (self.logdir, e))
 
     def _upload(self, filename):
+        url = self.results['url']
         with open(filename, 'rb') as f:
-            with requests.put(self.results['url'], body=f) as r:
-                self.logger.info(f'Uploaded file {filename} to {url}')
+            r = requests.put(url, body=f)
+            r.raise_for_status()
+
+            self.logger.info(f'Uploaded file {filename} to {url}')
 
     def _download(self, url):
         with requests.get(url, stream=True) as r:
