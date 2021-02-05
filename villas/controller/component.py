@@ -12,19 +12,12 @@ from villas.controller.exceptions import SimulationException
 class Component(object):
 
     def __init__(self, **props):
-        # Default values
-        if 'enabled' not in props:
-            props['enabled'] = True
-
-        if 'uuid' not in props:
-            props['uuid'] = str(uuid.uuid4())
-
-        self.realm = props['realm']
-        self.type = props['type']
-        self.name = props['name']
-        self.category = props['category']
-        self.enabled = props['enabled']
-        self.uuid = props['uuid']
+        self.realm = props.get('realm')
+        self.type = props.get('type')
+        self.name = props.get('name')
+        self.category = props.get('category')
+        self.enabled = props.get('enabled', True)
+        self.uuid = props.get('uuid', str(uuid.uuid4()))
 
         self.started = time.time()
         self.properties = props
