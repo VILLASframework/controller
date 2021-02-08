@@ -1,4 +1,4 @@
-class Command(object):
+class Command:
 
     @staticmethod
     def add_parser(subparsers):

@@ -26,7 +26,7 @@ class ConfigType(argparse.FileType):
             return Config(f)
 
 
-class Config(object):
+class Config:
 
     DEFAULT_PATHS = xdg_config_dirs() + [
                     xdg_config_home(),

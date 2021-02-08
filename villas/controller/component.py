@@ -10,7 +10,7 @@ from villas.controller import __version__ as version
 from villas.controller.exceptions import SimulationException
 
 
-class Component(object):
+class Component:
 
     def __init__(self, **props):
         self.realm = props.get('realm')
