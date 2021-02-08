@@ -4,6 +4,7 @@ import time
 import socket
 import os
 import uuid
+import threading
 
 from villas.controller import __version__ as version
 from villas.controller.exceptions import SimulationException
@@ -26,14 +27,21 @@ class Component(object):
         self._stateargs = {}
 
         self.logger = logging.getLogger(
-            f'villas.controller.{self.category}.{self.type}:{self.name}')
+            f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
         self.producer = None
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
                                        durable=True)
 
+        self.publish_state_interval = 10
+        self.publish_state_thread_stop = threading.Evdasent()
+        self.publish_state_thread = threading.Thread(
+            target=self.publish_state_periodically)
+        self.publish_state_thread.start()
+
     def __del__(self):
+        self.publish_state_thread_stop.set()
         self.change_state('gone')
 
     def on_ready(self):
@@ -45,8 +53,6 @@ class Component(object):
 
         self.producer = kombu.Producer(channel=self.connection.channel(),
                                        exchange=self.exchange)
-
-        self.publish_state()
 
     def get_consumer(self, channel):
         self.channel = channel
@@ -185,6 +191,11 @@ class Component(object):
             return
 
         self.producer.publish(self.state, headers=self.headers)
+
+    def publish_state_periodically(self):
+        while not self.publish_state_thread_stop.wait(
+          self.publish_state_interval):
+            self.publish_state()
 
     def __str__(self):
         return f'{self.type} {self.category} <{self.name}: {self.uuid}>'
