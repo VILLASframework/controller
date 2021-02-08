@@ -39,11 +39,11 @@ class Config(object):
             fn = self.find_default_path()
             if fn:
                 with open(fn) as fp:
-                    self.dict = yaml.load(fp)
+                    self.dict = yaml.load(fp, loader=yaml.SafeLoader)
             else:
                 pass  # Start without config
         else:
-            self.dict = yaml.load(fp)
+            self.dict = yaml.load(fp, loader=yaml.SafeLoader)
 
     def find_default_path(self, filename='config',
                           suffixes=['json', 'yaml', 'yml']):

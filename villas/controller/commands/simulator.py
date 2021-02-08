@@ -15,10 +15,11 @@ def _get_parameters(args):
 
     try:
         if args.parameters is not None:
-            parameters.update(yaml.loads(args.parameters))
+            parameters.update(yaml.loads(args.parameters,
+                                         loader=yaml.SafeLoader))
         if args.parameters_file is not None:
             with open(args.parameters_file) as f:
-                parameters.update(yaml.load(f))
+                parameters.update(yaml.load(f, loader=yaml.SafeLoader))
 
         return parameters
     except OSError as e:
@@ -157,9 +158,11 @@ class SimulatorStartCommand(Command):
 
         try:
             if args.model is not None:
-                message['model'] = yaml.loads(args.model)
+                message['model'] = yaml.loads(args.model,
+                                              loader=yaml.SafeLoader)
             if args.results is not None:
-                message['results'] = yaml.loads(args.results)
+                message['results'] = yaml.loads(args.results,
+                                                loader=yaml.SafeLoader)
         except yaml.YAMLError as e:
             LOGGER.error('Failed to parse parameters: %s at line %d column %d',
                          e.msg, e.lineno, e.colno)
