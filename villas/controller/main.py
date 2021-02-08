@@ -34,7 +34,7 @@ def _log_level_string_to_int(log_level_string):
 
 def setup_logging(args):
     logging.basicConfig(level=args.log_level,
-                        stream=sys.stdout,
+                        stream=sys.stderr,
                         format='%(asctime)s | %(levelname)s |'
                                ' %(name)s | %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
