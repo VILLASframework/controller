@@ -1,0 +1,19 @@
+---
+name: Kubernetes Job 1
+category: controller
+type: kubernetes
+realm: de.rwth-aachen.de.eonerc.acs
+uuid: 3654e856-2079-11eb-bb1e-3f11801a0391
+pod:
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: test-pod
+  spec:
+    containers:
+    - name: test-job
+      image: stv0g/test-job
+    env:
+    - name: RUNTIME
+      value: '15'
+    restartPolicy: Never

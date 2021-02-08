@@ -106,7 +106,7 @@ def main():
     if args.broker:
         broker_url = args.broker
     else:
-        broker = args.config.json.get('broker', {})
+        broker = args.config.dict.get('broker', {})
         broker_url = broker.get('url', 'amqp://guest:guest@localhost/%2F')
 
     try:

@@ -27,24 +27,24 @@ class Simulator(Component):
         }
 
     @staticmethod
-    def from_json(json):
-        type = json.get('type')
+    def from_dict(dict):
+        type = dict.get('type')
 
         if type == 'dummy':
             from villas.controller.components.simulators import dummy
-            return dummy.DummySimulator(**json)
+            return dummy.DummySimulator(**dict)
         if type == 'generic':
             from villas.controller.components.simulators import generic
-            return generic.GenericSimulator(**json)
+            return generic.GenericSimulator(**dict)
         elif type == 'dpsim':
             from villas.controller.components.simulators import dpsim
-            return dpsim.DPsimSimulator(**json)
+            return dpsim.DPsimSimulator(**dict)
         elif type == 'rtlab':
             from villas.controller.components.simulators import rtlab
-            return rtlab.RTLabSimulator(**json)
+            return rtlab.RTLabSimulator(**dict)
         elif type == 'rscad':
             from villas.controller.components.simulators import rscad
-            return rscad.RSCADSimulator(**json)
+            return rscad.RSCADSimulator(**dict)
         else:
             return None
 

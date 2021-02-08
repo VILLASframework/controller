@@ -11,25 +11,23 @@ class Controller(Component):
         self.components = {}
 
     @staticmethod
-    def from_json(json):
+    def from_dict(dict):
+        type = dict.get('type', 'generic')
 
-        if 'type' in json:
-            type = json.get('type')
-
-            if type == 'kubernetes':
-                from villas.controller.components.controllers import kubernetes
-                return kubernetes.KubernetesController(**json)
-            if type == 'villas-node':
-                from villas.controller.components.controllers import villas_node  # noqa E501
-                return villas_node.VILLASnodeController(**json)
-            if type == 'villas-relay':
-                from villas.controller.components.controllers import villas_relay  # noqa E501
-                return villas_relay.VILLASrelayController(**json)
-            else:
-                raise Exception(f'Unknown type: {type}')
-
+        if type == 'generic':
+            dict['type'] = 'generic'
+            return Controller(**dict)
+        if type == 'kubernetes':
+            from villas.controller.components.controllers import kubernetes
+            return kubernetes.KubernetesController(**dict)
+        if type == 'villas-node':
+            from villas.controller.components.controllers import villas_node  # noqa E501
+            return villas_node.VILLASnodeController(**dict)
+        if type == 'villas-relay':
+            from villas.controller.components.controllers import villas_relay  # noqa E501
+            return villas_relay.VILLASrelayController(**dict)
         else:
-            return Controller(**json)
+            raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
@@ -55,7 +53,7 @@ class Controller(Component):
             super().run_action(action, message)
 
     def create(self, message):
-        comp = Component.from_json(message.payload.get('parameters'))
+        comp = Component.from_dict(message.payload.get('parameters'))
 
         try:
             self.add_component(comp)

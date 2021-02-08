@@ -165,18 +165,18 @@ class Component(object):
         self.started = time.time()
 
     @staticmethod
-    def from_json(json):
-        category = json.get('category')
+    def from_dict(dict):
+        category = dict.get('category')
 
         if category == 'simulator':
             from villas.controller.components.simulator import Simulator
-            return Simulator.from_json(json)
+            return Simulator.from_dict(dict)
         elif category == 'controller':
             from villas.controller.components.controller import Controller
-            return Controller.from_json(json)
+            return Controller.from_dict(dict)
         elif category == 'gateway':
             from villas.controller.components.gateway import Gateway
-            return Gateway.from_json(json)
+            return Gateway.from_dict(dict)
         else:
             raise Exception(f'Unsupported category {category}')
 

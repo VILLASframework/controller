@@ -1,0 +1,15 @@
+---
+name: 'Generic Simulator #1'
+category: simulator
+type: generic
+realm: de.rwth-aachen.eonerc.acs
+uuid: 4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c
+location: Richard's PC
+ws_url: https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1
+api_url: https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1
+owner: rmr
+whitelist:
+- "/sbin/ping"
+- "^echo"
+shell: true
+enabled: false

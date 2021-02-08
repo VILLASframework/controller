@@ -30,10 +30,11 @@ setup(
         'requests',
         'villas-node>=0.10.2',
         'kubernetes',
-        'xdg'
+        'xdg',
+        'PyYAML'
     ],
     data_files=[
-        ('/etc/villas/controller', glob('etc/*.json')),
+        ('/etc/villas/controller', glob('etc/*.{json,yaml}')),
         ('/etc/systemd/system', ['villas-controller.service'])
     ],
     entry_points={

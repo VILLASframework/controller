@@ -15,7 +15,7 @@ kubectl -n villas-demo port-forward svc/broker 5672:5672 & PF2=$!
 
 sleep 2
 
-CONFIG=${CONFIG:-"etc/config.json"}
+CONFIG=${CONFIG:-"etc/config.yaml"}
 
 echo "Using config: ${CONFIG}"
 

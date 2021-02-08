@@ -5,3 +5,4 @@ requests
 villas-node>=0.10.2
 kubernetes
 xdg
+PyYAML

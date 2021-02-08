@@ -1,4 +1,4 @@
-import json
+import yaml
 import argparse
 import logging
 import os
@@ -39,17 +39,20 @@ class Config(object):
             fn = self.find_default_path()
             if fn:
                 with open(fn) as fp:
-                    self.json = json.load(fp)
-
+                    self.dict = yaml.load(fp)
+            else:
+                pass  # Start without config
         else:
-            self.json = json.load(fp)
+            self.dict = yaml.load(fp)
 
-    def find_default_path(self, filename='config.json'):
+    def find_default_path(self, filename='config',
+                          suffixes=['json', 'yaml', 'yml']):
         for path in Config.DEFAULT_PATHS:
-            fn = os.path.join(path, filename)
+            for suffix in suffixes:
+                fn = os.path.join(path, f'{filename}.{suffix}')
             if os.access(fn, os.R_OK):
                 return fn
 
     @property
     def components(self):
-        return [Component.from_json(js) for js in self.json['components']]
+        return [Component.from_dict(c) for c in self.dict['components']]

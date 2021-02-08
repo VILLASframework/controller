@@ -1,0 +1,29 @@
+---
+broker:
+  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+components:
+- category: controller
+  job:
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: pi
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          containers:
+          - command:
+            - perl
+            - "-Mbignum=bpi"
+            - "-wle"
+            - print bpi(2000)
+            image: perl
+            name: pi
+          restartPolicy: Never
+  location: EONERC Kubernetes Cluster
+  name: Kubernetes Service
+  namespace: villas-demo
+  owner: svg
+  realm: de.rwth-aachen.eonerc.acs
+  type: kubernetes

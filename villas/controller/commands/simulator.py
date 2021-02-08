@@ -1,5 +1,6 @@
 import kombu
 import socket
+import yaml
 import json
 import sys
 import logging
@@ -14,16 +15,16 @@ def _get_parameters(args):
 
     try:
         if args.parameters is not None:
-            parameters.update(json.loads(args.parameters))
+            parameters.update(yaml.loads(args.parameters))
         if args.parameters_file is not None:
             with open(args.parameters_file) as f:
-                parameters.update(json.load(f))
+                parameters.update(yaml.load(f))
 
         return parameters
     except OSError as e:
         LOGGER.error('Failed to open parameter file: %s',
                      e.strerror)
-    except json.JSONDecodeError as e:
+    except yaml.YAMLError as e:
         LOGGER.error('Failed to parse parameters: %s at line %d column %d',
                      e.msg, e.lineno, e.colno)
 
@@ -132,11 +133,11 @@ class SimulatorStartCommand(Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('start',
                                        help='Start a remote simulator')
-        parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-p', '--parameters', metavar='YAMLorJSON')
         parser.add_argument('-P', '--parameters-file', metavar='FILE')
-        parser.add_argument('-m', '--model', metavar='JSON')
-        parser.add_argument('-r', '--results', metavar='JSON')
-        parser.add_argument('-w', '--when', metavar='JSON')
+        parser.add_argument('-m', '--model', metavar='YAMLorJSON')
+        parser.add_argument('-r', '--results', metavar='YAMLorJSON')
+        parser.add_argument('-w', '--when', metavar='YAMLorJSON')
         parser.set_defaults(func=SimulatorStartCommand.run)
 
     @staticmethod
@@ -156,10 +157,10 @@ class SimulatorStartCommand(Command):
 
         try:
             if args.model is not None:
-                message['model'] = json.loads(args.model)
+                message['model'] = yaml.loads(args.model)
             if args.results is not None:
-                message['results'] = json.loads(args.results)
-        except json.JSONDecodeError as e:
+                message['results'] = yaml.loads(args.results)
+        except yaml.YAMLError as e:
             LOGGER.error('Failed to parse parameters: %s at line %d column %d',
                          e.msg, e.lineno, e.colno)
 
