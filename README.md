@@ -12,7 +12,7 @@ Documentation is available online at: https://villas.fein-aachen.org/doc/control
 
 ## Copyright
 
-2017, Institute for Automation of Complex Power Systems, EONERC
+2021, Institute for Automation of Complex Power Systems, EONERC
 
 ## License
 
