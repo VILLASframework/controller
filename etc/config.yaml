@@ -2,10 +2,11 @@
 broker:
   url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
 components:
+
 - category: controller
-  name: Generic Controller
   realm: de.rwth-aachen.eonerc.acs
   uuid: f4751894-205e-11eb-aefb-0741ff98abca
+
 - api_url: https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1
   category: simulator
   enabled: false
@@ -20,6 +21,7 @@ components:
   - "/sbin/ping"
   - "^echo"
   ws_url: https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1
+
 - category: simulator
   enabled: false
   location: Steffen's Laptop
@@ -32,6 +34,7 @@ components:
   whitelist:
   - "/sbin/ping"
   - "^echo"
+
 - category: simulator
   enabled: false
   location: Steffen's Laptop

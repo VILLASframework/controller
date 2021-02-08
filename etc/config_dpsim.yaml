@@ -1,7 +1,8 @@
 ---
 broker:
   url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
-simulators:
+
+components:
 - location: Richard's PC
   name: 'DPsim Simulator #1'
   owner: rmr
