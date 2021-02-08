@@ -36,13 +36,13 @@ class Controller(Component):
         self.components[comp.uuid] = comp
         self.mixin.components[comp.uuid] = comp
 
-        self.logger.info('Controller %s added new component %s', self, comp)
+        self.logger.info('Added new component %s', comp)
 
     def remove_component(self, comp):
         del self.components[comp.uuid]
         del self.mixin.components[comp.uuid]
 
-        self.logger.info('Controller %s removed component %s', self, comp)
+        self.logger.info('Removed component %s', comp)
 
     def run_action(self, action, message):
         if action == 'create':
