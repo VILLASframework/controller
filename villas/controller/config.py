@@ -7,7 +7,7 @@ from os import getcwd
 from xdg import (
     xdg_config_dirs,
     xdg_config_home,
- )
+)
 
 from villas.controller.component import Component
 
@@ -39,11 +39,11 @@ class Config:
             fn = self.find_default_path()
             if fn:
                 with open(fn) as fp:
-                    self.dict = yaml.load(fp, loader=yaml.SafeLoader)
+                    self.dict = yaml.load(fp, Loader=yaml.FullLoader)
             else:
                 pass  # Start without config
         else:
-            self.dict = yaml.load(fp, loader=yaml.SafeLoader)
+            self.dict = yaml.load(fp, Loader=yaml.FullLoader)
 
     def find_default_path(self, filename='config',
                           suffixes=['json', 'yaml', 'yml']):
