@@ -4,6 +4,7 @@ broker:
 components:
 
 - category: controller
+  name: Standard Controller
   realm: de.rwth-aachen.eonerc.acs
   uuid: f4751894-205e-11eb-aefb-0741ff98abca
 
@@ -16,7 +17,7 @@ components:
   realm: de.rwth-aachen.eonerc.acs
   shell: true
   type: generic
-  uuid: 4bc4ab42-6b1b-11e8-b38e-63d6cb797c3c
+  uuid: null # Generate automatically
   whitelist:
   - "/sbin/ping"
   - "^echo"
@@ -30,7 +31,7 @@ components:
   realm: de.rwth-aachen.eonerc.acs
   shell: true
   type: generic
-  uuid: 82b0d882-6b1c-11e8-9708-ffdb6522d53c
+  uuid: 29462fdd-8ce3-4761-ba95-392730764cd9
   whitelist:
   - "/sbin/ping"
   - "^echo"
@@ -42,4 +43,4 @@ components:
   owner: svg
   realm: de.rwth-aachen.eonerc.acs
   type: dummy
-  uuid: e15f5ad4-041f-11e8-9bf3-23372608bf60
+  uuid: 3ddd318e-fee1-46d7-bff4-7c064d640d4e

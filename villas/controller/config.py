@@ -56,3 +56,11 @@ class Config:
     @property
     def components(self):
         return [Component.from_dict(c) for c in self.dict['components']]
+
+    def check(self):
+        uuids = [c.uuid for c in self.components]
+
+        dups_uuids = set([u for u in uuids if uuids.count(u) > 1])
+
+        if len(dups_uuids) > 0:
+            raise RuntimeError('Duplicate UUIDs: ' + dups_uuids)

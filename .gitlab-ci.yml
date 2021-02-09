@@ -1,5 +1,8 @@
-variables:
-  DOCKER_IMAGE: registry.git.rwth-aachen.de/acs/public/villas/controller
+
+
+services:
+
+
 stages:
   - build
   - deploy
@@ -11,22 +14,35 @@ build:docker:
   stage: build
   image: docker
   script:
-    - docker build --tag ${DOCKER_IMAGE} .
+    - docker build --tag ${CI_REGISTRY_IMAGE} .
   tags:
     - docker
 
-build:flake8:
+build:precommit:
   stage: build
-  image: python:3.8
+  image: python:3.9
+  before_script:
+  - pip3 install -r requirements-dev.txt
   script:
-  - pip3 install flake8
-  - flake8 .
+  - pre-commit run --all-files
+  tags:
+    - docker
+
+build:test:
+  stage: build
+  image: python:3.9
+  services:
+  - rabbitmq:3.8.12
+  before_script:
+  - pip3 install -r requirements-dev.txt
+  script:
+  - pytest
   tags:
     - docker
 
 build:dist:
   stage: build
-  image: python:3.8
+  image: python:3.9
   script:
     - python3 setup.py sdist
   artifacts:
@@ -43,7 +59,7 @@ deploy:docker:
   before_script:
     - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
   script:
-    - docker push ${DOCKER_IMAGE}
+    - docker push ${CI_REGISTRY_IMAGE}
   tags:
     - shell
     - linux
