@@ -18,7 +18,11 @@ class Component:
         self.name = props.get('name')
         self.category = props.get('category')
         self.enabled = props.get('enabled', True)
-        self.uuid = props.get('uuid', str(uuid.uuid4()))
+        self.uuid = props.get('uuid')
+
+        # Generate random UUID in case no one is provided
+        if not self.uuid:
+            self.uuid = str(uuid.uuid4())
 
         self.started = time.time()
         self.properties = props
@@ -34,18 +38,21 @@ class Component:
                                        type='headers',
                                        durable=True)
 
-        self.publish_state_interval = 10
-        self.publish_state_thread_stop = threading.Evdasent()
+        self.publish_state_interval = 2
+        self.publish_state_thread_stop = threading.Event()
         self.publish_state_thread = threading.Thread(
             target=self.publish_state_periodically)
-        self.publish_state_thread.start()
-
-    def __del__(self):
-        self.publish_state_thread_stop.set()
-        self.change_state('gone')
 
     def on_ready(self):
+        self.publish_state_thread.start()
         pass
+
+    def on_shutdown(self):
+        if self.publish_state_thread.is_alive():
+            self.publish_state_thread_stop.set()
+            self.publish_state_thread.join()
+        self.change_state('gone')
+        self.logger.info('Component shut down: state=gone')
 
     def set_mixin(self, mixin):
         self.mixin = mixin
