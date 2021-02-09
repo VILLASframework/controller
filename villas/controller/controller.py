@@ -1,6 +1,8 @@
 import logging
 import kombu.mixins
 
+from villas.controller.components.managers.generic import GenericManager
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -10,9 +12,12 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
         self.components = {c.uuid: c for c in components if c.enabled}
         self.connection = connection
 
+        manager = self.add_managers()
+
         for uuid, comp in self.components.items():
             LOGGER.info('Adding %s', comp)
             comp.set_mixin(self)
+            comp.set_manager(manager)
             comp.on_ready()
 
         self.active_components = self.components.copy()
@@ -20,6 +25,25 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
     def get_consumers(self, Consumer, channel):
         return map(lambda comp: comp.get_consumer(channel),
                    self.active_components.values())
+
+    def add_managers(self):
+        mgrs = [c for c in self.components.values()
+                if isinstance(c, GenericManager)]
+
+        # Check that not more than one generic manager is configured
+        if len(mgrs) > 1:
+            raise RuntimeError('Each VILLAScontoller instance can have '
+                               'only a single generic manager configured!')
+
+        # Add a generic manager if none is configured
+        elif len(mgrs) == 0:
+            mgr = GenericManager()
+
+            self.components[mgr.uuid] = mgr
+        else:
+            mgr = mgrs[0]
+
+        return mgr
 
     def on_iteration(self):
         added = self.components.keys() - self.active_components.keys()

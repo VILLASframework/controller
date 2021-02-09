@@ -15,8 +15,8 @@ class Manager(Component):
         type = dict.get('type', 'generic')
 
         if type == 'generic':
-            dict['type'] = 'generic'
-            return Manager(**dict)
+            from villas.controller.components.managers import generic
+            return generic.GenericManager(**dict)
         if type == 'kubernetes':
             from villas.controller.components.managers import kubernetes
             return kubernetes.KubernetesController(**dict)
@@ -32,6 +32,8 @@ class Manager(Component):
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
             raise KeyError
+
+        comp.set_manager(self)
 
         self.components[comp.uuid] = comp
         self.mixin.components[comp.uuid] = comp
@@ -53,22 +55,7 @@ class Manager(Component):
             super().run_action(action, message)
 
     def create(self, message):
-        comp = Component.from_dict(message.payload.get('parameters'))
-
-        try:
-            self.add_component(comp)
-        except KeyError:
-            self.logger.error('A component with the UUID %s already exists',
-                              comp.uuid)
+        raise NotImplementedError()
 
     def delete(self, message):
-        params = message.payload.get('parameters')
-        uuid = params.get('uuid')
-
-        try:
-            comp = self.components[uuid]
-
-            self.remove_component(comp)
-
-        except KeyError:
-            self.logger.error('There is not component with UUID: %s', uuid)
+        raise NotImplementedError()

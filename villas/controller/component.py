@@ -20,6 +20,9 @@ class Component:
         self.enabled = props.get('enabled', True)
         self.uuid = props.get('uuid')
 
+        # The manager component which manages this instances
+        self.manager = None
+
         # Generate random UUID in case no one is provided
         if not self.uuid:
             self.uuid = str(uuid.uuid4())
@@ -28,7 +31,7 @@ class Component:
         self.properties = props
 
         self._state = 'idle'
-        self._stateargs = {}
+        self._status_fields = {}
 
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
@@ -38,21 +41,24 @@ class Component:
                                        type='headers',
                                        durable=True)
 
-        self.publish_state_interval = 2
-        self.publish_state_thread_stop = threading.Event()
-        self.publish_state_thread = threading.Thread(
-            target=self.publish_state_periodically)
+        self.publish_status_interval = 2
+        self.publish_status_thread_stop = threading.Event()
+        self.publish_status_thread = threading.Thread(
+            target=self.publish_status_periodically)
 
     def on_ready(self):
-        self.publish_state_thread.start()
+        self.publish_status_thread.start()
         pass
 
     def on_shutdown(self):
-        if self.publish_state_thread.is_alive():
-            self.publish_state_thread_stop.set()
-            self.publish_state_thread.join()
+        if self.publish_status_thread.is_alive():
+            self.publish_status_thread_stop.set()
+            self.publish_status_thread.join()
         self.change_state('gone')
         self.logger.info('Component shut down: state=gone')
+
+    def set_manager(self, manager):
+        self.manager = manager
 
     def set_mixin(self, mixin):
         self.mixin = mixin
@@ -88,17 +94,22 @@ class Component:
         }
 
     @property
-    def state(self):
+    def status(self):
+        status = {
+            'state': self._state,
+            'version': version,
+            'uptime': time.time() - self.started,
+            'host': socket.gethostname(),
+            'kernel': os.uname(),
+            **self._status_fields
+        }
+
+        if self.manager is not None:
+            status['managed_by'] = self.manager.uuid
+
         return {
-            'status': {
-                'state': self._state,
-                'version': version,
-                'uptime': time.time() - self.started,
-                'host': socket.gethostname(),
-                'kernel': os.uname(),
-            },
-            'properties': self.properties,
-            **self._stateargs
+            'status': status,
+            'properties': self.properties
         }
 
     def on_message(self, message):
@@ -151,13 +162,13 @@ class Component:
         self.logger.info(f'State transition: {self._state} => {state} {kwargs}')  # noqa E501
 
         self._state = state
-        self._stateargs = kwargs
+        self._status_fields = kwargs
 
-        self.publish_state()
+        self.publish_status()
 
     # Actions
     def ping(self, message):
-        self.publish_state()
+        self.publish_status()
 
     def start(self, message):
         raise SimulationException('The component can not be started')
@@ -193,16 +204,16 @@ class Component:
         else:
             raise Exception(f'Unsupported category {category}')
 
-    def publish_state(self):
+    def publish_status(self):
         if self.producer is None:
             return
 
-        self.producer.publish(self.state, headers=self.headers)
+        self.producer.publish(self.status, headers=self.headers)
 
-    def publish_state_periodically(self):
-        while not self.publish_state_thread_stop.wait(
-          self.publish_state_interval):
-            self.publish_state()
+    def publish_status_periodically(self):
+        while not self.publish_status_thread_stop.wait(
+          self.publish_status_interval):
+            self.publish_status()
 
     def __str__(self):
         return f'{self.type} {self.category} <{self.name}: {self.uuid}>'
