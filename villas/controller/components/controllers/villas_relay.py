@@ -91,3 +91,5 @@ class VILLASrelayController(Controller):
 
         # if self.autostart:
         #   os.system('villas-relay')
+
+        super().on_ready()

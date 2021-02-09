@@ -68,6 +68,8 @@ class VILLASnodeController(Controller):
         if self.autostart and not self.node.is_running():
             self.start()
 
+        super().on_ready()
+
     def start(self, message=None):
         self.node.start()
 
