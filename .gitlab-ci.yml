@@ -28,17 +28,17 @@ build:precommit:
   tags:
     - docker
 
-build:test:
-  stage: build
-  image: python:3.9
-  services:
-  - rabbitmq:3.8.12
-  before_script:
-  - pip3 install -r requirements-dev.txt
-  script:
-  - pytest
-  tags:
-    - docker
+# build:test:
+#   stage: build
+#   image: python:3.9
+#   services:
+#   - rabbitmq:latest
+#   before_script:
+#   - pip3 install -r requirements-dev.txt
+#   script:
+#   - PYTHONPATH=$(pwd) pytest
+#   tags:
+#     - docker
 
 build:dist:
   stage: build
