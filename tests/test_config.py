@@ -24,7 +24,8 @@ def test_config():
         for comp in c.components:
             assert is_valid_uuid(comp.uuid)
 
-        assert c.components[0].category == 'controller'
+        assert c.components[0].category == 'manager'
+        assert c.components[0].type == 'generic'
         assert c.components[0].name == 'Standard Controller'
         assert c.components[0].realm == 'de.rwth-aachen.eonerc.acs'
         assert c.components[0].uuid == 'f4751894-205e-11eb-aefb-0741ff98abca'

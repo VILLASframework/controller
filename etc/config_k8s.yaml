@@ -3,7 +3,14 @@ broker:
   url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
 
 components:
-- category: controller
+- category: simulator
+  type: kubernetes
+  location: EONERC Kubernetes Cluster
+  name: Kubernetes Job
+  namespace: villas-demo
+  owner: svg
+  realm: de.rwth-aachen.eonerc.acs
+
   job:
     apiVersion: batch/v1
     kind: Job
@@ -22,10 +29,3 @@ components:
             image: perl
             name: pi
           restartPolicy: Never
-
-  location: EONERC Kubernetes Cluster
-  name: Kubernetes Service
-  namespace: villas-demo
-  owner: svg
-  realm: de.rwth-aachen.eonerc.acs
-  type: kubernetes

@@ -3,7 +3,8 @@ broker:
   url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
 components:
 
-- category: controller
+- category: manager
+  type: generic
   name: Standard Controller
   realm: de.rwth-aachen.eonerc.acs
   uuid: f4751894-205e-11eb-aefb-0741ff98abca
@@ -37,8 +38,8 @@ components:
   - "^echo"
 
 - category: simulator
-  enabled: false
-  location: Steffen's Laptop
+  enabled: true
+  location: Sonjas's Laptop
   name: 'Dummy Simulator #1'
   owner: svg
   realm: de.rwth-aachen.eonerc.acs

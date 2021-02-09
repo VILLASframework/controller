@@ -4,6 +4,6 @@ broker:
 
 components:
 - api_url: http://localhost:8080
-  category: controller
+  category: manager
   name: VILLASnode
   type: villas-node

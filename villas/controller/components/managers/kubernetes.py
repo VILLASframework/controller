@@ -6,7 +6,7 @@ import kubernetes as k8s
 import collections
 from copy import deepcopy
 
-from villas.controller.components.controller import Controller
+from villas.controller.components.manager import Manager
 from villas.controller.component import Component
 
 
@@ -123,7 +123,7 @@ class KubernetesJob(Component):
         self._send_signal(signal.SIGCONT)
 
 
-class KubernetesController(Controller):
+class KubernetesManager(Manager):
 
     def __init__(self, **args):
         super().__init__(**args)

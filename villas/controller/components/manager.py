@@ -1,7 +1,7 @@
 from villas.controller.component import Component
 
 
-class Controller(Component):
+class Manager(Component):
 
     def __init__(self, **args):
         super().__init__(**args)
@@ -16,15 +16,15 @@ class Controller(Component):
 
         if type == 'generic':
             dict['type'] = 'generic'
-            return Controller(**dict)
+            return Manager(**dict)
         if type == 'kubernetes':
-            from villas.controller.components.controllers import kubernetes
+            from villas.controller.components.managers import kubernetes
             return kubernetes.KubernetesController(**dict)
         if type == 'villas-node':
-            from villas.controller.components.controllers import villas_node  # noqa E501
+            from villas.controller.components.managers import villas_node  # noqa E501
             return villas_node.VILLASnodeController(**dict)
         if type == 'villas-relay':
-            from villas.controller.components.controllers import villas_relay  # noqa E501
+            from villas.controller.components.managers import villas_relay  # noqa E501
             return villas_relay.VILLASrelayController(**dict)
         else:
             raise Exception(f'Unknown type: {type}')

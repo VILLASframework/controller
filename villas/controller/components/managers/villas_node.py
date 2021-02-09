@@ -1,11 +1,11 @@
 import threading
 
 from villas.node.node import Node
-from villas.controller.components.controller import Controller
+from villas.controller.components.manager import Manager
 from villas.controller.components.gateways.villas_node import VILLASnodeGateway
 
 
-class VILLASnodeController(Controller):
+class VILLASnodeController(Manager):
 
     def __init__(self, **args):
 

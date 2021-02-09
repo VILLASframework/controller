@@ -184,9 +184,9 @@ class Component:
         if category == 'simulator':
             from villas.controller.components.simulator import Simulator
             return Simulator.from_dict(dict)
-        elif category == 'controller':
-            from villas.controller.components.controller import Controller
-            return Controller.from_dict(dict)
+        elif category == 'manager':
+            from villas.controller.components.manager import Manager
+            return Manager.from_dict(dict)
         elif category == 'gateway':
             from villas.controller.components.gateway import Gateway
             return Gateway.from_dict(dict)

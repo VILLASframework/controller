@@ -1,6 +1,6 @@
 ---
 name: Kubernetes Job 1
-category: controller
+category: simulator
 type: kubernetes
 realm: de.rwth-aachen.de.eonerc.acs
 uuid: 3654e856-2079-11eb-bb1e-3f11801a0391
