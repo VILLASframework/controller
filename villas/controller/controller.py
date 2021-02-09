@@ -52,3 +52,10 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
                         len(self.active_components))
 
             super().run()
+
+    def shutdown(self):
+        LOGGER.info('Shutdown controller')
+        for u, c in self.components.items():
+            c.on_shutdown()
+
+        self.connection.drain_events(timeout=3)

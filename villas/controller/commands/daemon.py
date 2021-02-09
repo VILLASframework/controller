@@ -23,6 +23,6 @@ class DaemonCommand(Command):
             d = ControllerMixin(connection, components)
             d.run()
         except KeyboardInterrupt:
-            pass
+            d.shutdown()
         except ConnectionError:
             LOGGER.error('Failed to connect to broker.')

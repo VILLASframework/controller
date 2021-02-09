@@ -116,6 +116,8 @@ def main():
 
             args.func(c, args)
 
+            c.release()
+
     except ConnectionRefusedError:
         LOGGER.error('Connection refused!')
     except socket.timeout:

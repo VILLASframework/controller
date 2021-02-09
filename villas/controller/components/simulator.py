@@ -54,18 +54,21 @@ class Simulator(Component):
 
         valid_state_transitions = {
             # current       # list of valid next states
-            'error':        ['resetting', 'error'],
+            'error':        ['resetting', 'error', 'gone'],
             'idle':         ['resetting', 'error', 'idle', 'starting',
-                             'shuttingdown'],
-            'starting':     ['resetting', 'error', 'running'],
-            'running':      ['resetting', 'error', 'pausing', 'stopping'],
-            'pausing':      ['resetting', 'error', 'paused'],
-            'paused':       ['resetting', 'error', 'resuming', 'stopping'],
-            'resuming':     ['resetting', 'error', 'running'],
-            'stopping':     ['resetting', 'error', 'idle'],
-            'resetting':    ['resetting', 'error', 'idle'],
-            'shuttingdown': ['shutdown', 'error'],
-            'shutdown':     ['starting', 'error']
+                             'shuttingdown', 'gone'],
+            'starting':     ['resetting', 'error', 'running', 'gone'],
+            'running':      ['resetting', 'error', 'pausing',
+                             'stopping', 'gone'],
+            'pausing':      ['resetting', 'error', 'paused', 'gone'],
+            'paused':       ['resetting', 'error', 'resuming',
+                             'stopping', 'gone'],
+            'resuming':     ['resetting', 'error', 'running', 'gone'],
+            'stopping':     ['resetting', 'error', 'idle', 'gone'],
+            'resetting':    ['resetting', 'error', 'idle', 'gone'],
+            'shuttingdown': ['shutdown', 'error', 'gone'],
+            'shutdown':     ['starting', 'error', 'gone'],
+            'gone':         []
         }
 
         # check that we have been asked for a valid state
