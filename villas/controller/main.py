@@ -34,6 +34,7 @@ def _log_level_string_to_int(log_level_string):
 
 def setup_logging(args):
     logging.basicConfig(level=args.log_level,
+                        stream=sys.stderr,
                         format='%(asctime)s | %(levelname)s |'
                                ' %(name)s | %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
@@ -105,7 +106,7 @@ def main():
     if args.broker:
         broker_url = args.broker
     else:
-        broker = args.config.json.get('broker', {})
+        broker = args.config.dict.get('broker', {})
         broker_url = broker.get('url', 'amqp://guest:guest@localhost/%2F')
 
     try:
@@ -114,6 +115,8 @@ def main():
             c.connect()
 
             args.func(c, args)
+
+            c.release()
 
     except ConnectionRefusedError:
         LOGGER.error('Connection refused!')

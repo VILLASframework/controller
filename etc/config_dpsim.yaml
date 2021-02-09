@@ -1,0 +1,11 @@
+---
+broker:
+  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+
+components:
+- location: Richard's PC
+  name: 'DPsim Simulator #1'
+  owner: rmr
+  realm: de.rwth-aachen.eonerc.acs
+  type: dpsim
+  uuid: e15f5ad4-241f-11e8-9bf3-23372608bf60

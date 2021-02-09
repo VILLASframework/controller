@@ -3,7 +3,7 @@ import time
 import socket
 import os
 
-from villas.controller.simulator import Simulator
+from villas.controller.components.simulator import Simulator
 
 
 class DPsimSimulator(Simulator):

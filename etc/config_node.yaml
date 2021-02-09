@@ -1,0 +1,9 @@
+---
+broker:
+  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+
+components:
+- api_url: http://localhost:8080
+  category: manager
+  name: VILLASnode
+  type: villas-node

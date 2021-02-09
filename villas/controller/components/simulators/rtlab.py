@@ -1,7 +1,7 @@
-from villas.controller.simulator import Simulator
+from villas.controller.components.simulator import Simulator
 
 
 class RtlabSimulator(Simulator):
 
     def __init__(self):
-        pass
+        raise NotImplementedError()

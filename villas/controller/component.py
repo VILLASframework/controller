@@ -4,56 +4,68 @@ import time
 import socket
 import os
 import uuid
+import threading
 
 from villas.controller import __version__ as version
 from villas.controller.exceptions import SimulationException
 
 
-class Component(object):
+class Component:
 
     def __init__(self, **props):
-        # Default values
-        if 'enabled' not in props:
-            props['enabled'] = True
+        self.realm = props.get('realm')
+        self.type = props.get('type')
+        self.name = props.get('name')
+        self.category = props.get('category')
+        self.enabled = props.get('enabled', True)
+        self.uuid = props.get('uuid')
 
-        if 'uuid' not in props:
-            props['uuid'] = str(uuid.uuid4())
+        # The manager component which manages this instances
+        self.manager = None
 
-        self.realm = props['realm']
-        self.type = props['type']
-        self.name = props['name']
-        self.category = props['category']
-        self.enabled = props['enabled']
-        self.uuid = props['uuid']
+        # Generate random UUID in case no one is provided
+        if not self.uuid:
+            self.uuid = str(uuid.uuid4())
 
         self.started = time.time()
         self.properties = props
 
         self._state = 'idle'
-        self._stateargs = {}
+        self._status_fields = {}
 
         self.logger = logging.getLogger(
-            f'villas.controller:{self.category}:{self.name}')
+            f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
         self.producer = None
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
                                        durable=True)
 
-    def __del__(self):
-        self.change_state('gone')
+        self.publish_status_interval = 2
+        self.publish_status_thread_stop = threading.Event()
+        self.publish_status_thread = threading.Thread(
+            target=self.publish_status_periodically)
 
     def on_ready(self):
+        self.publish_status_thread.start()
         pass
 
-    def set_controller(self, ctrl):
-        self.controller = ctrl
-        self.connection = ctrl.connection
+    def on_shutdown(self):
+        if self.publish_status_thread.is_alive():
+            self.publish_status_thread_stop.set()
+            self.publish_status_thread.join()
+        self.change_state('gone')
+        self.logger.info('Component shut down: state=gone')
+
+    def set_manager(self, manager):
+        self.manager = manager
+
+    def set_mixin(self, mixin):
+        self.mixin = mixin
+        self.connection = mixin.connection
 
         self.producer = kombu.Producer(channel=self.connection.channel(),
                                        exchange=self.exchange)
-
-        self.publish_state()
 
     def get_consumer(self, channel):
         self.channel = channel
@@ -82,16 +94,22 @@ class Component(object):
         }
 
     @property
-    def state(self):
-        return {
+    def status(self):
+        status = {
             'state': self._state,
             'version': version,
-            'properties': self.properties,
             'uptime': time.time() - self.started,
             'host': socket.gethostname(),
             'kernel': os.uname(),
+            **self._status_fields
+        }
 
-            **self._stateargs
+        if self.manager is not None:
+            status['managed_by'] = self.manager.uuid
+
+        return {
+            'status': status,
+            'properties': self.properties
         }
 
     def on_message(self, message):
@@ -141,53 +159,61 @@ class Component(object):
         if self._state == state:
             return
 
-        self.logger.info(f'State transition: {self._state} => {state} {kwargs}')
+        self.logger.info(f'State transition: {self._state} => {state} {kwargs}')  # noqa E501
 
         self._state = state
-        self._stateargs = kwargs
+        self._status_fields = kwargs
 
-        self.publish_state()
+        self.publish_status()
 
     # Actions
     def ping(self, message):
-        self.publish_state()
+        self.publish_status()
 
     def start(self, message):
-        pass
+        raise SimulationException('The component can not be started')
 
     def stop(self, message):
-        pass
+        raise SimulationException('The component can not be stopped')
 
     def pause(self, message):
-        pass
+        raise SimulationException('The component can not be paused')
 
     def resume(self, message):
-        pass
+        raise SimulationException('The component can not be resumed')
 
     def shutdown(self, message):
-        pass
+        raise SimulationException('The component can not be shut down')
 
     def reset(self, message):
         self.started = time.time()
 
     @staticmethod
-    def from_json(json):
-        from villas.controller.components.controller import Controller
-        from villas.controller.components.simulator import Simulator
-        from villas.controller.components.gateway import Gateway
+    def from_dict(dict):
+        category = dict.get('category')
 
-        if json['category'] == 'simulator':
-            return Simulator.from_json(json)
-        elif json['category'] == 'gateway':
-            return Gateway.from_json(json)
-        elif json['category'] == 'controller':
-            return Controller.from_json(json)
+        if category == 'simulator':
+            from villas.controller.components.simulator import Simulator
+            return Simulator.from_dict(dict)
+        elif category == 'manager':
+            from villas.controller.components.manager import Manager
+            return Manager.from_dict(dict)
+        elif category == 'gateway':
+            from villas.controller.components.gateway import Gateway
+            return Gateway.from_dict(dict)
+        else:
+            raise Exception(f'Unsupported category {category}')
 
-    def publish_state(self):
+    def publish_status(self):
         if self.producer is None:
             return
 
-        self.producer.publish(self.state, headers=self.headers)
+        self.producer.publish(self.status, headers=self.headers)
+
+    def publish_status_periodically(self):
+        while not self.publish_status_thread_stop.wait(
+          self.publish_status_interval):
+            self.publish_status()
 
     def __str__(self):
         return f'{self.type} {self.category} <{self.name}: {self.uuid}>'

@@ -2,13 +2,11 @@ import uuid
 import time
 import os
 import requests
-import io
 import tempfile
 import zipfile
 
 from villas.controller.component import Component
 from villas.controller.exceptions import SimulationException
-from villas.controller.simulators import dummy, generic, rtlab, rscad, dpsim
 
 
 class Simulator(Component):
@@ -29,17 +27,24 @@ class Simulator(Component):
         }
 
     @staticmethod
-    def from_json(json):
-        if json['type'] == 'dummy':
-            return dummy.DummySimulator(**json)
-        if json['type'] == 'generic':
-            return generic.GenericSimulator(**json)
-        elif json['type'] == 'dpsim':
-            return dpsim.DPsimSimulator(**json)
-        elif json['type'] == 'rtlab':
-            return rtlab.RTLabSimulator(**json)
-        elif json['type'] == 'rscad':
-            return rscad.RSCADSimulator(**json)
+    def from_dict(dict):
+        type = dict.get('type')
+
+        if type == 'dummy':
+            from villas.controller.components.simulators import dummy
+            return dummy.DummySimulator(**dict)
+        if type == 'generic':
+            from villas.controller.components.simulators import generic
+            return generic.GenericSimulator(**dict)
+        elif type == 'dpsim':
+            from villas.controller.components.simulators import dpsim
+            return dpsim.DPsimSimulator(**dict)
+        elif type == 'rtlab':
+            from villas.controller.components.simulators import rtlab
+            return rtlab.RTLabSimulator(**dict)
+        elif type == 'rscad':
+            from villas.controller.components.simulators import rscad
+            return rscad.RSCADSimulator(**dict)
         else:
             return None
 
@@ -49,18 +54,21 @@ class Simulator(Component):
 
         valid_state_transitions = {
             # current       # list of valid next states
-            'error':        ['resetting', 'error'],
+            'error':        ['resetting', 'error', 'gone'],
             'idle':         ['resetting', 'error', 'idle', 'starting',
-                             'shuttingdown'],
-            'starting':     ['resetting', 'error', 'running'],
-            'running':      ['resetting', 'error', 'pausing', 'stopping'],
-            'pausing':      ['resetting', 'error', 'paused'],
-            'paused':       ['resetting', 'error', 'resuming', 'stopping'],
-            'resuming':     ['resetting', 'error', 'running'],
-            'stopping':     ['resetting', 'error', 'idle'],
-            'resetting':    ['resetting', 'error', 'idle'],
-            'shuttingdown': ['shutdown', 'error'],
-            'shutdown':     ['starting', 'error']
+                             'shuttingdown', 'gone'],
+            'starting':     ['resetting', 'error', 'running', 'gone'],
+            'running':      ['resetting', 'error', 'pausing',
+                             'stopping', 'gone'],
+            'pausing':      ['resetting', 'error', 'paused', 'gone'],
+            'paused':       ['resetting', 'error', 'resuming',
+                             'stopping', 'gone'],
+            'resuming':     ['resetting', 'error', 'running', 'gone'],
+            'stopping':     ['resetting', 'error', 'idle', 'gone'],
+            'resetting':    ['resetting', 'error', 'idle', 'gone'],
+            'shuttingdown': ['shutdown', 'error', 'gone'],
+            'shutdown':     ['starting', 'error', 'gone'],
+            'gone':         []
         }
 
         # check that we have been asked for a valid state
@@ -71,9 +79,6 @@ class Simulator(Component):
             raise SimulationException(self, msg='Invalid state transtion',
                                       current=self._state, next=state)
 
-        self._state = state
-        self._stateargs = kwargs
-
         self.logger.info('Changing state to %s', state)
 
         if 'msg' in kwargs:
@@ -82,7 +87,7 @@ class Simulator(Component):
         if state == 'stopping':
             self.upload_results()
 
-        self.publish_state()
+        super().change_state(state, **kwargs)
 
     # Actions
     def start(self, message):
@@ -113,9 +118,12 @@ class Simulator(Component):
                                             (self.logdir, e))
 
     def _upload(self, filename):
+        url = self.results['url']
         with open(filename, 'rb') as f:
-            with requests.put(self.results['url'], body=f) as r:
-                self.logger.info(f'Uploaded file {filename} to {url}')
+            r = requests.put(url, body=f)
+            r.raise_for_status()
+
+            self.logger.info(f'Uploaded file {filename} to {url}')
 
     def _download(self, url):
         with requests.get(url, stream=True) as r:

@@ -1,0 +1,47 @@
+---
+broker:
+  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+components:
+
+- category: manager
+  type: generic
+  name: Standard Controller
+  realm: de.rwth-aachen.eonerc.acs
+  uuid: f4751894-205e-11eb-aefb-0741ff98abca
+
+- api_url: https://villas-new.k8s.eonerc.rwth-aachen.de/api/ic/generic_1
+  category: simulator
+  enabled: false
+  location: Richard's PC
+  name: 'Generic Simulator #1'
+  owner: rmr
+  realm: de.rwth-aachen.eonerc.acs
+  shell: true
+  type: generic
+  uuid: null # Generate automatically
+  whitelist:
+  - "/sbin/ping"
+  - "^echo"
+  ws_url: https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1
+
+- category: simulator
+  enabled: false
+  location: Steffen's Laptop
+  name: 'Generic Simulator #2'
+  owner: svg
+  realm: de.rwth-aachen.eonerc.acs
+  shell: true
+  type: generic
+  uuid: 29462fdd-8ce3-4761-ba95-392730764cd9
+  whitelist:
+  - "/sbin/ping"
+  - "^echo"
+
+- category: simulator
+  enabled: true
+  location: Sonjas's Laptop
+  name: 'Dummy Simulator #1'
+  owner: svg
+  realm: de.rwth-aachen.eonerc.acs
+  type: dummy
+  uuid: 3ddd318e-fee1-46d7-bff4-7c064d640d4e

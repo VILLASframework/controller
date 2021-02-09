@@ -28,11 +28,13 @@ setup(
         'termcolor',
         'psutil',
         'requests',
-        'villas-node>=0.9.0',
-        'kubernetes'
+        'villas-node>=0.10.2',
+        'kubernetes',
+        'xdg',
+        'PyYAML'
     ],
     data_files=[
-        ('/etc/villas/controller', glob('etc/*.json')),
+        ('/etc/villas/controller', glob('etc/*.{json,yaml}')),
         ('/etc/systemd/system', ['villas-controller.service'])
     ],
     entry_points={
