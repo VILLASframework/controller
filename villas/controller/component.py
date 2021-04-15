@@ -211,8 +211,10 @@ class Component:
         self.producer.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):
+        self.logger.info('Start state publish thread')
         while not self.publish_status_thread_stop.wait(
           self.publish_status_interval):
+            self.logger.info('Publish status: %s', self.status)
             self.publish_status()
 
     def __str__(self):

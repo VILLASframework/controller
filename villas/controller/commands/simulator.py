@@ -65,7 +65,7 @@ class SimulatorCommand(Command):
 
     @staticmethod
     def get_headers(args):
-        headers = {'x-match': 'any'}
+        headers = {}
 
         if args.realm:
             headers['realm'] = args.realm
@@ -78,9 +78,6 @@ class SimulatorCommand(Command):
 
         if args.type:
             headers['type'] = args.type
-
-        if len(headers) <= 1:
-            headers['x-match'] = 'all'
 
         return headers
 
@@ -110,9 +107,7 @@ class SimulatorPingCommand(Command):
 
         message = {'action': 'ping'}
 
-        headers = SimulatorCommand.get_headers(args)
-
-        producer.publish(message, headers=headers)
+        producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
         with consumer:
             try:
@@ -256,8 +251,7 @@ class SimulatorResetCommand(Command):
 
         message = {'action': 'reset'}
 
-        producer.publish(message,
-                         headers=SimulatorCommand.get_headers(args))
+        producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
 class SimulatorCreateCommand(Command):
@@ -282,8 +276,7 @@ class SimulatorCreateCommand(Command):
             'parameters': _get_parameters(args)
         }
 
-        producer.publish(message,
-                         headers=SimulatorCommand.get_headers(args))
+        producer.publish(message, headers=SimulatorCommand.get_headers(args))
 
 
 class SimulatorDeleteCommand(Command):
@@ -308,5 +301,4 @@ class SimulatorDeleteCommand(Command):
             'parameters': _get_parameters(args)
         }
 
-        producer.publish(message,
-                         headers=SimulatorCommand.get_headers(args))
+        producer.publish(message, headers=SimulatorCommand.get_headers(args))
