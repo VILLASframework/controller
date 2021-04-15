@@ -1,4 +1,5 @@
 import logging
+import socket
 import kombu.mixins
 
 from villas.controller.components.managers.generic import GenericManager
@@ -16,11 +17,10 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
 
         for uuid, comp in self.components.items():
             LOGGER.info('Adding %s', comp)
-            comp.set_mixin(self)
             comp.set_manager(manager)
-            comp.on_ready()
 
-        self.active_components = self.components.copy()
+        # Components are activated by first call to on_iteration()
+        self.active_components = {}
 
     def get_consumers(self, Consumer, channel):
         return map(lambda comp: comp.get_consumer(channel),
@@ -37,7 +37,12 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
 
         # Add a generic manager if none is configured
         elif len(mgrs) == 0:
-            mgr = GenericManager()
+            mgr = GenericManager(
+                type='generic',
+                category='manager',
+                name='Generic Manager',
+                location=socket.gethostname()
+            )
 
             self.components[mgr.uuid] = mgr
         else:
@@ -60,6 +65,7 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
 
                 LOGGER.info('Adding %s', comp)
                 comp.set_mixin(self)
+                comp.on_ready()
 
             for uuid in removed:
                 comp = self.active_components[uuid]

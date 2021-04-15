@@ -9,9 +9,9 @@ function exit_handler() {
 
 trap exit_handler EXIT
 
-
-kubectl -n villas-demo port-forward svc/node 8080:80 & PF1=$!
-kubectl -n villas-demo port-forward svc/broker 5672:5672 & PF2=$!
+kubectl -n villas port-forward svc/villas-relay 8081:80 & PF1=$!
+kubectl -n villas port-forward svc/villas-node 8080:80 & PF1=$!
+kubectl -n villas port-forward svc/villas-broker 5672:5672 & PF2=$!
 
 sleep 2
 
