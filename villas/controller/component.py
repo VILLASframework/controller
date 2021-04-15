@@ -75,7 +75,10 @@ class Component:
             on_message=self.on_message,
             queues=kombu.Queue(
                 exchange=self.exchange,
-                binding_arguments=self.headers,
+                binding_arguments={
+                    'x-match': 'any',
+                    **self.headers
+                },
                 durable=False
             ),
             no_ack=True,
@@ -85,12 +88,10 @@ class Component:
     @property
     def headers(self):
         return {
-            'x-match': 'any',
             'category': self.category,
             'realm': self.realm,
             'uuid': self.uuid,
-            'type': self.type,
-            'action': 'ping'
+            'type': self.type
         }
 
     @property
@@ -109,7 +110,10 @@ class Component:
 
         return {
             'status': status,
-            'properties': self.properties
+            'properties': {
+                **self.properties,
+                **self.headers
+            }
         }
 
     def on_message(self, message):

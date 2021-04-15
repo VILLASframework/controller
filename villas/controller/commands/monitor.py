@@ -24,8 +24,11 @@ class MonitorCommand(Command):
     def run(connection, args):
         exchange = kombu.Exchange(name='villas', type='headers')
 
+        headers = SimulatorCommand.get_headers(args)
+        headers['x-match'] = 'any' if len(headers) > 0 else 'all'
+
         queue = kombu.Queue(exchange=exchange,
-                            binding_arguments=SimulatorCommand.get_headers(args),  # noqa F501
+                            binding_arguments=headers,
                             durable=False)
 
         consumer = kombu.Consumer(connection,
