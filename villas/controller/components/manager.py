@@ -41,6 +41,8 @@ class Manager(Component):
         self.logger.info('Added new component %s', comp)
 
     def remove_component(self, comp):
+        comp.change_state('gone')
+
         del self.components[comp.uuid]
         del self.mixin.components[comp.uuid]
 
