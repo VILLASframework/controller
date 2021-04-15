@@ -37,36 +37,40 @@ class KubernetesJob(Simulator):
     def __del__(self):
         pass
 
-    def _prepare_pod(self, pod, parameters):
+    def _prepare_job(self, job, parameters):
         c = k8s.client.CoreV1Api()
 
         cm = self._create_config_map(parameters)
 
-        v = c.V1Volume(
+        v = k8s.client.V1Volume(
             name='parameters',
             config_map=c.V1ConfigMapVolumeSource(
                 name=cm.metadata.name
             )
         )
 
-        vm = c.V1VolumeMount(
+        vm = k8s.client.V1VolumeMount(
             name='parameters',
             mount_path='/config/',
             read_only=True
         )
 
-        pod.spec.volumes.append(v)
+        job.spec.template.spec.volumes.append(v)
 
-        for c in pod.spec.containers:
+        for c in job.spec.template.spec.containers:
             c.volume_mounts.append(vm)
+            c.env.append(c.V1EnvVar(
+                name='VILLAS_PARAMETERS_FILE',
+                value='/config/parameters.json'
+            ))
 
-        return merge(pod, {
+        return merge(job, {
             'metadata': {
                 'name': None,
-                'generateName': pod.get('metadata').get('name') + '-',
+                'generateName': job.get('metadata').get('name') + '-',
                 'labels': {
                     'controller': 'villas',
-                    'controller-uuid': self.controller.uuid,
+                    'controller-uuid': self.manager.uuid,
                     'uuid': self.uuid
                 }
             }
@@ -77,7 +81,7 @@ class KubernetesJob(Simulator):
 
         self.cm = c.V1ConfigMap(
             metadata=c.V1ObjectMeta(
-                generate_name='pod-parameters-'
+                generate_name='job-parameters-'
             ),
             data={
                 'parameters.json': json.dumps(parameters)
@@ -85,30 +89,32 @@ class KubernetesJob(Simulator):
         )
 
         return c.create_namespaced_config_map(
-            namespace=self.controller.namespace,
+            namespace=self.manager.namespace,
             body=self.cm
         )
 
     def start(self, message):
+        job = message.payload.get('job', {})
         parameters = message.payload.get('parameters', {})
 
-        pod = self._prepare_pod(self.pod, parameters)
+        job = merge(self.job, job)
+        job = self._prepare_job(self.job, parameters)
 
-        c = k8s.client.CoreV1Api()
-        self.pod = c.create_namespaced_pod(
-            namespace=self.controller.namespace,
-            body=pod)
+        b = k8s.client.BatchV1Api()
+        self.job = b.create_namespaced_job(
+            namespace=self.manager.namespace,
+            body=job)
 
     def stop(self, message):
-        c = k8s.client.CoreV1Api()
-        self.pod = c.delete_namespaced_pod(
-            namespace=self.controller.namespace,
-            name=self.pod.metadata.name)
+        b = k8s.client.BatchV1Api()
+        self.job = b.delete_namespaced_job(
+            namespace=self.manager.namespace,
+            name=self.job.metadata.name)
 
     def _send_signal(self, sig):
         c = k8s.client.api.CoreV1Api()
         resp = k8s.stream.stream(c.connect_get_namespaced_pod_exec,
-                                 self.pod.metadata.name, self.namespace,
+                                 self.job.metadata.name, self.namespace,
                                  command=['kill', f'-{sig}', '1'],
                                  stderr=False, stdin=False,
                                  stdout=False, tty=False)
