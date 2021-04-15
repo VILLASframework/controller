@@ -26,12 +26,13 @@ def merge(dict1, dict2):
 
 class KubernetesJob(Simulator):
 
-    def __init__(self, controller, props):
-        super().__init__(**props)
+    def __init__(self, manager, **args):
+        super().__init__(**args)
 
-        self.controller = controller
+        self.manager = manager
 
-        self.pod = props.get('pod')
+        # Job template which can be overwritten via start parameter
+        self.job = args.get('job')
 
     def __del__(self):
         pass

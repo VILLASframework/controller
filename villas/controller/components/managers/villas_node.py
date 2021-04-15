@@ -5,7 +5,7 @@ from villas.controller.components.manager import Manager
 from villas.controller.components.gateways.villas_node import VILLASnodeGateway
 
 
-class VILLASnodeController(Manager):
+class VILLASnodeManager(Manager):
 
     def __init__(self, **args):
 

@@ -5,7 +5,7 @@ from villas.controller.components.manager import Manager
 from villas.controller.components.gateways.villas_relay import VILLASrelayGateway  # noqa E501
 
 
-class VILLASrelayController(Manager):
+class VILLASrelayManager(Manager):
 
     def __init__(self, **args):
         self.autostart = args.get('autostart', False)

@@ -19,13 +19,13 @@ class Manager(Component):
             return generic.GenericManager(**dict)
         if type == 'kubernetes':
             from villas.controller.components.managers import kubernetes
-            return kubernetes.KubernetesController(**dict)
+            return kubernetes.KubernetesManager(**dict)
         if type == 'villas-node':
             from villas.controller.components.managers import villas_node  # noqa E501
-            return villas_node.VILLASnodeController(**dict)
+            return villas_node.VILLASnodeManager(**dict)
         if type == 'villas-relay':
             from villas.controller.components.managers import villas_relay  # noqa E501
-            return villas_relay.VILLASrelayController(**dict)
+            return villas_relay.VILLASrelayManager(**dict)
         else:
             raise Exception(f'Unknown type: {type}')
 
