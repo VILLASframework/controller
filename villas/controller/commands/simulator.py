@@ -10,15 +10,15 @@ from villas.controller.command import Command
 LOGGER = logging.getLogger(__name__)
 
 
-def _get_parameters(args):
+def _get_parameters(params, params_file):
     parameters = {}
 
     try:
-        if args.parameters is not None:
-            parameters.update(yaml.loads(args.parameters,
+        if params is not None:
+            parameters.update(yaml.loads(params,
                                          Loader=yaml.FullLoader))
-        if args.parameters_file is not None:
-            with open(args.parameters_file) as f:
+        if params_file is not None:
+            with open(params_file) as f:
                 parameters.update(yaml.load(f, Loader=yaml.FullLoader))
 
         return parameters
@@ -132,8 +132,10 @@ class SimulatorStartCommand(Command):
         parser.add_argument('-p', '--parameters', metavar='YAMLorJSON')
         parser.add_argument('-P', '--parameters-file', metavar='FILE')
         parser.add_argument('-m', '--model', metavar='YAMLorJSON')
+        parser.add_argument('-M', '--model-file', metavar='FILE')
         parser.add_argument('-r', '--results', metavar='YAMLorJSON')
-        parser.add_argument('-w', '--when', metavar='YAMLorJSON')
+        parser.add_argument('-R', '--results-file', metavar='FILE')
+        parser.add_argument('-w', '--when', metavar='TS')
         parser.set_defaults(func=SimulatorStartCommand.run)
 
     @staticmethod
@@ -149,15 +151,16 @@ class SimulatorStartCommand(Command):
         message = {'action': 'start'}
 
         if args.parameters is not None:
-            message['parameters'] = _get_parameters(args)
+            message['parameters'] = _get_parameters(args.parameters,
+                                                    args.parameters_file)
 
         try:
             if args.model is not None:
-                message['model'] = yaml.loads(args.model,
-                                              Loader=yaml.FullLoader)
+                message['model'] = _get_parameters(args.model,
+                                                   args.model_file)
             if args.results is not None:
-                message['results'] = yaml.loads(args.results,
-                                                Loader=yaml.FullLoader)
+                message['results'] = _get_parameters(args.results,
+                                                     args.results_file)
         except yaml.YAMLError as e:
             LOGGER.error('Failed to parse parameters: %s at line %d column %d',
                          e.msg, e.lineno, e.colno)
@@ -260,7 +263,7 @@ class SimulatorCreateCommand(Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('create',
                                        help='Create a new simulator')  # noqa F501
-        parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-p', '--parameters', metavar='YAMLorJSON')
         parser.add_argument('-P', '--parameters-file', metavar='FILE')
         parser.set_defaults(func=SimulatorCreateCommand.run)
 
@@ -285,7 +288,7 @@ class SimulatorDeleteCommand(Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('delete',
                                        help='Delete a simulator')  # noqa F501
-        parser.add_argument('-p', '--parameters', metavar='JSON')
+        parser.add_argument('-p', '--parameters', metavar='YAMLorJSON')
         parser.add_argument('-P', '--parameters-file', metavar='FILE')
         parser.set_defaults(func=SimulatorDeleteCommand.run)
 
