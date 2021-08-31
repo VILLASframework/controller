@@ -14,7 +14,7 @@ build:docker:
   stage: build
   image: docker
   script:
-    - docker build --tag ${CI_REGISTRY_IMAGE} .
+    - docker build --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} .
   tags:
     - docker
 
@@ -59,9 +59,6 @@ deploy:docker:
   before_script:
     - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
   script:
-    - docker push ${CI_REGISTRY_IMAGE}
+    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
   tags:
-    - shell
-    - linux
-  only:
-    - ci-docker
+    - docker
