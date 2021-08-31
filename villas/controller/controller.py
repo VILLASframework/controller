@@ -1,5 +1,6 @@
 import logging
 import socket
+import queue
 import kombu.mixins
 
 from villas.controller.components.managers.generic import GenericManager
@@ -12,10 +13,15 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
     def __init__(self, connection, components):
         self.components = {c.uuid: c for c in components if c.enabled}
         self.connection = connection
+        self.exchange = kombu.Exchange(name='villas',
+                                       type='headers',
+                                       durable=True)
+
+        self.publish_queue = queue.Queue()
 
         manager = self.add_managers()
 
-        for uuid, comp in self.components.items():
+        for _, comp in self.components.items():
             LOGGER.info('Adding %s', comp)
             comp.set_manager(manager)
 
@@ -50,7 +56,24 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
 
         return mgr
 
+    def publish(self, body, **kwargs):
+        self.publish_queue.put((body, kwargs))
+
     def on_iteration(self):
+        # Drain publish queue
+        try:
+            while msg := self.publish_queue.get(False):
+                body = msg(0)
+                kwargs = msg(1)
+
+                if 'exchange' not in kwargs:
+                    kwargs['exchange'] = self.exchange
+
+                self.producer.publish(body, **kwargs)
+        except queue.Empty:
+            pass
+
+        # Update components
         added = self.components.keys() - self.active_components.keys()
         removed = self.active_components.keys() - self.components.keys()
         if added or removed:

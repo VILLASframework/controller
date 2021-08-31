@@ -36,11 +36,6 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
-        self.producer = None
-        self.exchange = kombu.Exchange(name='villas',
-                                       type='headers',
-                                       durable=True)
-
         self.publish_status_interval = 2
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
@@ -63,9 +58,6 @@ class Component:
     def set_mixin(self, mixin):
         self.mixin = mixin
         self.connection = mixin.connection
-
-        self.producer = kombu.Producer(channel=self.connection.channel(),
-                                       exchange=self.exchange)
 
     def get_consumer(self, channel):
         self.channel = channel
@@ -209,10 +201,10 @@ class Component:
             raise Exception(f'Unsupported category {category}')
 
     def publish_status(self):
-        if self.producer is None:
+        if not self.mixin or not self.mixin.producer:
             return
 
-        self.producer.publish(self.status, headers=self.headers)
+        self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):
         self.logger.info('Start state publish thread')
@@ -220,6 +212,8 @@ class Component:
           self.publish_status_interval):
             self.logger.info('Publish status: %s', self.status)
             self.publish_status()
+
+        self.logger.info('Joining publish thread of %s', self.name)
 
     def __str__(self):
         return f'{self.type} {self.category} <{self.name}: {self.uuid}>'
