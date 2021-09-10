@@ -10,6 +10,13 @@ class Manager(Component):
         # which are managed by this controller
         self.components = {}
 
+    @property
+    def status(self):
+        return {
+            'components': [c for c in self.components],
+            **super().status
+        }
+
     @staticmethod
     def from_dict(dict):
         type = dict.get('type', 'generic')
