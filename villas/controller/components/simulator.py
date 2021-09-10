@@ -84,9 +84,6 @@ class Simulator(Component):
         if 'msg' in kwargs:
             self.logger.info('Message is: %s', kwargs['msg'])
 
-        if state == 'stopping':
-            self.upload_results()
-
         super().change_state(state, **kwargs)
 
     # Actions

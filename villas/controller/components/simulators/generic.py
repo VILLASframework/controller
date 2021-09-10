@@ -124,6 +124,7 @@ class GenericSimulator(Simulator):
             if self.child.returncode == 0:
                 self.logger.info('Child process has finished.')
                 self.change_state('stopping')
+                self.upload_results()
                 self.change_state('idle')
             elif self.child.returncode > 0:
                 self.return_code = self.child.returncode
