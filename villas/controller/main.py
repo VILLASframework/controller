@@ -111,8 +111,8 @@ def main():
 
     try:
         with kombu.Connection(broker_url, connect_timeout=3) as c:
-            LOGGER.info(f'Connecting to: {broker_url}')
             c.connect()
+            LOGGER.info(f'Connected to: {broker_url}')
 
             args.func(c, args)
 
