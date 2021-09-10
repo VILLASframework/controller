@@ -8,7 +8,7 @@ from villas.controller.components.managers.generic import GenericManager
 LOGGER = logging.getLogger(__name__)
 
 
-class ControllerMixin(kombu.mixins.ConsumerMixin):
+class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
     def __init__(self, connection, components):
         self.components = {c.uuid: c for c in components if c.enabled}
@@ -63,8 +63,8 @@ class ControllerMixin(kombu.mixins.ConsumerMixin):
         # Drain publish queue
         try:
             while msg := self.publish_queue.get(False):
-                body = msg(0)
-                kwargs = msg(1)
+                body = msg[0]
+                kwargs = msg[1]
 
                 if 'exchange' not in kwargs:
                     kwargs['exchange'] = self.exchange

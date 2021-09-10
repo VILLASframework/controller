@@ -66,7 +66,7 @@ class Component:
             channel=self.channel,
             on_message=self.on_message,
             queues=kombu.Queue(
-                exchange=self.exchange,
+                exchange=self.mixin.exchange,
                 binding_arguments={
                     'x-match': 'any',
                     **self.headers
