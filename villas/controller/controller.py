@@ -59,8 +59,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
     def publish(self, body, **kwargs):
         self.publish_queue.put((body, kwargs))
 
-    def on_iteration(self):
-        # Drain publish queue
+    def _drain_publish_queue(self):
         try:
             while msg := self.publish_queue.get(False):
                 body = msg[0]
@@ -72,6 +71,10 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
                 self.producer.publish(body, **kwargs)
         except queue.Empty:
             pass
+
+    def on_iteration(self):
+        # Drain publish queue
+        self._drain_publish_queue()
 
         # Update components
         added = self.components.keys() - self.active_components.keys()
@@ -98,7 +101,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
             self.active_components = self.components.copy()
 
     def run(self):
-        while True:
+        self.should_terminate = False
+        while not self.should_terminate:
             self.should_stop = False
 
             LOGGER.info('Startig mixing for %d components',
@@ -107,8 +111,12 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
             super().run()
 
     def shutdown(self):
+        self.should_terminate = True
+
         LOGGER.info('Shutdown controller')
+
         for u, c in self.components.items():
             c.on_shutdown()
 
-        self.connection.drain_events(timeout=3)
+        # Publish last status updates before shutdown
+        self._drain_publish_queue()

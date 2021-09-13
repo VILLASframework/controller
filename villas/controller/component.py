@@ -49,8 +49,6 @@ class Component:
         if self.publish_status_thread.is_alive():
             self.publish_status_thread_stop.set()
             self.publish_status_thread.join()
-        self.change_state('gone')
-        self.logger.info('Component shut down: state=gone')
 
     def set_manager(self, manager):
         self.manager = manager
@@ -127,8 +125,7 @@ class Component:
                 self.change_state('starting')
                 self.start(message)
             elif action == 'stop':
-                # state changed to stopping after the simulation
-                # has ended, to avoid missing log entries
+                self.change_state('stopping')
                 self.stop(message)
             elif action == 'pause':
                 self.change_state('pausing')
@@ -147,6 +144,7 @@ class Component:
                                           action=action)
 
         except SimulationException as se:
+            self.logger.error('SimulationException: %s', str(se))
             self.change_state('error', msg=se.msg, **se.info)
         finally:
             message.ack()
@@ -201,19 +199,20 @@ class Component:
             raise Exception(f'Unsupported category {category}')
 
     def publish_status(self):
-        if not self.mixin or not self.mixin.producer:
+        if not self.mixin:
             return
 
         self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):
         self.logger.info('Start state publish thread')
+
         while not self.publish_status_thread_stop.wait(
           self.publish_status_interval):
             self.logger.info('Publish status: %s', self.status)
             self.publish_status()
 
-        self.logger.info('Joining publish thread of %s', self.name)
+        self.logger.info('Stopping publish thread of %s', self.name)
 
     def __str__(self):
         return f'{self.type} {self.category} <{self.name}: {self.uuid}>'

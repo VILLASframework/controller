@@ -1,0 +1,26 @@
+---
+name: "kubernetes simulator dpsim"
+location: "slew vm, erc kubernetes"
+realm: "de.rwth-aachen.eonerc.acs"
+category: "simulator"
+type: "kubernetes"
+uuid: "c333aaaa-6af6-11eb-beee-7fa268050224"
+properties:
+  job:
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: dpsim
+    spec:
+      suspend: true
+      activeDeadlineSeconds: 120 # kill the Job after 1h
+      backoffLimit: 0 # only try to run pod once, no retries
+      ttlSecondsAfterFinished: 120 # delete the Job resources 1h after completion
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - image: dpsimrwth/slew-villas:latest
+            name: slew-dpsim
+            securityContext:
+              privileged: true

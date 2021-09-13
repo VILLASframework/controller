@@ -68,3 +68,12 @@ class Manager(Component):
 
     def delete(self, message):
         raise NotImplementedError()
+
+    def on_shutdown(self):
+        super().on_shutdown()
+
+        # Once the villas controller process is terminated,
+        # the managers are effectively shutdown and cant act on any
+        # create/delete actions, therefore we let them
+        # change their state to 'shutdown'.
+        self.change_state('shutdown')
