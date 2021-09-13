@@ -32,14 +32,22 @@ class KubernetesJob(Simulator):
 
         self.manager = manager
 
+        props = args.get('properties', {})
+
         # Job template which can be overwritten via start parameter
-        self.jobdict = args.get('properties', {}).get('job')
+        self.jobdict = props.get('job')
 
         self.job = None
         self.pod_names = set()
 
-    def __del__(self):
-        pass
+        self.custom_schema = props.get('schema', {})
+
+    @property
+    def schema(self):
+        return {
+            **self.custom_schema,
+            **super().schema
+        }
 
     def _prepare_job(self, job, payload):
         # Create config map

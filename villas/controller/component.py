@@ -85,13 +85,25 @@ class Component:
         }
 
     @property
+    def schema(self):
+        return self.properties.get('schema', {})
+
+    @property
     def status(self):
+        u = os.uname()
+
         status = {
             'state': self._state,
             'version': version,
             'uptime': time.time() - self.started,
             'host': socket.gethostname(),
-            'kernel': os.uname(),
+            'kernel': {
+                'sysname': u.sysname,
+                'nodename': u.nodename,
+                'release': u.release,
+                'version': u.version,
+                'machine': u.machine
+            },
             **self._status_fields
         }
 
@@ -103,7 +115,8 @@ class Component:
             'properties': {
                 **self.properties,
                 **self.headers
-            }
+            },
+            'schema': self.schema
         }
 
     def on_message(self, message):

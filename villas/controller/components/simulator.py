@@ -18,6 +18,17 @@ class Simulator(Component):
         self.results = None
 
     @property
+    def schema(self):
+        return {
+            'start': self.start_schema,
+            **super().schema
+        }
+
+    @property
+    def start_schema(self):
+        return {}
+
+    @property
     def state(self):
         return {
             'model': self.model,
