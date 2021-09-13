@@ -1,9 +1,20 @@
 import os
 import threading
+import time
 import kubernetes as k8s
+from urllib3.exceptions import ProtocolError
 
 from villas.controller.components.manager import Manager
 from villas.controller.components.simulators.kubernetes import KubernetesJob
+
+
+def _match(stringA, stringB):
+    if stringA == stringB:
+        return True
+    elif len(stringA) < len(stringB):
+        return stringA in stringB
+    elif len(stringB) < len(stringA):
+        return stringB in stringA
 
 
 class KubernetesManager(Manager):
@@ -31,20 +42,8 @@ class KubernetesManager(Manager):
 
         # self.pod_watcher_thread.start()
         # self.job_watcher_thread.start()
-        # self.event_watcher_thread.start()
-
-    def __del__(self):
-        self.logger.info('Stopping Kubernetes watchers')
-        self.thread_stop.set()
-
-        if self.pod_watcher_thread.is_alive():
-            self.pod_watcher_thread.join()
-
-        if self.job_watcher_thread.is_alive():
-            self.job_watcher_thread.join()
-
-        if self.event_watcher_thread.is_alive():
-            self.event_watcher_thread.join()
+        self.event_watcher_thread.setDaemon(True)
+        self.event_watcher_thread.start()
 
     def _check_namespace(self, ns):
         c = k8s.client.CoreV1Api()
@@ -55,16 +54,6 @@ class KubernetesManager(Manager):
                 return
 
         raise RuntimeError(f'Namespace {ns} does not exist')
-
-    def _run_event_watcher(self):
-        w = k8s.watch.Watch()
-        c = k8s.client.CoreV1Api()
-
-        for e in w.stream(c.list_namespaced_event,
-                          namespace=self.namespace):
-            eo = e.get('object')
-
-            self.logger.info('Event: %s (reason=%s)', eo.message, eo.reason)
 
     def _run_pod_watcher(self):
         w = k8s.watch.Watch()
@@ -88,12 +77,61 @@ class KubernetesManager(Manager):
 
             self.logger.info('%s Job: %s', typ, stso.metadata.name)
 
+    def _run_event_watcher(self):
+        while not self.thread_stop.is_set():
+            w = k8s.watch.Watch()
+            c = k8s.client.CoreV1Api()
+
+            try:
+                for e in w.stream(c.list_namespaced_event,
+                                  namespace=self.namespace,
+                                  timeout_seconds=5):
+
+                    if self.thread_stop.is_set():
+                        return
+
+                    eo = e.get('object')
+
+                    self.logger.info('Event: %s (reason=%s)', eo.message,
+                                     eo.reason)
+
+                    for uuid in self.components:
+                        comp = self.components[uuid]
+
+                        if not comp.job:
+                            continue
+
+                        if _match(comp.job.metadata.name,
+                                  eo.involved_object.name):
+                            if eo.reason == 'Completed':
+                                comp.change_state('stopping', True)
+                            elif eo.reason == 'Started':
+                                comp.pod_names.append(eo.involved_object.name)
+                                comp.properties['pod_names'] = comp.pod_names
+                                comp.change_state('running', True)
+                            elif eo.reason == 'BackoffLimitExceeded':
+                                comp.change_state('error', error=eo.reason)
+                            elif eo.reason == 'Failed':
+                                if comp._state == 'running':
+                                    comp.change_state('error', error=eo.reason)
+                                elif comp._state == 'starting':
+                                    # wait for BackoffLimitExceeded event
+                                    continue
+                            else:
+                                self.logger.info('Reason \'%s\' not handled '
+                                                 'for kubernetes simulator',
+                                                 eo.reason)
+
+            except ProtocolError:
+                self.logger.warn('Connection to kubernetes broken, \
+                                    attempting reconnect..')
+                time.sleep(1)
+
     def create(self, message):
         parameters = message.payload.get('parameters', {})
-        ic = KubernetesJob(self, **parameters)
-        self.logger.info('Creating new KubernetesJob component: %s', ic)
+        comp = KubernetesJob(self, **parameters)
 
-        self.add_component(ic)
+        self.add_component(comp)
 
     def delete(self, message):
         parameters = message.payload.get('parameters')
@@ -102,7 +140,23 @@ class KubernetesManager(Manager):
         try:
             comp = self.components[uuid]
 
+            comp.on_delete()
             self.remove_component(comp)
 
         except KeyError:
-            self.logger.error('There is not component with UUID: %s', uuid)
+            self.logger.error('There is no component with UUID: %s', uuid)
+
+    def on_shutdown(self):
+        self.logger.info('Stopping Kubernetes watchers')
+        self.thread_stop.set()
+
+        if self.pod_watcher_thread.is_alive():
+            self.pod_watcher_thread.join()
+
+        if self.job_watcher_thread.is_alive():
+            self.job_watcher_thread.join()
+
+        if self.event_watcher_thread.is_alive():
+            self.event_watcher_thread.join()
+
+        return super().on_shutdown()

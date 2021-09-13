@@ -6,6 +6,7 @@ import collections
 import kubernetes as k8s
 
 from villas.controller.components.simulator import Simulator
+from villas.controller.exceptions import SimulationException
 
 
 def merge(dict1, dict2):
@@ -32,59 +33,78 @@ class KubernetesJob(Simulator):
         self.manager = manager
 
         # Job template which can be overwritten via start parameter
-        self.job = args.get('job')
+        self.jobdict = args.get('properties', {}).get('job')
+
+        self.job = None
+        self.pod_names = set()
 
     def __del__(self):
         pass
 
-    def _prepare_job(self, job, parameters):
-        c = k8s.client.CoreV1Api()
+    def _prepare_job(self, job, payload):
+        # Create config map
+        cm = self._create_config_map(payload)
 
-        cm = self._create_config_map(parameters)
-
+        # Create volumes
         v = k8s.client.V1Volume(
-            name='parameters',
-            config_map=c.V1ConfigMapVolumeSource(
+            name='payload',
+            config_map=k8s.client.V1ConfigMapVolumeSource(
                 name=cm.metadata.name
             )
         )
 
         vm = k8s.client.V1VolumeMount(
-            name='parameters',
+            name='payload',
             mount_path='/config/',
             read_only=True
         )
 
-        job.spec.template.spec.volumes.append(v)
+        env = k8s.client.V1EnvVar(
+            name='VILLAS_PAYLOAD_FILE',
+            value='/config/payload.json'
+        )
+
+        # add volumes to kubernetes job
+        v1 = k8s.client.CoreV1Api()
+        job = v1.api_client._ApiClient__deserialize(job, 'V1Job')
+
+        if job.spec.template.spec.volumes is not None:
+            job.spec.template.spec.volumes.append(v)
+        else:
+            job.spec.template.spec.volumes = [v]
 
         for c in job.spec.template.spec.containers:
-            c.volume_mounts.append(vm)
-            c.env.append(c.V1EnvVar(
-                name='VILLAS_PARAMETERS_FILE',
-                value='/config/parameters.json'
-            ))
+            c.volume_mounts = [vm]
+            if c.env is not None:
+                c.env.append(env)
+            else:
+                c.env = [env]
 
-        return merge(job, {
-            'metadata': {
-                'name': None,
-                'generateName': job.get('metadata').get('name') + '-',
-                'labels': {
-                    'controller': 'villas',
-                    'controller-uuid': self.manager.uuid,
-                    'uuid': self.uuid
-                }
-            }
+        # Use generated names only
+        name = job.metadata.name or 'villas-job'
+        job.metadata.generate_name = name + '-'
+        job.metadata.name = None
+
+        if job.metadata.labels is None:
+            job.metadata.labels = {}
+
+        job.metadata.labels.update({
+            'controller': 'villas',
+            'controller-uuid': self.manager.uuid,
+            'uuid': self.uuid
         })
 
-    def _create_config_map(self, parameters):
+        return job
+
+    def _create_config_map(self, payload):
         c = k8s.client.CoreV1Api()
 
-        self.cm = c.V1ConfigMap(
-            metadata=c.V1ObjectMeta(
-                generate_name='job-parameters-'
+        self.cm = k8s.client.V1ConfigMap(
+            metadata=k8s.client.V1ObjectMeta(
+                generate_name='job-payload-'
             ),
             data={
-                'parameters.json': json.dumps(parameters)
+                'payload.json': json.dumps(payload)
             }
         )
 
@@ -93,36 +113,85 @@ class KubernetesJob(Simulator):
             body=self.cm
         )
 
-    def start(self, message):
-        job = message.payload.get('job', {})
-        parameters = message.payload.get('parameters', {})
-
-        job = merge(self.job, job)
-        job = self._prepare_job(self.job, parameters)
+    def _delete_job(self):
+        if not self.job:
+            return
 
         b = k8s.client.BatchV1Api()
-        self.job = b.create_namespaced_job(
-            namespace=self.manager.namespace,
-            body=job)
+        body = k8s.client.V1DeleteOptions(propagation_policy='Background')
+
+        try:
+            self.job = b.delete_namespaced_job(
+                namespace=self.manager.namespace,
+                name=self.job.metadata.name,
+                body=body)
+        except k8s.client.exceptions.ApiException as e:
+            raise SimulationException(self, 'Kubernetes API error',
+                                      error=str(e))
+
+        self.pod_names.clear()
+
+        self.job = None
+        self.properties['job_name'] = None
+        self.properties['pod_names'] = []
+
+    def start(self, message):
+        self._delete_job()
+
+        payload = message.payload
+        job = payload.get('job', {})
+        job = merge(self.jobdict, job)
+        v1job = self._prepare_job(job, payload)
+
+        b = k8s.client.BatchV1Api()
+        try:
+            self.job = b.create_namespaced_job(
+                namespace=self.manager.namespace,
+                body=v1job)
+        except k8s.client.exceptions.ApiException as e:
+            raise SimulationException(self, 'Kubernetes API error',
+                                      error=str(e))
+
+        self.properties['job_name'] = self.job.metadata.name
+        self.properties['namespace'] = self.manager.namespace
 
     def stop(self, message):
-        b = k8s.client.BatchV1Api()
-        self.job = b.delete_namespaced_job(
-            namespace=self.manager.namespace,
-            name=self.job.metadata.name)
+        self._delete_job()
+
+        self.change_state('idle')
 
     def _send_signal(self, sig):
-        c = k8s.client.api.CoreV1Api()
-        resp = k8s.stream.stream(c.connect_get_namespaced_pod_exec,
-                                 self.job.metadata.name, self.namespace,
-                                 command=['kill', f'-{sig}', '1'],
-                                 stderr=False, stdin=False,
-                                 stdout=False, tty=False)
+        for pod in self.pod_names:
+            self._send_signal_to_pod(sig, pod)
 
-        self.logger.debug('Send signal %d to container: %s', sig, resp)
+    def _send_signal_to_pod(self, sig, podname):
+        c = k8s.client.CoreV1Api()
+        try:
+            resp = k8s.stream.stream(c.connect_get_namespaced_pod_exec,
+                                     podname, self.manager.namespace,
+                                     command=['kill', f'-{sig}', '1'],
+                                     stderr=True, stdin=False,
+                                     stdout=True, tty=False)
+
+        except k8s.client.exceptions.ApiException as e:
+            raise SimulationException(self, 'Kubernetes API error',
+                                      error=str(e))
+
+        self.logger.debug('Sent signal %d to container: %s', sig, resp)
 
     def pause(self, message):
         self._send_signal(signal.SIGSTOP)
+        self.change_state('paused')
 
     def resume(self, message):
         self._send_signal(signal.SIGCONT)
+        self.change_state('running')
+
+    def reset(self, message):
+        self._delete_job()
+        super().reset(message)
+
+        self.change_state('idle')
+
+    def on_delete(self):
+        self._delete_job()
