@@ -121,8 +121,8 @@ class KubernetesManager(Manager):
                             if eo.reason == 'Completed':
                                 comp.change_state('stopping', True)
                             elif eo.reason == 'Started':
-                                comp.pod_names.append(eo.involved_object.name)
-                                comp.properties['pod_names'] = comp.pod_names
+                                comp.pods.add(eo.involved_object.name)
+                                comp.properties['pod_names'] = list(comp.pods)
                                 comp.change_state('running', True)
                             elif eo.reason == 'BackoffLimitExceeded':
                                 comp.change_state('error', error=eo.reason)
