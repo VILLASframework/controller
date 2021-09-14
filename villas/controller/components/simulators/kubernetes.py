@@ -38,7 +38,7 @@ class KubernetesJob(Simulator):
         self.jobdict = props.get('job')
 
         self.job = None
-        self.pod_names = set()
+        self.pods = set()
 
         self.custom_schema = props.get('schema', {})
 
@@ -137,7 +137,7 @@ class KubernetesJob(Simulator):
             raise SimulationException(self, 'Kubernetes API error',
                                       error=str(e))
 
-        self.pod_names.clear()
+        self.pods.clear()
 
         self.job = None
         self.properties['job_name'] = None
@@ -169,7 +169,7 @@ class KubernetesJob(Simulator):
         self.change_state('idle')
 
     def _send_signal(self, sig):
-        for pod in self.pod_names:
+        for pod in self.pods:
             self._send_signal_to_pod(sig, pod)
 
     def _send_signal_to_pod(self, sig, podname):
