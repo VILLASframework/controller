@@ -3,8 +3,9 @@ broker:
   url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
 
 components:
-- api_url: http://ernie.acs-lab.eonerc.rwth-aachen.de:8080
+- api_url: https://villas.k8s.eonerc.rwth-aachen.de/ws/
   category: manager
+  type: villas-node
   config: {}
   config_filename: "/Users/stv0g/workspace/rwth/acs/public/villas/node/build_devel_osx/file-playback.conf"
   enabled: true
@@ -13,13 +14,12 @@ components:
   name: VILLASnode (k8s)
   owner: svg
   realm: de.rwth-aachen.eonerc.acs
-  type: villas-node
 
-- api_url: https://villas-new.k8s.eonerc.rwth-aachen.de/ws/relay
+- api_url: https://villas.k8s.eonerc.rwth-aachen.de/ws/relay
   category: manager
-  enabled: false
+  type: villas-relay
+  enabled: true
   location: k8s
   name: VILLASrelay (k8s)
   owner: svg
   realm: de.rwth-aachen.eonerc.acs
-  type: villas-relay
