@@ -9,22 +9,23 @@ class VILLASnodeManager(Manager):
 
     def __init__(self, **args):
 
-        self.node = Node(**args)
-        self.status = self.node.status
-
         self.autostart = args.get('autostart', False)
+        self.api_url = args.get('url', 'http://localhost:8080') + '/api/v1'
+        self.api_url_external = args.get('url_external', self.api_url)
+
+        args['api_url'] = self.api_url
+
+        self.node = Node(**args)
+
+        self._status = self.node.status
+
+        args['uuid'] = self._status.get('uuid')
+
+        super().__init__(**args)
 
         self.thread_stop = threading.Event()
         self.thread = threading.Thread(target=self.reconcile_periodically)
         self.thread.start()
-
-        args['uuid'] = self.status['uuid']
-
-        super().__init__(**args)
-
-    def __del__(self):
-        self.thread_stop.set()
-        self.thread.join()
 
     def reconcile_periodically(self):
         while not self.thread_stop.wait(2):
@@ -52,25 +53,30 @@ class VILLASnodeManager(Manager):
             self.change_state('error', error=str(e))
 
     @property
-    def state(self):
+    def status(self):
         return {
-            'villas_node_version': self.status['version'],
-
-            **super().state
+            **super().status,
+            'villas_node_version': self.node.get_version()
         }
 
     def on_ready(self):
-        try:
-            self.status = self.node.status
-        except Exception:
-            self.change_state('error', error='VILLASnode not installed')
-
         if self.autostart and not self.node.is_running():
             self.start()
 
+        try:
+            self._status = self.node.status
+        except Exception:
+            self.change_state('error', error='VILLASnode not installed')
+
         super().on_ready()
 
-    def start(self, message=None):
+    def on_shutdown(self):
+        self.thread_stop.set()
+        self.thread.join()
+
+        return super().on_shutdown()
+
+    def start(self, message):
         self.node.start()
 
         self.change_state('starting')

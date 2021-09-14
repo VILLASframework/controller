@@ -7,12 +7,12 @@ class VILLASrelayGateway(Gateway):
         # Some default properties
         props = {
             'category': 'gateway',
-            'type': 'relay',
+            'type': 'villas-relay',
             'realm': manager.realm,
             'name': args['identifier']
         }
 
-        props['ws_url'] = manager.ws_url + '/' + args['identifier']
+        props['ws_url'] = manager.api_url_external + '/' + args['identifier']
 
         props.update(args)
 

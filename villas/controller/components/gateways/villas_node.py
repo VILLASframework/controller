@@ -7,13 +7,13 @@ class VILLASnodeGateway(Gateway):
         # Some default properties
         props = {
             'category': 'gateway',
-            'type': 'node',
+            'type': 'villas-node',
             'sub_type': args['type'],
             'realm': args.get('realm', manager.realm)
         }
 
         if args['type'] == 'websocket':
-            props['ws_url'] = manager.node.api_url + '/' + args['name']
+            props['ws_url'] = manager.api_url_external + '/' + args['name']
 
         del args['type']
         props.update(args)
