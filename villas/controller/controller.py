@@ -111,8 +111,6 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
             super().run()
 
     def shutdown(self):
-        self.should_terminate = True
-
         LOGGER.info('Shutdown controller')
 
         for u, c in self.components.items():
@@ -120,3 +118,4 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
         # Publish last status updates before shutdown
         self._drain_publish_queue()
+        self.should_terminate = True
