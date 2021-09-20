@@ -14,12 +14,11 @@ setup(
     url='https://www.fein-aachen.org/projects/villas-controller/',
     author='Steffen Vogel',
     author_email='acs-software@eonerc.rwth-aachen.de',
-    license='GPL-3.0',
+    license='Apache License 2.0',
     keywords='simulation controller villas',
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'License :: OSI Approved :: GNU General Public License v3 '
-        'or later (GPLv3+)',
+        'License :: OSI Approved :: Apache Software License'
         'Programming Language :: Python :: 3'
     ],
     packages=find_namespace_packages(include=['villas.*']),
