@@ -13,7 +13,7 @@ class VILLASnodeManager(Manager):
         self.api_url = args.get('url', 'http://localhost:8080') + '/api/v1'
         self.api_url_external = args.get('url_external', self.api_url)
 
-        args['api_url'] = self.api_url
+        args['api_url'] = args.get('url', 'http://localhost:8080')
 
         self.node = Node(**args)
 
