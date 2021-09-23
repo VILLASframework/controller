@@ -38,6 +38,9 @@ class Manager(Component):
         if type == 'kubernetes':
             from villas.controller.components.managers import kubernetes
             return kubernetes.KubernetesManager(**dict)
+        if type == 'kubernetes-simple':
+            from villas.controller.components.managers import kubernetes_simple
+            return kubernetes_simple.KubernetesManagerSimple(**dict)
         if type == 'villas-node':
             from villas.controller.components.managers import villas_node  # noqa E501
             return villas_node.VILLASnodeManager(**dict)
@@ -48,8 +51,11 @@ class Manager(Component):
             raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
+        print(self.name)
+        print(comp)
         if comp.uuid in self.mixin.components:
-            raise KeyError
+            # raise KeyError
+            self.logger.error('UUID %s already exists, not added', comp.uuid)
 
         comp.set_manager(self)
 
@@ -68,6 +74,9 @@ class Manager(Component):
 
     def run_action(self, action, message):
         if action == 'create':
+            print("###############")
+            print(message)
+            print(message.payload)
             self.create(message)
         elif action == 'delete':
             self.delete(message)
