@@ -1,0 +1,7 @@
+---
+name: "ksim created by simple manager"
+uuid: c555aaaa-6af6-11eb-beee-7fa268050224
+image: dpsimrwth/slew-villas:latest
+jobname: "test job"
+activeDeadlineSeconds: 60
+containername: "test container"
