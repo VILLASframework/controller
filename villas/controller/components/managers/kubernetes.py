@@ -107,8 +107,8 @@ class KubernetesManager(Manager):
 
                     eo = e.get('object')
 
-                    self.logger.info('Event: %s (reason=%s)', eo.message,
-                                     eo.reason)
+                    # self.logger.info('Event: %s (reason=%s)', eo.message,
+                    #                 eo.reason)
 
                     for uuid in self.components:
                         comp = self.components[uuid]
@@ -118,6 +118,10 @@ class KubernetesManager(Manager):
 
                         if _match(comp.job.metadata.name,
                                   eo.involved_object.name):
+                            if comp._state == 'stopping':
+                                # incoming events are old repetitions
+                                continue
+
                             if eo.reason == 'Completed':
                                 comp.change_state('stopping', True)
                             elif eo.reason == 'Started':
@@ -132,10 +136,10 @@ class KubernetesManager(Manager):
                                 elif comp._state == 'starting':
                                     # wait for BackoffLimitExceeded event
                                     continue
-                            else:
-                                self.logger.info('Reason \'%s\' not handled '
-                                                 'for kubernetes simulator',
-                                                 eo.reason)
+                            # else:
+                                # self.logger.info('Reason \'%s\' not handled '
+                                #                 'for kubernetes simulator',
+                                #                 eo.reason)
 
             except ProtocolError:
                 self.logger.warn('Connection to kubernetes broken, \

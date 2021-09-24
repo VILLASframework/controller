@@ -2,6 +2,7 @@ import json
 import signal
 from copy import deepcopy
 import collections
+import time
 
 import kubernetes as k8s
 
@@ -164,8 +165,11 @@ class KubernetesJob(Simulator):
         self.properties['namespace'] = self.manager.namespace
 
     def stop(self, message):
+        self.change_state('stopping', True)
         self._delete_job()
-
+        # job isn't immediately deleted
+        # let the user see something is happening
+        time.sleep(3)
         self.change_state('idle')
 
     def _send_signal(self, sig):
