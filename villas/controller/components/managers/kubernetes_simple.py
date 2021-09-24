@@ -82,7 +82,8 @@ class KubernetesManagerSimple(KubernetesManager):
         uuid = params.get('uuid')
 
         if image is None:
-            self.logger.error('No image given, cannot create kubernetes job')
+            self.logger.error('No image given, will try super.create')
+            super().create(message)
             return
 
         parameters = self.parameters_simple
