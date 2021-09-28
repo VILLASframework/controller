@@ -40,6 +40,7 @@ class KubernetesJob(Simulator):
 
         self.job = None
         self.pods = set()
+        self.cm_name = ''
 
         self.custom_schema = props.get('schema', {})
 
@@ -53,6 +54,7 @@ class KubernetesJob(Simulator):
     def _prepare_job(self, job, payload):
         # Create config map
         cm = self._create_config_map(payload)
+        self.cm_name = cm.metadata.name
 
         # Create volumes
         v = k8s.client.V1Volume(
@@ -127,12 +129,17 @@ class KubernetesJob(Simulator):
             return
 
         b = k8s.client.BatchV1Api()
+        c = k8s.client.CoreV1Api()
         body = k8s.client.V1DeleteOptions(propagation_policy='Background')
 
         try:
             self.job = b.delete_namespaced_job(
                 namespace=self.manager.namespace,
                 name=self.job.metadata.name,
+                body=body)
+            c.delete_namespaced_config_map(
+                namespace=self.manager.namespace,
+                name=self.cm_name,
                 body=body)
         except k8s.client.exceptions.ApiException as e:
             raise SimulationException(self, 'Kubernetes API error',
