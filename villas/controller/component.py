@@ -1,12 +1,9 @@
 import logging
-import kombu
 import time
-import socket
-import os
+import kombu
 import uuid
 import threading
 
-from villas.controller import __version__ as version
 from villas.controller.exceptions import SimulationException
 
 
@@ -90,20 +87,9 @@ class Component:
 
     @property
     def status(self):
-        u = os.uname()
-
         status = {
             'state': self._state,
-            'version': version,
-            'uptime': time.time() - self.started,
-            'host': socket.gethostname(),
-            'kernel': {
-                'sysname': u.sysname,
-                'nodename': u.nodename,
-                'release': u.release,
-                'version': u.version,
-                'machine': u.machine
-            },
+            **self.mixin.status,
             **self._status_fields
         }
 
