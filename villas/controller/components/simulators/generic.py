@@ -35,8 +35,8 @@ class GenericSimulator(Simulator):
 
         return state
 
-    def start(self, message):
-        super().start(message)
+    def start(self, payload):
+        super().start(payload)
         self.logger.info('Working directory: %s', os.getcwd())
         path = self.download_model()
 
@@ -45,7 +45,7 @@ class GenericSimulator(Simulator):
             raise SimulationException(self, 'Child process is already running')
 
         try:
-            params = message.payload['parameters']
+            params = payload['parameters']
 
             self.thread = threading.Thread(target=GenericSimulator.run,
                                            args=(self, params, path))
@@ -150,7 +150,7 @@ class GenericSimulator(Simulator):
 
         self.child = None
 
-    def reset(self, message):
+    def reset(self, payload):
         # Don't send a signal if the child does not exist
         if self.child is None:
             return
@@ -173,7 +173,7 @@ class GenericSimulator(Simulator):
         # we will transition into the error state
         self.check_state_deferred('idle', 5)
 
-    def stop(self, message):
+    def stop(self, payload):
         send_cont = False
 
         if self.child is None:
@@ -196,7 +196,7 @@ class GenericSimulator(Simulator):
         # we will transition into the error state
         self.check_state_deferred('stopped', 5)
 
-    def pause(self, message):
+    def pause(self, payload):
         # Suspend command
         if self.child is None:
             raise SimulationException(self, 'No child process is running')
@@ -206,7 +206,7 @@ class GenericSimulator(Simulator):
         self.change_state('paused')
         self.logger.info('Child process has been paused')
 
-    def resume(self, message):
+    def resume(self, payload):
         # Let process run
         if self.child is None:
             raise SimulationException(self, 'No child process is running')

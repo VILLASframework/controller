@@ -146,14 +146,14 @@ class KubernetesManager(Manager):
                                     attempting reconnect..')
                 time.sleep(1)
 
-    def create(self, message):
-        parameters = message.payload.get('parameters', {})
+    def create(self, payload):
+        parameters = payload.get('parameters', {})
         comp = KubernetesJob(self, **parameters)
 
         self.add_component(comp)
 
-    def delete(self, message):
-        parameters = message.payload.get('parameters')
+    def delete(self, payload):
+        parameters = payload.get('parameters')
         uuid = parameters.get('uuid')
 
         try:

@@ -20,35 +20,35 @@ class VILLASnodeGateway(Gateway):
 
         super().__init__(manager, **props)
 
-    def start(self, message):
+    def start(self, payload):
         try:
             self.manager.node.request('node.start', {'node': self.name})
             self.manager.reconcile()
         except Exception as e:
             self.logger.warn('Failed to start node: %s', e)
 
-    def stop(self, message):
+    def stop(self, payload):
         try:
             self.manager.node.request('node.stop', {'node': self.name})
             self.manager.reconcile()
         except Exception as e:
             self.logger.warn('Failed to stop node: %s', e)
 
-    def pause(self, message):
+    def pause(self, payload):
         try:
             self.manager.node.request('node.pause', {'node': self.name})
             self.manager.reconcile()
         except Exception as e:
             self.logger.warn('Failed to pause node: %s', e)
 
-    def resume(self, message):
+    def resume(self, payload):
         try:
             self.manager.node.request('node.resume', {'node': self.name})
             self.manager.reconcile()
         except Exception as e:
             self.logger.warn('Failed to resume node: %s', e)
 
-    def reset(self, message):
+    def reset(self, payload):
         try:
             self.manager.node.reset('node.restart', {'node': self.name})
             self.manager.reconcile()

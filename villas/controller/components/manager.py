@@ -72,21 +72,20 @@ class Manager(Component):
 
         self.logger.info('Removed component %s', comp)
 
-    def run_action(self, action, message):
+    def run_action(self, action, payload):
         if action == 'create':
-            print("###############")
-            print(message)
-            print(message.payload)
-            self.create(message)
+            #print(message.payload)
+            #self.create(message)
+            self.create(payload)
         elif action == 'delete':
-            self.delete(message)
+            self.delete(payload)
         else:
-            super().run_action(action, message)
+            super().run_action(action, payload)
 
-    def create(self, message):
+    def create(self, payload):
         raise NotImplementedError()
 
-    def delete(self, message):
+    def delete(self, payload):
         raise NotImplementedError()
 
     def on_shutdown(self):
