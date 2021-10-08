@@ -2,8 +2,10 @@ import time
 import logging
 import socket
 import queue
+import os
 import kombu.mixins
 
+from villas.controller import __version__ as version
 from villas.controller.components.managers.generic import GenericManager
 
 
@@ -126,3 +128,20 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         # Publish last status updates before shutdown
         self._drain_publish_queue()
         self.should_terminate = True
+
+    @property
+    def status(self):
+        u = os.uname()
+
+        return {
+            'version': version,
+            'uptime': time.time() - self.started,
+            'host': socket.gethostname(),
+            'kernel': {
+                'sysname': u.sysname,
+                'nodename': u.nodename,
+                'release': u.release,
+                'version': u.version,
+                'machine': u.machine
+            },
+        }
