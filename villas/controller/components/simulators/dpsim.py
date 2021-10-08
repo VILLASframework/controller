@@ -1,6 +1,5 @@
 import dpsim
 import os
-import time
 
 from villas.controller.components.simulator import Simulator
 
@@ -101,9 +100,6 @@ class DPsimSimulator(Simulator):
     }
 
     def __init__(self, **args):
-        args['type'] = 'dpsim'
-
-        self.started = time.time()
         self.sim = None
 
         super().__init__(**args)
