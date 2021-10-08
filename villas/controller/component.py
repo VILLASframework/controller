@@ -112,7 +112,10 @@ class Component:
         self.logger.debug('Received message: %s', message.payload)
 
         if 'action' in message.payload:
-            self.run_action(message.payload['action'], message.payload)
+            try:
+                self.run_action(message.payload['action'], message.payload)
+            except SimulationException:
+                pass
 
         message.ack()
 
@@ -150,6 +153,8 @@ class Component:
         except SimulationException as se:
             self.logger.error('SimulationException: %s', str(se))
             self.change_state('error', msg=se.msg, **se.info)
+
+            raise se
 
     def change_state(self, state, **kwargs):
         if self._state == state:
