@@ -1,7 +1,6 @@
 import dpsim
-import time
-import socket
 import os
+import time
 
 from villas.controller.components.simulator import Simulator
 
@@ -117,17 +116,6 @@ class DPsimSimulator(Simulator):
         headers['version'] = '0.1.0'
 
         return headers
-
-    @property
-    def state(self):
-        state = super().state
-
-        state['uptime'] = time.time() - self.started
-        state['version'] = '0.1.0'
-        state['host'] = socket.getfqdn()
-        state['kernel'] = os.uname()
-
-        return state
 
     def load_cim(self, fp):
         if fp is not None:
