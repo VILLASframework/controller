@@ -69,7 +69,9 @@ class Component:
                     'x-match': 'any',
                     **self.headers
                 },
-                durable=False
+                durable=False,
+                exclusive=True,
+                auto_delete=True
             ),
             no_ack=True,
             accept={'application/json'}
