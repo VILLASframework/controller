@@ -126,10 +126,9 @@ class KubernetesJob(Simulator):
         self.properties['job_name'] = None
         self.properties['pod_names'] = []
 
-    def start(self, message):
+    def start(self, payload):
         self._delete_job()
 
-        payload = message.payload
         job = payload.get('job', {})
         job = merge(self.jobdict, job)
         v1job = self._prepare_job(job, payload)
@@ -146,7 +145,7 @@ class KubernetesJob(Simulator):
         self.properties['job_name'] = self.job.metadata.name
         self.properties['namespace'] = self.manager.namespace
 
-    def stop(self, message):
+    def stop(self, payload):
         self._delete_job()
 
         self.change_state('idle')
@@ -170,17 +169,17 @@ class KubernetesJob(Simulator):
 
         self.logger.debug('Sent signal %d to container: %s', sig, resp)
 
-    def pause(self, message):
+    def pause(self, payload):
         self._send_signal(signal.SIGSTOP)
         self.change_state('paused')
 
-    def resume(self, message):
+    def resume(self, payload):
         self._send_signal(signal.SIGCONT)
         self.change_state('running')
 
-    def reset(self, message):
+    def reset(self, payload):
         self._delete_job()
-        super().reset(message)
+        super().reset(payload)
 
         self.change_state('idle')
 

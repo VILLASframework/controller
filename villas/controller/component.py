@@ -112,9 +112,11 @@ class Component:
         self.logger.debug('Received message: %s', message.payload)
 
         if 'action' in message.payload:
-            self.run_action(message.payload['action'], message)
+            self.run_action(message.payload['action'], message.payload)
 
-    def run_action(self, action, message):
+        message.ack()
+
+    def run_action(self, action, payload):
         if action == 'ping':
             self.logger.debug('Received action: %s', action)
         else:
@@ -122,25 +124,25 @@ class Component:
 
         try:
             if action == 'ping':
-                self.ping(message)
+                self.ping(payload)
             elif action == 'start':
                 self.change_state('starting')
-                self.start(message)
+                self.start(payload)
             elif action == 'stop':
                 self.change_state('stopping')
-                self.stop(message)
+                self.stop(payload)
             elif action == 'pause':
                 self.change_state('pausing')
-                self.pause(message)
+                self.pause(payload)
             elif action == 'resume':
                 self.change_state('resuming')
-                self.resume(message)
+                self.resume(payload)
             elif action == 'shutdown':
                 self.change_state('shuttingdown')
-                self.shutdown(message)
+                self.shutdown(payload)
             elif action == 'reset':
                 self.change_state('resetting')
-                self.reset(message)
+                self.reset(payload)
             else:
                 raise SimulationException(self, 'Unknown action',
                                           action=action)
@@ -148,8 +150,6 @@ class Component:
         except SimulationException as se:
             self.logger.error('SimulationException: %s', str(se))
             self.change_state('error', msg=se.msg, **se.info)
-        finally:
-            message.ack()
 
     def change_state(self, state, **kwargs):
         if self._state == state:
@@ -163,25 +163,25 @@ class Component:
         self.publish_status()
 
     # Actions
-    def ping(self, message):
+    def ping(self, payload):
         self.publish_status()
 
-    def start(self, message):
+    def start(self, payload):
         raise SimulationException('The component can not be started')
 
-    def stop(self, message):
+    def stop(self, payload):
         raise SimulationException('The component can not be stopped')
 
-    def pause(self, message):
+    def pause(self, payload):
         raise SimulationException('The component can not be paused')
 
-    def resume(self, message):
+    def resume(self, payload):
         raise SimulationException('The component can not be resumed')
 
-    def shutdown(self, message):
+    def shutdown(self, payload):
         raise SimulationException('The component can not be shut down')
 
-    def reset(self, message):
+    def reset(self, payload):
         self.started = time.time()
 
     @staticmethod

@@ -135,8 +135,8 @@ class DPsimSimulator(Simulator):
             self.logger.info(self.sim)
             os.unlink(fp.name)
 
-    def start(self, message):
-        fp = self.download_model(message)
+    def start(self, payload):
+        fp = self.download_model(payload)
         if fp:
             self.load_cim(fp)
 
@@ -154,7 +154,7 @@ class DPsimSimulator(Simulator):
             self.logger.warn('Attempted to start non-stopped simulator.'
                              'State is %s', self._state)
 
-    def stop(self, message):
+    def stop(self, payload):
         if self._state == 'running':
             self.logger.info('Stopping simulation...')
 
@@ -169,7 +169,7 @@ class DPsimSimulator(Simulator):
             self.logger.warn('Attempted to stop non-stopped simulator.'
                              'State is %s', self._state)
 
-    def pause(self, message):
+    def pause(self, payload):
         if self._state == 'running':
             self.logger.info('Pausing simulation...')
 
@@ -192,7 +192,7 @@ class DPsimSimulator(Simulator):
             self.logger.warn('Attempted to pause non-running simulator.'
                              'State is ' + self._state)
 
-    def resume(self, message):
+    def resume(self, payload):
         if self._state == 'paused':
             self.logger.info('Resuming simulation...')
 
