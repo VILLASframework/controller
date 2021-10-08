@@ -2,6 +2,7 @@ import yaml
 import argparse
 import logging
 import os
+import dotmap
 
 from os import getcwd
 from xdg import (
@@ -10,6 +11,7 @@ from xdg import (
 )
 
 from villas.controller.component import Component
+from villas.controller.util import merge
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +30,19 @@ class ConfigType(argparse.FileType):
 
 class Config:
 
+    DEFAULT_CONFIG = {
+        'broker': {
+            'url': 'amqp://localhost:5672/%2F'
+        },
+        'api': {
+            'enabled': True,
+            'port': 8089
+        },
+        'components': [],
+        # 'workdir': '/var/villas/controller/simulators/'
+        'workdir': os.getcwd()
+    }
+
     DEFAULT_PATHS = xdg_config_dirs() + [
                     xdg_config_home(),
                     getcwd(),
@@ -39,11 +54,17 @@ class Config:
             fn = self.find_default_path()
             if fn:
                 with open(fn) as fp:
-                    self.dict = yaml.load(fp, Loader=yaml.FullLoader)
+                    self.load(fp)
             else:
                 pass  # Start without config
         else:
-            self.dict = yaml.load(fp, Loader=yaml.FullLoader)
+            self.load(fp)
+
+    def load(self, fp):
+        config = yaml.load(fp, Loader=yaml.FullLoader)
+        merged = merge(self.DEFAULT_CONFIG, config)
+
+        self.config = dotmap.DotMap(merged)
 
     def find_default_path(self, filename='config',
                           suffixes=['json', 'yaml', 'yml']):
@@ -55,7 +76,10 @@ class Config:
 
     @property
     def components(self):
-        return [Component.from_dict(c) for c in self.dict['components']]
+        return [Component.from_dict(c) for c in self.config.components]
+
+    def __getattr__(self, attr):
+        return self.config.get(attr)
 
     def check(self):
         uuids = [c.uuid for c in self.components]

@@ -13,15 +13,14 @@ class DaemonCommand(Command):
     def add_parser(subparsers):
         parser = subparsers.add_parser('daemon',
                                        help='Run VILLAScontroller as a daemon')
-        parser.set_defaults(func=DaemonCommand.run)
+        parser.set_defaults(func=DaemonCommand.start)
 
     @staticmethod
-    def run(connection, args):
-        components = args.config.components
+    def start(connection, args):
 
         try:
-            d = ControllerMixin(connection, components)
-            d.run()
+            d = ControllerMixin(connection, args)
+            d.start()
         except KeyboardInterrupt:
             d.shutdown()
         except ConnectionError:
