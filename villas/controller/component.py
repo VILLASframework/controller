@@ -1,4 +1,5 @@
 import logging
+import os.path
 import time
 import kombu
 import uuid
@@ -53,6 +54,8 @@ class Component:
     def set_mixin(self, mixin):
         self.mixin = mixin
         self.connection = mixin.connection
+
+        self.workdir = os.path.join(self.mixin.config.workdir, str(self.uuid))
 
     def get_consumer(self, channel):
         self.channel = channel

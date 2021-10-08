@@ -98,32 +98,27 @@ class Simulator(Component):
         super().change_state(state, **kwargs)
 
     # Actions
-    def start(self, message):
+    def start(self, payload):
         self.started = time.time()
         self.simuuid = uuid.uuid4()
 
-        if 'parameters' in message.payload:
-            self.params = message.payload['parameters']
+        self.params = payload.get('parameters', {})
+        self.model = payload.get('model')
+        self.results = payload.get('results')
 
-        if 'model' in message.payload:
-            self.model = message.payload['model']
+        self.sim_workdir = os.path.join(self.workdir, 'simulation',
+                                        str(self.simuuid))
 
-        if 'results' in message.payload:
-            self.results = message.payload['results']
-
-        self.workdir = '/var/villas/controller/simulators/' + \
-            str(self.uuid) + '/simulation/' + str(self.simuuid)
-
-        self.logdir = self.workdir + '/Logs/'
-        self.logger.info('Target working directory: %s' % self.workdir)
+        self.sim_logdir = self.sim_workdir + '/Logs/'
+        self.logger.info('Simulation working directory: %s' % self.sim_workdir)
 
         try:
-            os.makedirs(self.logdir)
-            os.chdir(self.logdir)
+            os.makedirs(self.sim_logdir)
+            os.chdir(self.sim_logdir)
         except Exception as e:
             raise SimulationException(self, 'Failed to create and change to '
                                             'working directory: %s ( %s )' %
-                                            (self.logdir, e))
+                                            (self.sim_logdir, e))
 
     def _upload(self, filename):
         url = self.results['url']
@@ -157,9 +152,9 @@ class Simulator(Component):
 
     def upload_results(self):
         try:
-            filename = self.workdir + '/results.zip'
+            filename = os.path.join(self.sim_workdir, 'results.zip')
             with zipfile.ZipFile(filename, 'w') as results_zip:
-                for sub in os.scandir(self.logdir):
+                for sub in os.scandir(self.sim_logdir):
                     results_zip.write(sub)
 
                 results_zip.close()
