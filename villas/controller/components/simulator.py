@@ -29,12 +29,12 @@ class Simulator(Component):
         return {}
 
     @property
-    def state(self):
+    def status(self):
         return {
             'model': self.model,
             'results': self.results,
 
-            **super().state
+            **super().status
         }
 
     @staticmethod
