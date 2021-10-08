@@ -1,3 +1,4 @@
+import time
 import logging
 import socket
 import queue
@@ -5,13 +6,18 @@ import kombu.mixins
 
 from villas.controller.components.managers.generic import GenericManager
 
+
 LOGGER = logging.getLogger(__name__)
 
 
 class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
-    def __init__(self, connection, components):
-        self.components = {c.uuid: c for c in components if c.enabled}
+    def __init__(self, connection, args):
+        self.args = args
+        self.config = args.config
+
+        comps = self.config.components
+        self.components = {c.uuid: c for c in comps if c.enabled}
         self.connection = connection
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
@@ -100,7 +106,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
             self.active_components = self.components.copy()
 
-    def run(self):
+    def start(self):
+        self.started = time.time()
         self.should_terminate = False
         while not self.should_terminate:
             self.should_stop = False
