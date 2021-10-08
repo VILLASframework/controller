@@ -31,7 +31,8 @@ setup(
         'villas-node>=0.10.2',
         'kubernetes',
         'xdg',
-        'PyYAML'
+        'PyYAML',
+        'tornado'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),
