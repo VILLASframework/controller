@@ -1,0 +1,10 @@
+---
+$schema: http://json-schema.org/draft-04/schema#
+
+type: object
+properties:
+  job:
+    $ref: https://kubernetesjsonschema.dev/v1.18.1/job.json
+  schema:
+    additionalProperties:
+      $ref: https://json-schema.org/draft-04/schema

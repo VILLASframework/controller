@@ -17,17 +17,6 @@ class Manager(Component):
             **super().status
         }
 
-    @property
-    def schema(self):
-        return {
-            'create': self.create_schema,
-            **super().schema
-        }
-
-    @property
-    def create_schema(self):
-        return {}
-
     @staticmethod
     def from_dict(dict):
         type = dict.get('type', 'generic')

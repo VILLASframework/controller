@@ -4,6 +4,11 @@ import time
 import kombu
 import uuid
 import threading
+import yaml
+from jsonschema import Draft202012Validator
+
+import importlib
+import importlib.resources as resources
 
 from villas.controller.exceptions import SimulationException
 
@@ -38,6 +43,9 @@ class Component:
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
+
+        # Load schemas for validating action payloads
+        self._load_schema()
 
     def on_ready(self):
         self.publish_status_thread.start()
@@ -77,6 +85,27 @@ class Component:
             accept={'application/json'}
         )
 
+    def _load_schema(self):
+        self.schema = {}
+
+        try:
+            pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
+            pkg = importlib.import_module(pkg_name)
+        except ModuleNotFoundError:
+            self.logger.warn('Missing schemas!')
+            return
+
+        self.logger.debug('Loading schemas from %s', pkg_name)
+
+        for res in resources.contents(pkg):
+            name, ext = os.path.splitext(res)
+            if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
+
+                fo = resources.open_text(pkg, res)
+                schema = yaml.load(fo, yaml.SafeLoader)
+
+                self.schema[name] = Draft202012Validator(schema)
+
     @property
     def headers(self):
         return {
@@ -85,10 +114,6 @@ class Component:
             'uuid': self.uuid,
             'type': self.type
         }
-
-    @property
-    def schema(self):
-        return self.properties.get('schema', {})
 
     @property
     def status(self):
@@ -107,7 +132,9 @@ class Component:
                 **self.properties,
                 **self.headers
             },
-            'schema': self.schema
+            'schema': {
+                name: v.schema for name, v in self.schema.items()
+            }
         }
 
     def on_message(self, message):
