@@ -46,7 +46,7 @@ class VILLASrelayManager(Manager):
             return r.json()
 
         except requests.exceptions.RequestException:
-            self.change_state('error', error='Failed to contact VILLASrelay')
+            self.change_to_error('Failed to contact VILLASrelay')
 
             return None
 
@@ -112,6 +112,6 @@ class VILLASrelayManager(Manager):
             self._version = status['version']
 
         except Exception:
-            self.change_state('error', error='Failed to contact VILLASrelay')
+            self.change_to_error('Failed to contact VILLASrelay')
 
         super().on_ready()

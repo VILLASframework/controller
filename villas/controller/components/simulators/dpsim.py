@@ -38,7 +38,7 @@ class DPsimSimulator(Simulator):
             if self.sim.start() is None:
                 self.change_state('running')
             else:
-                self.change_state('error')
+                self.change_to_error('failed to start simulation')
                 self.logger.warn('Attempt to start simulator failed.'
                                  'State is %s', self._state)
         else:

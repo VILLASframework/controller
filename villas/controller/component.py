@@ -5,6 +5,7 @@ import kombu
 import uuid
 import threading
 import yaml
+import jsonschema
 from jsonschema import Draft202012Validator
 
 import importlib
@@ -95,8 +96,6 @@ class Component:
             self.logger.warn('Missing schemas!')
             return
 
-        self.logger.debug('Loading schemas from %s', pkg_name)
-
         for res in resources.contents(pkg):
             name, ext = os.path.splitext(res)
             if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
@@ -105,6 +104,16 @@ class Component:
                 schema = yaml.load(fo, yaml.SafeLoader)
 
                 self.schema[name] = Draft202012Validator(schema)
+
+    def validate_parameters(self, action, parameters):
+        if action in self.schema:
+            validator = self.schema[action]
+
+            validator.validate(parameters)
+
+        else:
+            self.logger.warn('missing schema for action: %s', action)
+            return True  # we really should fail here...
 
     @property
     def headers(self):
@@ -155,6 +164,25 @@ class Component:
         else:
             self.logger.info('Received action: %s', action)
 
+        parameters = payload.get('parameters', {})
+
+        try:
+            self.validate_parameters(action, parameters)
+        except jsonschema.ValidationError as ve:
+            e = {
+                'instance': ve.instance,
+                'path': ve.json_path,
+            }
+
+            se = SimulationException(self, 'Failed to validate parameters',
+                                     **e)
+
+            self.logger.error('Failed to validate action parameters against '
+                              'schema: %s', ve.message)
+            self.change_to_error(ve.message, **e)
+
+            raise se
+
         try:
             if action == 'ping':
                 self.ping(payload)
@@ -182,7 +210,7 @@ class Component:
 
         except SimulationException as se:
             self.logger.error('SimulationException: %s', str(se))
-            self.change_state('error', msg=se.msg, **se.info)
+            self.change_to_error(se.msg, **se.info)
 
             raise se
 
@@ -196,6 +224,14 @@ class Component:
         self._status_fields = kwargs
 
         self.publish_status()
+
+    def change_to_error(self, msg, **details):
+        self.change_state('error',
+                          error=msg,
+                          error_details={
+                              'msg': msg,
+                              **details
+                          })
 
     # Actions
     def ping(self, payload):
