@@ -120,7 +120,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         while not self.should_terminate:
             self.should_stop = False
 
-            LOGGER.info('Startig mixing for %d components',
+            LOGGER.info('Starting mixing for %d components',
                         len(self.active_components))
 
             super().run()
