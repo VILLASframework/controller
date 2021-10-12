@@ -103,8 +103,12 @@ def main():
 
     setup_logging(args)
 
-    broker_url = args.broker or args.config.broker.url
-
+    try:
+        broker_url = args.broker or args.config.broker.url
+    except AttributeError:
+        LOGGER.error('A broker URL must be provided either via a command line '
+                     'parameter or a configuration file')
+        return -1
     try:
         with kombu.Connection(broker_url, connect_timeout=3) as c:
             LOGGER.info(f'Connecting to: {broker_url}')
