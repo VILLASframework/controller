@@ -15,8 +15,8 @@ def _get_parameters(params, params_file):
 
     try:
         if params is not None:
-            parameters.update(yaml.loads(params,
-                                         Loader=yaml.FullLoader))
+            parameters.update(yaml.load(params,
+                                        Loader=yaml.FullLoader))
         if params_file is not None:
             with open(params_file) as f:
                 parameters.update(yaml.load(f, Loader=yaml.FullLoader))
