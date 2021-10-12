@@ -19,21 +19,6 @@ def _match(stringA, stringB):
 
 class KubernetesManager(Manager):
 
-    create_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'properties': {
-            'job': {
-                '$ref': 'https://kubernetesjsonschema.dev/v1.18.1/job.json'
-            },
-            'schema': {
-                'type': 'object',
-                'additionalProperties': {
-                    '$ref': 'https://json-schema.org/draft-04/schema'
-                }
-            }
-        }
-    }
-
     def __init__(self, **args):
         super().__init__(**args)
 
