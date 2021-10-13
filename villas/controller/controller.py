@@ -37,7 +37,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         # Components are activated by first call to on_iteration()
         self.active_components = {}
 
-    def get_consumers(self, Consumer, channel):
+    def get_consumers(self, _, channel):
         return map(lambda comp: comp.get_consumer(channel),
                    self.active_components.values())
 
