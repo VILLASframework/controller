@@ -1,0 +1,324 @@
+---
+openapi: 3.0.0
+info:
+  title: VILLAScontroller API
+  description: 'A HTTP/REST API for controlling VILLAScontroller remotely for querying component status as well as issuing control actions.'
+  version: 0.0.1
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+- url: https://villas.k8s.eonerc.rwth-aachen.de/api/v1
+  description: Demo instance at RWTH Aachen
+paths:
+  /:
+    get:
+      summary: 'Get status of VILLAScontroller daemon'
+      operationId: getStatus
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  components:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  status:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      uptime:
+                        type: number
+                      host:
+                        type: string
+                      kernel:
+                        type: object
+                        properties:
+                          sysname:
+                            type: string
+                          nodename:
+                            type: string
+                          release:
+                            type: string
+                          version:
+                            type: string
+                          machine:
+                            type: string
+
+              example:
+                components:
+                  - f4751894-205e-11eb-aefb-0741ff98abca
+                  - 3ddd318e-fee1-46d7-bff4-7c064d640d4e
+                status:
+                  version: 0.3.2
+                  uptime: 15.38102650642395
+                  host: lat.0l.de
+                  kernel:
+                    sysname: Linux
+                    nodename: lat.0l.de
+                    release: 5.13.14-200.fc34.x86_64
+                    version: '#1 SMP Fri Sep 3 15:33:01 UTC 2021'
+                    machine: x86_64
+
+
+  /component/{uuid}:
+    get:
+      parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+      operationId: getComponentStatus
+      summary: 'Get the current status of a component'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  components:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+
+                  status:
+                    type: object
+                    properties:
+                      managed_by:
+                        type: string
+                        format: uuid
+
+                      state:
+                        type: string
+                        enum:
+                        - idle
+                        - starting
+                        - running
+                        - stopping
+                        - pausing
+                        - paused
+                        - resuming
+                        - error
+                        - resetting
+                        - shuttingdown
+                        - shutdown
+                        - gone
+
+                      version:
+                        type: string
+                      uptime:
+                        type: number
+                      host:
+                        type: string
+                      kernel:
+                        type: object
+                        properties:
+                          sysname:
+                            type: string
+                          nodename:
+                            type: string
+                          release:
+                            type: string
+                          version:
+                            type: string
+                          machine:
+                            type: string
+
+                  properties:
+                    type: object
+                    properties:
+                      category:
+                        type: string
+                        enum:
+                        - manager
+                        - simulator
+                        - gateway
+                      type:
+                        type: string
+                        pattern: '[a-z-]+'
+                      name:
+                        type: string
+                      realm:
+                        type: string
+                        pattern: '[a-z0-9-.]+'
+                      uuid:
+                        type: string
+                        format: uuid
+
+                    additionalProperties: true
+
+                  schema:
+                    type: object
+                    additionalProperties:
+                      $ref: 'https://json-schema.org/draft/2020-12/schema'
+
+              example:
+                components: []
+                status:
+                  state: idle
+                  version: 0.3.2
+                  uptime: 480.25064611434937
+                  host: lat.0l.de
+                  kernel:
+                    sysname: Linux
+                    nodename: lat.0l.de
+                    release: 5.13.14-200.fc34.x86_64
+                    version: '#1 SMP Fri Sep 3 15:33:01 UTC 2021'
+                    machine: x86_64
+                  managed_by: f4751894-205e-11eb-aefb-0741ff98abca
+                properties:
+                  category: manager
+                  type: generic
+                  name: Standard Controller
+                  realm: de.rwth-aachen.eonerc.acs
+                  uuid: f4751894-205e-11eb-aefb-0741ff98abca
+                schema:
+                  create:
+                    $schema: 'http://json-schema.org/draft-07/schema'
+                    $id: 'http://example.com/example.json'
+                    type: object
+                    default: {}
+                    required:
+                      - name
+                      - category
+                      - location
+                      - owner
+                      - realm
+                      - type
+                      - api_url
+                      - ws_url
+                    properties:
+                      name:
+                        $id: '#/properties/name'
+                        type: string
+                        title: Component name
+                        default: New Component
+                        examples:
+                          - 'Generic Simulator #1'
+                      owner:
+                        $id: '#/properties/owner'
+                        type: string
+                        title: Component owner
+                        default: ''
+                        examples:
+                          - rmr
+                          - svg
+                      realm:
+                        $id: '#/properties/realm'
+                        type: string
+                        title: Component realm
+                        default: ''
+                        examples:
+                          - de.rwth-aachen.eonerc.acs
+                      category:
+                        $id: '#/properties/category'
+                        type: string
+                        title: Component category
+                        default: ''
+                        examples:
+                          - simulator
+                      location:
+                        $id: '#/properties/location'
+                        type: string
+                        title: Component location
+                        default: ''
+                        examples:
+                          - Richard's PC
+                      type:
+                        $id: '#/properties/type'
+                        type: string
+                        title: The type schema
+                        default: ''
+                        examples:
+                          - generic
+                      uuid:
+                        $id: '#/properties/uuid'
+                        type: 'null'
+                        title: The uuid schema
+                        default: null
+                      ws_url:
+                        $id: '#/properties/ws_url'
+                        type: string
+                        title: The ws_url schema
+                        default: ''
+                        examples:
+                          - 'https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1'
+                      api_url:
+                        $id: '#/properties/api_url'
+                        type: string
+                        title: The api_url schema
+                        default: ''
+                        examples:
+                          - 'https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1'
+                      shell:
+                        $id: '#/properties/shell'
+                        type: boolean
+                        title: The shell schema
+                        default: false
+                        examples:
+                          - true
+                      whitelist:
+                        $id: '#/properties/whitelist'
+                        type: array
+                        title: The whitelist schema
+                        default: []
+                        examples:
+                          - - /sbin/ping
+                            - ^echo
+                        additionalItems: true
+                        items:
+                          $id: '#/properties/whitelist/items'
+                          anyOf:
+                            - $id: '#/properties/whitelist/items/anyOf/0'
+                              type: string
+                              title: The first anyOf schema
+                              default: ''
+                              examples:
+                                - /sbin/ping
+                                - ^echo
+                    additionalProperties: true
+
+
+    post:
+      operationId: executeComponentAction
+      summary: 'Send a control action to the component'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+              example:
+                runtime: 10.2
+
+  /health:
+    get:
+      operationId: getHealth
+      summary: Query health of daemon.
+      responses:
+        '200':
+          description: The daemon is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: ok

@@ -10,8 +10,8 @@ class VILLASnodeManager(Manager):
     def __init__(self, **args):
 
         self.autostart = args.get('autostart', False)
-        self.api_url = args.get('url', 'http://localhost:8080') + '/api/v1'
-        self.api_url_external = args.get('url_external', self.api_url)
+        self.api_url = args.get('api_url', 'http://localhost:8080')
+        self.api_url_external = args.get('api_url_external', self.api_url)
 
         args['api_url'] = self.api_url
 
@@ -76,12 +76,12 @@ class VILLASnodeManager(Manager):
 
         return super().on_shutdown()
 
-    def start(self, message):
+    def start(self, payload):
         self.node.start()
 
         self.change_state('starting')
 
-    def stop(self, message):
+    def stop(self, payload):
         if self.node.is_running():
             self.node.stop()
 
@@ -91,7 +91,7 @@ class VILLASnodeManager(Manager):
         for node in self.nodes:
             node.change_state('shutdown')
 
-    def pause(self, message):
+    def pause(self, payload):
         self.node.pause()
 
         self.change_state('paused')
@@ -100,8 +100,8 @@ class VILLASnodeManager(Manager):
         for node in self.nodes:
             node.change_state('paused')
 
-    def resume(self, message):
+    def resume(self, payload):
         self.node.resume()
 
-    def reset(self, message):
+    def reset(self, payload):
         self.node.restart()

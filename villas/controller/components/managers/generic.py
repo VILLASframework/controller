@@ -143,8 +143,8 @@ class GenericManager(Manager):
         'additionalProperties': True
     }
 
-    def create(self, message):
-        component = Component.from_dict(message.payload.get('parameters'))
+    def create(self, payload):
+        component = Component.from_dict(payload.get('parameters'))
 
         try:
             self.add_component(component)
@@ -152,8 +152,8 @@ class GenericManager(Manager):
             self.logger.error('A component with the UUID %s already exists',
                               component.uuid)
 
-    def delete(self, message):
-        parameters = message.payload.get('parameters')
+    def delete(self, payload):
+        parameters = payload.get('parameters')
         uuid = parameters.get('uuid')
 
         try:

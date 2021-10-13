@@ -23,6 +23,7 @@ setup(
     ],
     packages=find_namespace_packages(include=['villas.*']),
     install_requires=[
+        'dotmap',
         'kombu',
         'termcolor',
         'psutil',
@@ -30,7 +31,8 @@ setup(
         'villas-node>=0.10.2',
         'kubernetes',
         'xdg',
-        'PyYAML'
+        'PyYAML',
+        'tornado'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),

@@ -1,17 +1,26 @@
+import time
 import logging
 import socket
 import queue
+import os
 import kombu.mixins
 
+from villas.controller.api import Api
+from villas.controller import __version__ as version
 from villas.controller.components.managers.generic import GenericManager
+
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
-    def __init__(self, connection, components):
-        self.components = {c.uuid: c for c in components if c.enabled}
+    def __init__(self, connection, args):
+        self.args = args
+        self.config = args.config
+
+        comps = self.config.components
+        self.components = {c.uuid: c for c in comps if c.enabled}
         self.connection = connection
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
@@ -100,7 +109,13 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
             self.active_components = self.components.copy()
 
-    def run(self):
+    def start(self):
+        self.started = time.time()
+
+        if self.config.api.enabled:
+            self.api = Api(self)
+            self.api.start()
+
         self.should_terminate = False
         while not self.should_terminate:
             self.should_stop = False
@@ -119,3 +134,20 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         # Publish last status updates before shutdown
         self._drain_publish_queue()
         self.should_terminate = True
+
+    @property
+    def status(self):
+        u = os.uname()
+
+        return {
+            'version': version,
+            'uptime': time.time() - self.started,
+            'host': socket.gethostname(),
+            'kernel': {
+                'sysname': u.sysname,
+                'nodename': u.nodename,
+                'release': u.release,
+                'version': u.version,
+                'machine': u.machine
+            },
+        }

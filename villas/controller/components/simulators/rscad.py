@@ -1,5 +1,4 @@
 import socket
-import time
 
 from villas.controller.components.simulator import Simulator
 
@@ -14,25 +13,26 @@ class RscadSimulator(Simulator):
         self.name = f'{host}({number})'
 
     @property
-    def state(self):
+    def status(self):
         try:
             user, case = self.ping()
 
             if len(user) > 0:
-                state = {
+                status = {
                     'status': 'running',
                     'user': user,
                     'case': case
                 }
             else:
-                state = {
+                status = {
                     'status': 'free'
                 }
         except socket.timeout:
-            state = {
+            status = {
                 'status': 'offline'
             }
 
-        state['time'] = int(round(time.time() * 1000))
-
-        return state
+        return {
+            **super().status,
+            **status
+        }

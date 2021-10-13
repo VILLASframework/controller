@@ -103,11 +103,7 @@ def main():
 
     setup_logging(args)
 
-    if args.broker:
-        broker_url = args.broker
-    else:
-        broker = args.config.dict.get('broker', {})
-        broker_url = broker.get('url', 'amqp://guest:guest@localhost/%2F')
+    broker_url = args.broker or args.config.broker.url
 
     try:
         with kombu.Connection(broker_url, connect_timeout=3) as c:
