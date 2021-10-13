@@ -8,13 +8,13 @@ from villas.controller.components.manager import Manager
 from villas.controller.components.simulators.kubernetes import KubernetesJob
 
 
-def _match(stringA, stringB):
-    if stringA == stringB:
+def _match(a, b):
+    if a == b:
         return True
-    elif len(stringA) < len(stringB):
-        return stringA in stringB
-    elif len(stringB) < len(stringA):
-        return stringB in stringA
+    elif len(a) < len(b):
+        return a in b
+    elif len(b) < len(a):
+        return b in a
 
 
 class KubernetesManager(Manager):
