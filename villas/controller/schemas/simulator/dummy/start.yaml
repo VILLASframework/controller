@@ -9,5 +9,4 @@ properties:
     type: number
     default: 1.0
     description: The runtime of the simulation in seconds
-    examples:
-    - 3.0
+    example: 3.0

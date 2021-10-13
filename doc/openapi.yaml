@@ -4,17 +4,25 @@ info:
   title: VILLAScontroller API
   description: 'A HTTP/REST API for controlling VILLAScontroller remotely for querying component status as well as issuing control actions.'
   version: 0.0.1
+  contact:
+    name: "Steffen Vogel"
+    email: "svogel2@eonerc.rwth-aachen.de"
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
+
 servers:
 - url: https://villas.k8s.eonerc.rwth-aachen.de/api/v1
   description: Demo instance at RWTH Aachen
+
 paths:
+
   /:
     get:
       summary: 'Get status of VILLAScontroller daemon'
       operationId: getStatus
+      tags:
+      - status
       responses:
         '200':
           description: ''
@@ -66,9 +74,31 @@ paths:
                     version: '#1 SMP Fri Sep 3 15:33:01 UTC 2021'
                     machine: x86_64
 
+  /health:
+    get:
+      operationId: getHealth
+      summary: Query health of daemon.
+      tags:
+      - status
+      responses:
+        '200':
+          description: The daemon is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: ok
+
 
   /component/{uuid}:
     get:
+      summary: 'Get the current status of a component'
+      operationId: getComponentStatus
+
       parameters:
       - name: uuid
         in: path
@@ -77,10 +107,8 @@ paths:
           type: string
           format: uuid
 
-      operationId: getComponentStatus
-      summary: 'Get the current status of a component'
       responses:
-        200:
+        '200':
           description: ''
           content:
             application/json:
@@ -186,139 +214,114 @@ paths:
                   uuid: f4751894-205e-11eb-aefb-0741ff98abca
                 schema:
                   create:
-                    $schema: 'http://json-schema.org/draft-07/schema'
-                    $id: 'http://example.com/example.json'
+                    # $schema: 'http://json-schema.org/draft-07/schema'
                     type: object
                     default: {}
                     required:
-                      - name
-                      - category
-                      - location
-                      - owner
-                      - realm
-                      - type
-                      - api_url
-                      - ws_url
+                    - name
+                    - category
+                    - location
+                    - owner
+                    - realm
+                    - type
+                    - api_url
+                    - ws_url
                     properties:
                       name:
-                        $id: '#/properties/name'
                         type: string
                         title: Component name
                         default: New Component
-                        examples:
-                          - 'Generic Simulator #1'
+                        examples: 'Generic Simulator #1'
                       owner:
-                        $id: '#/properties/owner'
                         type: string
                         title: Component owner
-                        default: ''
                         examples:
-                          - rmr
-                          - svg
+                        - rmr
+                        - svg
                       realm:
-                        $id: '#/properties/realm'
                         type: string
                         title: Component realm
                         default: ''
                         examples:
-                          - de.rwth-aachen.eonerc.acs
+                        - de.rwth-aachen.eonerc.acs
                       category:
-                        $id: '#/properties/category'
                         type: string
                         title: Component category
-                        default: ''
                         examples:
-                          - simulator
+                        - simulator
                       location:
-                        $id: '#/properties/location'
                         type: string
                         title: Component location
-                        default: ''
                         examples:
-                          - Richard's PC
+                        - Richard's PC
                       type:
-                        $id: '#/properties/type'
                         type: string
-                        title: The type schema
-                        default: ''
-                        examples:
-                          - generic
+                        default: generic
                       uuid:
-                        $id: '#/properties/uuid'
-                        type: 'null'
-                        title: The uuid schema
-                        default: null
+                        type: 'string'
+                        format: uuid
                       ws_url:
-                        $id: '#/properties/ws_url'
                         type: string
-                        title: The ws_url schema
-                        default: ''
                         examples:
-                          - 'https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1'
+                        - 'https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1'
                       api_url:
-                        $id: '#/properties/api_url'
                         type: string
-                        title: The api_url schema
-                        default: ''
                         examples:
-                          - 'https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1'
+                        - 'https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1'
                       shell:
-                        $id: '#/properties/shell'
                         type: boolean
-                        title: The shell schema
                         default: false
                         examples:
-                          - true
+                        - true
                       whitelist:
-                        $id: '#/properties/whitelist'
                         type: array
                         title: The whitelist schema
                         default: []
                         examples:
-                          - - /sbin/ping
-                            - ^echo
+                        - - /sbin/ping
+                          - ^echo
                         additionalItems: true
                         items:
-                          $id: '#/properties/whitelist/items'
                           anyOf:
-                            - $id: '#/properties/whitelist/items/anyOf/0'
-                              type: string
-                              title: The first anyOf schema
-                              default: ''
-                              examples:
-                                - /sbin/ping
-                                - ^echo
-                    additionalProperties: true
-
+                          - type: string
+                            examples:
+                            - /sbin/ping
+                            - ^echo
 
     post:
       operationId: executeComponentAction
       summary: 'Send a control action to the component'
-      responses:
-        200:
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum:
+                  - start
+                  - stop
+                  - pause
+                  - resume
+                  - create
+                  - delete
+                  - shutdown
+                  - reset
+                parameters:
+                  oneOf:
+                  - $ref: ../villas/controller/schemas/manager/generic/create.yaml
+                  - $ref: ../villas/controller/schemas/manager/kubernetes/create.yaml
+                  - $ref: ../villas/controller/schemas/simulator/dpsim/start.yaml
+                  - $ref: ../villas/controller/schemas/simulator/dummy/start.yaml
 
-              example:
-                runtime: 10.2
-
-  /health:
-    get:
-      operationId: getHealth
-      summary: Query health of daemon.
       responses:
         '200':
-          description: The daemon is healthy
+          description: ''
           content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-              example:
-                status: ok
+            application/json: {}
+
+
+              # example:
+              #   runtime: 10.2
