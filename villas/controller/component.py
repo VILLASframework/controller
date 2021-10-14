@@ -34,7 +34,7 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
-        self.publish_status_interval = 2
+        self.publish_status_interval = 5
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
@@ -111,7 +111,8 @@ class Component:
         }
 
     def on_message(self, message):
-        self.logger.debug('Received message: %s', message.payload)
+        self.logger.info('my uuid: %s', self.uuid)
+        self.logger.info('Received message: %s', message.payload)
 
         if 'action' in message.payload:
             try:
