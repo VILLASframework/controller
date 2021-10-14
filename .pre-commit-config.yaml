@@ -18,3 +18,18 @@ repos:
   rev: 3.8.4
   hooks:
   - id: flake8
+- repo: https://github.com/sirosen/check-jsonschema
+  rev: 8a14ffa1d4c81a56057f55e1da308daeccc3bcd6
+  hooks:
+  - id: check-jsonschema
+    name: "Check schemas"
+    language: python
+    files: ^villas/controller/schemas/.*\.yaml$
+    types: [yaml]
+    args: ["--schemafile", "https://json-schema.org/draft/2020-12/schema"]
+  - id: check-jsonschema
+    name: "Check OpenAPI doc"
+    language: python
+    files: ^doc/openapi.yaml$
+    types: [yaml]
+    args: ["--schemafile", "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json"]
