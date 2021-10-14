@@ -56,6 +56,7 @@ class Manager(Component):
         if comp.uuid in self.mixin.components:
             # raise KeyError
             self.logger.error('UUID %s already exists, not added', comp.uuid)
+            return
 
         comp.set_manager(self)
 

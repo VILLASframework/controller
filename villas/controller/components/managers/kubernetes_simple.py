@@ -71,9 +71,9 @@ class KubernetesManagerSimple(KubernetesManager):
         }
     }
 
-    def create(self, message):
-        print(message.payload)
-        params = message.payload.get('parameters', {})
+    def create(self, payload):
+        self.logger.info(payload)
+        params = payload.get('parameters', {})
         jobname = params.get('jobname', 'noname')
         adls = params.get('activeDeadlineSeconds', 3600)
         contName = params.get('containername', 'noname')
@@ -83,7 +83,7 @@ class KubernetesManagerSimple(KubernetesManager):
 
         if image is None:
             self.logger.error('No image given, will try super.create')
-            super().create(message)
+            super().create(payload)
             return
 
         parameters = self.parameters_simple
@@ -101,7 +101,7 @@ class KubernetesManagerSimple(KubernetesManager):
         if uuid:
             parameters['uuid'] = uuid
 
-        print(parameters)
+        self.logger.info(parameters)
 
         comp = KubernetesJob(self, **parameters)
         self.add_component(comp)
