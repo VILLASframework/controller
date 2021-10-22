@@ -226,8 +226,7 @@ class Component:
 
     def change_to_error(self, msg, **details):
         self.change_state('error',
-                          error=msg,
-                          error_details={
+                          error={
                               'msg': msg,
                               **details
                           })
