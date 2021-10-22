@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import json
 import signal
 from copy import deepcopy
@@ -10,10 +12,14 @@ from villas.controller.components.simulator import Simulator
 from villas.controller.exceptions import SimulationException
 from villas.controller.util import merge
 
+if TYPE_CHECKING:
+    from villas.controller.components.managers.kubernetes \
+        import KubernetesManager
+
 
 class KubernetesJob(Simulator):
 
-    def __init__(self, manager, **args):
+    def __init__(self, manager: KubernetesManager, **args):
         super().__init__(**args)
 
         self.manager = manager
@@ -43,6 +49,16 @@ class KubernetesJob(Simulator):
             **self.custom_schema,
             **super().schema
         }
+
+    def _owner(self):
+        if self.manager.my_pod_name and self.manager.my_pod_uid:
+            return k8s.client.V1OwnerReference(
+                kind='Pod',
+                name=self.manager.my_pod_name,
+                uid=self.manager.my_pod_uid
+            )
+
+        return None
 
     def _prepare_job(self, job, payload):
         # Create config map
@@ -89,6 +105,9 @@ class KubernetesJob(Simulator):
         job.metadata.generate_name = name + '-'
         job.metadata.name = None
 
+        if o := self._owner():
+            job.metadata.owner_references = [o]
+
         if job.metadata.labels is None:
             job.metadata.labels = {}
 
@@ -124,6 +143,9 @@ class KubernetesJob(Simulator):
             }
         )
 
+        if o := self._owner():
+            self.cm.metadata.owner_references = [o]
+
         return c.create_namespaced_config_map(
             namespace=self.manager.namespace,
             body=self.cm
@@ -157,6 +179,7 @@ class KubernetesJob(Simulator):
         self.properties['pod_names'] = []
 
     def start(self, payload):
+        # Delete prior job
         self._delete_job()
 
         job = payload.get('job', {})
