@@ -56,10 +56,11 @@ class VILLASnodeManager(Manager):
 
     @property
     def status(self):
-        return {
-            **super().status,
-            'villas_node_version': self.node.get_version()
-        }
+        status = super().status
+
+        status['status']['villas_none_version'] = self._version
+
+        return status
 
     def on_ready(self):
         if self.autostart and not self.node.is_running():
