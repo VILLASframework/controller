@@ -93,9 +93,21 @@ class KubernetesJob(Simulator):
             job.metadata.labels = {}
 
         job.metadata.labels.update({
-            'controller': 'villas',
-            'controller-uuid': self.manager.uuid,
-            'uuid': self.uuid
+            'app.kubernetes.io/part-of': 'villas',
+            'app.kubernetes.io/managed-by': 'villas-controller',
+            'app.kubernetes.io/component': 'infrastructure-component',
+
+            'villas.fein-aachen.org/ic-manager-uuid': self.manager.uuid,
+            'villas.fein-aachen.org/ic-uuid': self.uuid
+        })
+
+        if job.metadata.annotations is None:
+            job.metadata.annotations = {}
+
+        job.metadata.annotations.update({
+            'villas.fein-aachen.org/name': self.name,
+            'villas.fein-aachen.org/location': self.location,
+            'villas.fein-aachen.org/realm': self.realm
         })
 
         return job
