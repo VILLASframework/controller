@@ -91,10 +91,11 @@ class VILLASrelayManager(Manager):
 
     @property
     def status(self):
-        return {
-            'villas_relay_version': self._version,
-            **super().status
-        }
+        status = super().status
+
+        status['status']['villas_relay_version'] = self._version
+
+        return status
 
     def on_shutdown(self):
         self.thread_stop.set()
