@@ -1,4 +1,5 @@
 from villas.controller.component import Component
+from villas.controller.exceptions import SimulationException
 
 
 class Manager(Component):
@@ -38,7 +39,11 @@ class Manager(Component):
 
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
-            raise KeyError
+            existing_comp = self.mixin.components[comp.uuid]
+
+            raise SimulationException(self, 'Component with same UUID ' +
+                                      'already exists!',
+                                      component=existing_comp)
 
         comp.set_manager(self)
 
