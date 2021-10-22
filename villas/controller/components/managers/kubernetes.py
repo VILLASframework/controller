@@ -111,13 +111,14 @@ class KubernetesManager(Manager):
                                 comp.change_state('stopping', True)
                             elif eo.reason == 'Started':
                                 comp.pods.add(eo.involved_object.name)
-                                comp.properties['pod_names'] = list(comp.pods)
                                 comp.change_state('running', True)
                             elif eo.reason == 'BackoffLimitExceeded':
-                                comp.change_state('error', error=eo.reason)
+                                comp.change_to_error('failed to start job',
+                                                     reason=eo.reason)
                             elif eo.reason == 'Failed':
                                 if comp._state == 'running':
-                                    comp.change_state('error', error=eo.reason)
+                                    comp.change_to_error('failed to start job',
+                                                         error=eo.reason)
                                 elif comp._state == 'starting':
                                     # wait for BackoffLimitExceeded event
                                     continue
