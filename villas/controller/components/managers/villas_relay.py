@@ -71,18 +71,22 @@ class VILLASrelayManager(Manager):
 
             if uuid in self.components:
                 comp = self.components[uuid]
-
-                comp.change_state('running')
             else:
                 comp = VILLASrelayGateway(self, session)
-
                 self.add_component(comp)
+
+            comp.change_state('running')
 
         # Find vanished sessions
         for uuid in existing_uuids - active_uuids:
             comp = self.components[uuid]
 
-            self.remove_component(comp)
+            comp.change_state('stopped')
+
+            # We dont remove the components here
+            # So that they dont get removed from the backend
+            # and get recreated with the same UUID later
+            # self.remove_component(comp)
 
         if len(self.components) > 0:
             self.change_state('running')
