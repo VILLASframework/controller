@@ -7,6 +7,7 @@ import kombu.mixins
 
 from villas.controller.api import Api
 from villas.controller import __version__ as version
+from villas.controller.config import Config
 from villas.controller.components.managers.generic import GenericManager
 
 
@@ -17,10 +18,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
     def __init__(self, connection, args):
         self.args = args
-        self.config = args.config
+        self.config: Config = args.config
 
-        comps = self.config.components
-        self.components = {c.uuid: c for c in comps if c.enabled}
         self.connection = connection
         self.exchange = kombu.Exchange(name='villas',
                                        type='headers',
@@ -28,14 +27,16 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
 
         self.publish_queue = queue.Queue()
 
+        # Components are activated by first call to on_iteration()
+        self.components = {}
+        self.active_components = {}
+
         manager = self.add_managers()
 
-        for _, comp in self.components.items():
+        comps = [c for c in self.config.components if c.enabled]
+        for comp in comps:
             LOGGER.info('Adding %s', comp)
-            comp.set_manager(manager)
-
-        # Components are activated by first call to on_iteration()
-        self.active_components = {}
+            manager.add_component(comp)
 
     def get_consumers(self, _, channel):
         return map(lambda comp: comp.get_consumer(channel),
@@ -58,6 +59,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
                 name='Generic Manager',
                 location=socket.gethostname()
             )
+
+            mgr.mixin = self
 
             self.components[mgr.uuid] = mgr
         else:
