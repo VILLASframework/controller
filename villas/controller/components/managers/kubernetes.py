@@ -8,31 +8,16 @@ from villas.controller.components.manager import Manager
 from villas.controller.components.simulators.kubernetes import KubernetesJob
 
 
-def _match(stringA, stringB):
-    if stringA == stringB:
+def _match(a, b):
+    if a == b:
         return True
-    elif len(stringA) < len(stringB):
-        return stringA in stringB
-    elif len(stringB) < len(stringA):
-        return stringB in stringA
+    elif len(a) < len(b):
+        return a in b
+    elif len(b) < len(a):
+        return b in a
 
 
 class KubernetesManager(Manager):
-
-    create_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'properties': {
-            'job': {
-                '$ref': 'https://kubernetesjsonschema.dev/v1.18.1/job.json'
-            },
-            'schema': {
-                'type': 'object',
-                'additionalProperties': {
-                    '$ref': 'https://json-schema.org/draft-04/schema'
-                }
-            }
-        }
-    }
 
     def __init__(self, **args):
         super().__init__(**args)
@@ -122,13 +107,14 @@ class KubernetesManager(Manager):
                                 comp.change_state('stopping', True)
                             elif eo.reason == 'Started':
                                 comp.pods.add(eo.involved_object.name)
-                                comp.properties['pod_names'] = list(comp.pods)
                                 comp.change_state('running', True)
                             elif eo.reason == 'BackoffLimitExceeded':
-                                comp.change_state('error', error=eo.reason)
+                                comp.change_to_error('failed to start job',
+                                                     reason=eo.reason)
                             elif eo.reason == 'Failed':
                                 if comp._state == 'running':
-                                    comp.change_state('error', error=eo.reason)
+                                    comp.change_to_error('failed to start job',
+                                                         error=eo.reason)
                                 elif comp._state == 'starting':
                                     # wait for BackoffLimitExceeded event
                                     continue

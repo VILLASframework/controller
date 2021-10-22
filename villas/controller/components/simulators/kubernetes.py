@@ -26,6 +26,14 @@ class KubernetesJob(Simulator):
         self.custom_schema = props.get('schema', {})
 
     @property
+    def status(self):
+        status = super().status
+
+        status['status']['pod_names'] = list(self.pods)
+
+        return status
+
+    @property
     def schema(self):
         return {
             **self.custom_schema,

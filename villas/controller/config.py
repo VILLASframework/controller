@@ -56,7 +56,7 @@ class Config:
                 with open(fn) as fp:
                     self.load(fp)
             else:
-                pass  # Start without config
+                self.config = {}  # Start without config
         else:
             self.load(fp)
 

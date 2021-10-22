@@ -37,7 +37,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         # Components are activated by first call to on_iteration()
         self.active_components = {}
 
-    def get_consumers(self, Consumer, channel):
+    def get_consumers(self, _, channel):
         return map(lambda comp: comp.get_consumer(channel),
                    self.active_components.values())
 
@@ -120,7 +120,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
         while not self.should_terminate:
             self.should_stop = False
 
-            LOGGER.info('Startig mixing for %d components',
+            LOGGER.info('Starting mixing for %d components',
                         len(self.active_components))
 
             super().run()

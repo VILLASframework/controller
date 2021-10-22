@@ -24,9 +24,6 @@ class GenericSimulator(Simulator):
         if self.timer:
             self.timer.cancel()
 
-        if self.thread:
-            self
-
     @property
     def status(self):
         return {
@@ -56,8 +53,7 @@ class GenericSimulator(Simulator):
 
     def check_state(self, state):
         if self._state != state:
-            self.change_state('error',
-                              msg=f'Failed to transition to state "{state}"!')
+            self.change_to_error('Failed to transition to state', state=state)
 
     def check_state_deferred(self, state, timeout=5):
         self.timer = threading.Timer(timeout, self.check_state, args=[state])
@@ -145,7 +141,7 @@ class GenericSimulator(Simulator):
         # GenericSimulator.run() is executed in a separate thread.
         # We therefore want to catch exceptions here.
         except SimulationException as se:
-            self.change_state('error', msg=se.msg, **se.info)
+            self.change_to_error(se.msg, **se.info)
 
         self.child = None
 
