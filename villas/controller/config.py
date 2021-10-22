@@ -3,6 +3,7 @@ import argparse
 import logging
 import os
 import dotmap
+from typing import List
 
 from os import getcwd
 from xdg import (
@@ -75,7 +76,7 @@ class Config:
                 return fn
 
     @property
-    def components(self):
+    def components(self) -> List[Component]:
         return [Component.from_dict(c) for c in self.config.components]
 
     def __getattr__(self, attr):

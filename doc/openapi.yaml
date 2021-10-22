@@ -12,7 +12,7 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
-- url: https://villas.k8s.eonerc.rwth-aachen.de/api/v1
+- url: https://villas.k8s.eonerc.rwth-aachen.de/controller/api/v1
   description: Demo instance at RWTH Aachen
 
 paths:
