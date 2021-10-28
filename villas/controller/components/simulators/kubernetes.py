@@ -45,10 +45,15 @@ class KubernetesJob(Simulator):
 
     @property
     def schema(self):
-        return {
-            **self.custom_schema,
-            **super().schema
-        }
+        if (super().schema):
+            return {
+                **self.custom_schema,
+                **super().schema
+            }
+        else:
+            return {
+                **self.custom_schema
+            }
 
     def _owner(self):
         if self.manager.my_pod_name and self.manager.my_pod_uid:
