@@ -22,6 +22,7 @@ class Component:
         self.name = props.get('name')
         self.category = props.get('category')
         self.enabled = props.get('enabled', True)
+        self.location = props.get('location', '')
         self.uuid = props.get('uuid')
 
         # The manager component which manages this instances
@@ -44,9 +45,8 @@ class Component:
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
-
         # Load schemas for validating action payloads
-        self._load_schema()
+        self._schema = self.load_schema()
 
     def on_ready(self):
         self.publish_status_thread.start()
@@ -86,8 +86,12 @@ class Component:
             accept={'application/json'}
         )
 
-    def _load_schema(self):
-        self.schema = {}
+    @property
+    def schema(self):
+        return self._schema
+
+    def load_schema(self):
+        schema = {}
 
         try:
             pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
@@ -101,9 +105,10 @@ class Component:
             if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
 
                 fo = resources.open_text(pkg, res)
-                schema = yaml.load(fo, yaml.SafeLoader)
+                loadedschema = yaml.load(fo, yaml.SafeLoader)
 
-                self.schema[name] = Draft202012Validator(schema)
+                schema[name] = Draft202012Validator(loadedschema)
+        return schema
 
     def validate_parameters(self, action, parameters):
         if action in self.schema:
