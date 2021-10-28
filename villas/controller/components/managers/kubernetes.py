@@ -40,7 +40,7 @@ class KubernetesManager(Manager):
 
         self.my_namespace = os.environ.get('NAMESPACE')
         self.my_pod_name = os.environ.get('POD_NAME')
-        self.my_pod_uid = os.environ('POD_UID')
+        self.my_pod_uid = os.environ.get('POD_UID')
 
         self._check_namespace(self.namespace)
 
