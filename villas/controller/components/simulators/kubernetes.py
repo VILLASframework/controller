@@ -56,7 +56,8 @@ class KubernetesJob(Simulator):
             return k8s.client.V1OwnerReference(
                 kind='Pod',
                 name=self.manager.my_pod_name,
-                uid=self.manager.my_pod_uid
+                uid=self.manager.my_pod_uid,
+                api_version='v1'
             )
 
         return None
