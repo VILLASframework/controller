@@ -26,10 +26,11 @@ class GenericSimulator(Simulator):
 
     @property
     def status(self):
-        return {
-            **super().status,
-            'return_code': self.return_code
-        }
+        status = super().status
+
+        status['status']['return_code'] = self.return_code
+
+        return status
 
     def start(self, payload):
         super().start(payload)
