@@ -41,12 +41,12 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
+        self._schema = self.load_schema()
+
         self.publish_status_interval = 30
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
-        # Load schemas for validating action payloads
-        self._schema = self.load_schema()
 
     def on_ready(self):
         self.publish_status_thread.start()
@@ -98,7 +98,8 @@ class Component:
             pkg = importlib.import_module(pkg_name)
         except ModuleNotFoundError:
             self.logger.warn('Missing schemas!')
-            return
+
+            return schema
 
         for res in resources.contents(pkg):
             name, ext = os.path.splitext(res)
@@ -108,6 +109,7 @@ class Component:
                 loadedschema = yaml.load(fo, yaml.SafeLoader)
 
                 schema[name] = Draft202012Validator(loadedschema)
+
         return schema
 
     def validate_parameters(self, action, parameters):
