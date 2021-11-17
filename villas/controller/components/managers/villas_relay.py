@@ -46,7 +46,7 @@ class VILLASrelayManager(Manager):
             return r.json()
 
         except requests.exceptions.RequestException:
-            self.change_state('error', error='Failed to contact VILLASrelay')
+            self.change_to_error('Failed to contact VILLASrelay')
 
             return None
 
@@ -71,18 +71,22 @@ class VILLASrelayManager(Manager):
 
             if uuid in self.components:
                 comp = self.components[uuid]
-
-                comp.change_state('running')
             else:
                 comp = VILLASrelayGateway(self, session)
-
                 self.add_component(comp)
+
+            comp.change_state('running')
 
         # Find vanished sessions
         for uuid in existing_uuids - active_uuids:
             comp = self.components[uuid]
 
-            self.remove_component(comp)
+            comp.change_state('stopped')
+
+            # We dont remove the components here
+            # So that they dont get removed from the backend
+            # and get recreated with the same UUID later
+            # self.remove_component(comp)
 
         if len(self.components) > 0:
             self.change_state('running')
@@ -91,10 +95,11 @@ class VILLASrelayManager(Manager):
 
     @property
     def status(self):
-        return {
-            'villas_relay_version': self._version,
-            **super().status
-        }
+        status = super().status
+
+        status['status']['villas_relay_version'] = self._version
+
+        return status
 
     def on_shutdown(self):
         self.thread_stop.set()
@@ -112,6 +117,6 @@ class VILLASrelayManager(Manager):
             self._version = status['version']
 
         except Exception:
-            self.change_state('error', error='Failed to contact VILLASrelay')
+            self.change_to_error('Failed to contact VILLASrelay')
 
         super().on_ready()

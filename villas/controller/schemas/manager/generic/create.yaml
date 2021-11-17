@@ -1,0 +1,80 @@
+---
+$schema: http://json-schema.org/draft-07/schema
+additionalProperties: true
+
+type: object
+required:
+  - name
+  - category
+  - location
+  - owner
+  - realm
+  - type
+  - api_url
+  - ws_url
+
+properties:
+  api_url:
+    examples:
+    - https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1
+    title: The api_url schema
+    type: string
+  category:
+    examples:
+    - simulator
+    title: Component category
+    type: string
+  location:
+    examples:
+    - Richard's PC
+    title: Component location
+    type: string
+  name:
+    default: New Component
+    examples:
+    - 'Generic Simulator #1'
+    title: Component name
+    type: string
+  owner:
+    examples:
+    - rmr
+    - svg
+    title: Component owner
+    type: string
+  realm:
+    examples:
+    - de.rwth-aachen.eonerc.acs
+    title: Component realm
+    type: string
+  shell:
+    examples:
+    - true
+    title: The shell schema
+    type: boolean
+  type:
+    examples:
+    - generic
+    title: The type schema
+    type: string
+  uuid:
+    title: The uuid schema
+    type: 'null'
+  whitelist:
+    additionalItems: true
+    examples:
+    - - /sbin/ping
+      - ^echo
+    items:
+      anyOf:
+      - examples:
+        - /sbin/ping
+        - ^echo
+        title: The first anyOf schema
+        type: string
+    title: The whitelist schema
+    type: array
+  ws_url:
+    examples:
+    - https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1
+    title: The ws_url schema
+    type: string

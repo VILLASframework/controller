@@ -4,6 +4,12 @@ import time
 import kombu
 import uuid
 import threading
+import yaml
+import jsonschema
+from jsonschema import Draft202012Validator
+
+import importlib
+import importlib.resources as resources
 
 from villas.controller.exceptions import SimulationException
 
@@ -16,6 +22,7 @@ class Component:
         self.name = props.get('name')
         self.category = props.get('category')
         self.enabled = props.get('enabled', True)
+        self.location = props.get('location', '')
         self.uuid = props.get('uuid')
 
         # The manager component which manages this instances
@@ -34,7 +41,9 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
-        self.publish_status_interval = 5
+        self._schema = self.load_schema()
+
+        self.publish_status_interval = 30
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
@@ -78,6 +87,42 @@ class Component:
         )
 
     @property
+    def schema(self):
+        return self._schema
+
+    def load_schema(self):
+        schema = {}
+
+        try:
+            pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
+            pkg = importlib.import_module(pkg_name)
+        except ModuleNotFoundError:
+            self.logger.warn('Missing schemas!')
+
+            return schema
+
+        for res in resources.contents(pkg):
+            name, ext = os.path.splitext(res)
+            if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
+
+                fo = resources.open_text(pkg, res)
+                loadedschema = yaml.load(fo, yaml.SafeLoader)
+
+                schema[name] = Draft202012Validator(loadedschema)
+
+        return schema
+
+    def validate_parameters(self, action, parameters):
+        if action in self.schema:
+            validator = self.schema[action]
+
+            validator.validate(parameters)
+
+        else:
+            self.logger.warn('missing schema for action: %s', action)
+            return True  # we really should fail here...
+
+    @property
     def headers(self):
         return {
             'category': self.category,
@@ -85,10 +130,6 @@ class Component:
             'uuid': self.uuid,
             'type': self.type
         }
-
-    @property
-    def schema(self):
-        return self.properties.get('schema', {})
 
     @property
     def status(self):
@@ -107,7 +148,9 @@ class Component:
                 **self.properties,
                 **self.headers
             },
-            'schema': self.schema
+            'schema': {
+                name: v.schema for name, v in self.schema.items()
+            }
         }
 
     def on_message(self, message):
@@ -127,6 +170,25 @@ class Component:
             self.logger.debug('Received action: %s', action)
         else:
             self.logger.info('Received action: %s', action)
+
+        parameters = payload.get('parameters', {})
+
+        try:
+            self.validate_parameters(action, parameters)
+        except jsonschema.ValidationError as ve:
+            e = {
+                'instance': ve.instance,
+                'path': ve.json_path,
+            }
+
+            se = SimulationException(self, 'Failed to validate parameters',
+                                     **e)
+
+            self.logger.error('Failed to validate action parameters against '
+                              'schema: %s', ve.message)
+            self.change_to_error(ve.message, **e)
+
+            raise se
 
         try:
             if action == 'ping':
@@ -155,7 +217,7 @@ class Component:
 
         except SimulationException as se:
             self.logger.error('SimulationException: %s', str(se))
-            self.change_state('error', msg=se.msg, **se.info)
+            self.change_to_error(se.msg, **se.info)
 
             raise se
 
@@ -169,6 +231,13 @@ class Component:
         self._status_fields = kwargs
 
         self.publish_status()
+
+    def change_to_error(self, msg, **details):
+        self.change_state('error',
+                          error={
+                              'msg': msg,
+                              **details
+                          })
 
     # Actions
     def ping(self, payload):

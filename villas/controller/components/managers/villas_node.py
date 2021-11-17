@@ -50,14 +50,17 @@ class VILLASnodeManager(Manager):
             self.change_state('running')
 
         except Exception as e:
-            self.change_state('error', error=str(e))
+            self.change_to_error('failed to reconcile',
+                                 exception=str(e),
+                                 args=e.args)
 
     @property
     def status(self):
-        return {
-            **super().status,
-            'villas_node_version': self.node.get_version()
-        }
+        status = super().status
+
+        status['status']['villas_none_version'] = self._version
+
+        return status
 
     def on_ready(self):
         if self.autostart and not self.node.is_running():
@@ -66,7 +69,7 @@ class VILLASnodeManager(Manager):
         try:
             self._status = self.node.status
         except Exception:
-            self.change_state('error', error='VILLASnode not installed')
+            self.change_to_error('VILLASnode not installed')
 
         super().on_ready()
 

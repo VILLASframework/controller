@@ -1,0 +1,12 @@
+---
+$schema: http://json-schema.org/draft-07/schema
+
+type: object
+required:
+- runtime
+properties:
+  runtime:
+    type: number
+    default: 1.0
+    description: The runtime of the simulation in seconds
+    example: 3.0

@@ -32,7 +32,8 @@ setup(
         'kubernetes',
         'xdg',
         'PyYAML',
-        'tornado'
+        'tornado',
+        'jsonschema>=4.1.0'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),
@@ -43,5 +44,6 @@ setup(
             'villas-ctl=villas.controller.main:main',
             'villas-controller=villas.controller.main:main'
         ],
-    }
+    },
+    include_package_data=True
 )

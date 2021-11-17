@@ -8,6 +8,8 @@ LOGGER = logging.getLogger(__name__)
 REGEX_UUID = r'\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]' \
              r'{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b'
 
+BASE = '/api/v1'
+
 
 class RequestHandler(tornado.web.RequestHandler):
 
@@ -32,7 +34,7 @@ class Api(threading.Thread):
         port = self.controller.config.api.port
         self.app.listen(port)
 
-        LOGGER.info('Starting API')
+        LOGGER.info('Starting API at http://localhost:%d%s', port, BASE)
 
         self.loop = IOLoop.current(instance=True)
         self.loop.start()
@@ -48,7 +50,7 @@ class Api(threading.Thread):
         }
 
         return [
-            (r'/', MainRequestHandler, args),
-            (r'/health', HealthRequestHandler, args),
-            (r'/component/('+REGEX_UUID+r')', ComponentRequestHandler, args)
+            (BASE + r'/', MainRequestHandler, args),
+            (BASE + r'/health', HealthRequestHandler, args),
+            (BASE + r'/component/('+REGEX_UUID+r')', ComponentRequestHandler, args)  # noqa E501
         ]

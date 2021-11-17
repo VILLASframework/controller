@@ -1,4 +1,5 @@
 from villas.controller.component import Component
+from villas.controller.exceptions import SimulationException
 
 
 class Manager(Component):
@@ -16,17 +17,6 @@ class Manager(Component):
             'components': [c for c in self.components],
             **super().status
         }
-
-    @property
-    def schema(self):
-        return {
-            'create': self.create_schema,
-            **super().schema
-        }
-
-    @property
-    def create_schema(self):
-        return {}
 
     @staticmethod
     def from_dict(dict):
@@ -51,12 +41,16 @@ class Manager(Component):
             raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
-        print(self.name)
-        print(comp)
+        # print(self.name)
+        # print(comp)
         if comp.uuid in self.mixin.components:
-            # raise KeyError
-            self.logger.error('UUID %s already exists, not added', comp.uuid)
-            return
+            existing_comp = self.mixin.components[comp.uuid]
+
+            raise SimulationException(self, 'Component with same UUID ' +
+                                      'already exists!',
+                                      component=existing_comp)
+            # self.logger.error('UUID %s already exists, not added', comp.uuid)
+            # return
 
         comp.set_manager(self)
 

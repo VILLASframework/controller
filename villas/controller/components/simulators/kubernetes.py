@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import json
 import signal
 import time
@@ -8,10 +10,14 @@ from villas.controller.components.simulator import Simulator
 from villas.controller.exceptions import SimulationException
 from villas.controller.util import merge
 
+if TYPE_CHECKING:
+    from villas.controller.components.managers.kubernetes \
+        import KubernetesManager
+
 
 class KubernetesJob(Simulator):
 
-    def __init__(self, manager, **args):
+    def __init__(self, manager: KubernetesManager, **args):
         super().__init__(**args)
 
         self.manager = manager
@@ -28,11 +34,35 @@ class KubernetesJob(Simulator):
         self.custom_schema = props.get('schema', {})
 
     @property
+    def status(self):
+        status = super().status
+
+        status['status']['pod_names'] = list(self.pods)
+
+        return status
+
+    @property
     def schema(self):
-        return {
-            **self.custom_schema,
-            **super().schema
-        }
+        if (super().schema):
+            return {
+                **self.custom_schema,
+                **super().schema
+            }
+        else:
+            return {
+                **self.custom_schema
+            }
+
+    def _owner(self):
+        if self.manager.my_pod_name and self.manager.my_pod_uid:
+            return k8s.client.V1OwnerReference(
+                kind='Pod',
+                name=self.manager.my_pod_name,
+                uid=self.manager.my_pod_uid,
+                api_version='v1'
+            )
+
+        return None
 
     def _prepare_job(self, job, payload):
         # Create config map
@@ -79,13 +109,28 @@ class KubernetesJob(Simulator):
         job.metadata.generate_name = name + '-'
         job.metadata.name = None
 
+        if o := self._owner():
+            job.metadata.owner_references = [o]
+
         if job.metadata.labels is None:
             job.metadata.labels = {}
 
         job.metadata.labels.update({
-            'controller': 'villas',
-            'controller-uuid': self.manager.uuid,
-            'uuid': self.uuid
+            'app.kubernetes.io/part-of': 'villas',
+            'app.kubernetes.io/managed-by': 'villas-controller',
+            'app.kubernetes.io/component': 'infrastructure-component',
+
+            'villas.fein-aachen.org/ic-manager-uuid': self.manager.uuid,
+            'villas.fein-aachen.org/ic-uuid': self.uuid
+        })
+
+        if job.metadata.annotations is None:
+            job.metadata.annotations = {}
+
+        job.metadata.annotations.update({
+            'villas.fein-aachen.org/name': self.name,
+            'villas.fein-aachen.org/location': self.location,
+            'villas.fein-aachen.org/realm': self.realm
         })
 
         return job
@@ -101,6 +146,9 @@ class KubernetesJob(Simulator):
                 'payload.json': json.dumps(payload)
             }
         )
+
+        if o := self._owner():
+            self.cm.metadata.owner_references = [o]
 
         return c.create_namespaced_config_map(
             namespace=self.manager.namespace,
@@ -135,6 +183,7 @@ class KubernetesJob(Simulator):
         self.properties['pod_names'] = []
 
     def start(self, payload):
+        # Delete prior job
         self._delete_job()
 
         job = payload.get('job', {})
