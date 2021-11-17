@@ -181,6 +181,9 @@ class KubernetesJob(Simulator):
         self.job = None
         self.properties['job_name'] = None
         self.properties['pod_names'] = []
+        # job isn't immediately deleted
+        # let the user see something is happening
+        time.sleep(7)
 
     def start(self, payload):
         # Delete prior job
@@ -205,9 +208,6 @@ class KubernetesJob(Simulator):
     def stop(self, message):
         self.change_state('stopping', True)
         self._delete_job()
-        # job isn't immediately deleted
-        # let the user see something is happening
-        time.sleep(3)
         self.change_state('idle')
 
     def _send_signal(self, sig):

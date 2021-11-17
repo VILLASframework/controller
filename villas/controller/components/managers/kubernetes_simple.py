@@ -4,47 +4,11 @@ from villas.controller.components.simulators.kubernetes import KubernetesJob
 
 class KubernetesManagerSimple(KubernetesManager):
 
-    create_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'title': 'Simple Kubernetes Job',
-        'type': 'object',
-        'required': [
-            'image',
-        ],
-        'properties': {
-            'uuid': {
-                'type': 'string',
-                'title': 'UUID',
-                'default': '8dfd03b2-1c78-11ec-9621-0242ac130002'
-            },
-            'jobname': {
-                'type': 'string',
-                'title': 'Job name',
-                'default': 'myJob'
-            },
-            'activeDeadlineSeconds': {
-                'type': 'number',
-                'title': 'activeDeadlineSeconds',
-                'default': 3600
-            },
-            'image': {
-                'type': 'string',
-                'title': 'Image',
-                'default': 'perl'
-            },
-            'containername': {
-                'type': 'string',
-                'title': 'Container name',
-                'default': 'myContainer'
-            }
-        }
-    }
-
     parameters_simple = {
         'type': 'kubernetes',
         'category': 'simulator',
         'uuid': None,
-        'name': 'Kubernetes Simulator',
+        'name': '',
         'properties': {
             'job': {
                 'apiVersion': 'batch/v1',
@@ -61,7 +25,7 @@ class KubernetesManagerSimple(KubernetesManager):
                             'containers': [
                                 {
                                     'image': '',
-                                    'name': ''
+                                    'name': 'jobcontainer'
                                 }
                             ]
                         }
@@ -74,9 +38,9 @@ class KubernetesManagerSimple(KubernetesManager):
     def create(self, payload):
         self.logger.info(payload)
         params = payload.get('parameters', {})
+        sim_name = payload.get('name', 'Kubernetes Simulator')
         jobname = params.get('jobname', 'noname')
         adls = params.get('activeDeadlineSeconds', 3600)
-        contName = params.get('containername', 'noname')
         image = params.get('image')
         name = params.get('name')
         uuid = params.get('uuid')
@@ -87,10 +51,10 @@ class KubernetesManagerSimple(KubernetesManager):
             return
 
         parameters = self.parameters_simple
+        parameters['name'] = sim_name
         job = parameters['properties']['job']
         job['metadata']['name'] = jobname
         job['spec']['activeDeadlineSeconds'] = adls
-        job['spec']['template']['spec']['containers'][0]['name'] = contName
         job['spec']['template']['spec']['containers'][0]['image'] = image
 
         parameters['job'] = job
