@@ -51,7 +51,7 @@ class KubernetesManager(Manager):
         else:
             k8s.config.load_incluster_config()
 
-        self.namespace = args.get('namespace', 'villas')
+        self.namespace = args.get('namespace', 'villas-controller')
 
         self._check_namespace(self.namespace)
 
