@@ -17,7 +17,7 @@ properties:
   jobname:
     type: string
     title: 'Jobname'
-    default: myJob
+    default: myjob
   activeDeadlineSeconds:
     type: number
     title: activeDeadlineSeconds

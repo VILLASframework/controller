@@ -1,39 +1,43 @@
 from villas.controller.components.managers.kubernetes import KubernetesManager
 from villas.controller.components.simulators.kubernetes import KubernetesJob
 
-
-class KubernetesManagerSimple(KubernetesManager):
-
-    parameters_simple = {
-        'type': 'kubernetes',
-        'category': 'simulator',
-        'uuid': None,
-        'name': '',
-        'properties': {
-            'job': {
-                'apiVersion': 'batch/v1',
-                'kind': 'Job',
-                'metadata': {
-                    'name': ''
-                },
-                'spec': {
-                    'activeDeadlineSeconds': 3600,
-                    'backoffLimit': 0,
-                    'template': {
-                        'spec': {
-                            'restartPolicy': 'Never',
-                            'containers': [
-                                {
-                                    'image': '',
-                                    'name': 'jobcontainer'
-                                }
-                            ]
-                        }
+parameters_simple = {
+    'type': 'kubernetes',
+    'category': 'simulator',
+    'uuid': None,
+    'name': '',
+    'properties': {
+        'job': {
+            'apiVersion': 'batch/v1',
+            'kind': 'Job',
+            'metadata': {
+                'name': ''
+            },
+            'spec': {
+                'activeDeadlineSeconds': 3600,
+                'backoffLimit': 0,
+                'template': {
+                    'spec': {
+                        'restartPolicy': 'Never',
+                        'containers': [
+                            {
+                                'image': '',
+                                'name': 'jobcontainer'
+                            }
+                        ]
                     }
                 }
             }
         }
     }
+}
+
+
+class KubernetesManagerSimple(KubernetesManager):
+
+    def __init__(self, **args):
+        super().__init__(**args)
+        self.logger.info("init of KubernetesManagerSimple")
 
     def create(self, payload):
         self.logger.info(payload)
@@ -50,7 +54,7 @@ class KubernetesManagerSimple(KubernetesManager):
             super().create(payload)
             return
 
-        parameters = self.parameters_simple
+        parameters = parameters_simple
         parameters['name'] = sim_name
         job = parameters['properties']['job']
         job['metadata']['name'] = jobname
@@ -69,6 +73,3 @@ class KubernetesManagerSimple(KubernetesManager):
 
         comp = KubernetesJob(self, **parameters)
         self.add_component(comp)
-
-    def __init__(self, **args):
-        super().__init__(**args)
