@@ -83,6 +83,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
                 self.producer.publish(body, **kwargs)
         except queue.Empty:
             pass
+        except TimeoutError:
+            LOGGER.warn('TimeoutError, let kombu reconnect..')
 
     def on_iteration(self):
         # Drain publish queue
