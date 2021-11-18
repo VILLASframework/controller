@@ -41,9 +41,12 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
+        self.logger.info("init component:")
+        self.logger.info(self.name)
+
         self._schema = self.load_schema()
 
-        self.publish_status_interval = 5
+        self.publish_status_interval = 15
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
@@ -67,6 +70,8 @@ class Component:
         self.workdir = os.path.join(self.mixin.config.workdir, str(self.uuid))
 
     def get_consumer(self, channel):
+        self.logger.info(channel)
+        self.logger.info(self.headers)
         self.channel = channel
 
         return kombu.Consumer(
@@ -96,6 +101,7 @@ class Component:
         try:
             pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
             pkg = importlib.import_module(pkg_name)
+            self.logger.info(pkg)
         except ModuleNotFoundError:
             self.logger.warn('Missing schemas!')
 
@@ -103,13 +109,22 @@ class Component:
 
         for res in resources.contents(pkg):
             name, ext = os.path.splitext(res)
+            self.logger.info(name)
+            self.logger.info(ext)
             if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
 
                 fo = resources.open_text(pkg, res)
                 loadedschema = yaml.load(fo, yaml.SafeLoader)
+                self.logger.info(loadedschema)
 
-                schema[name] = Draft202012Validator(loadedschema)
+                try:
+                    Draft202012Validator.check_schema(loadedschema)
+                    schema[name] = loadedschema
+                    print(schema[name])
+                except jsonschema.exceptions.SchemaError:
+                    self.logger.warn("Schema is invalid!")
 
+        print(schema)
         return schema
 
     def validate_parameters(self, action, parameters):
@@ -133,6 +148,9 @@ class Component:
 
     @property
     def status(self):
+        self.logger.info("status, self.schema:")
+        self.logger.info(self.schema)
+
         status = {
             'state': self._state,
             **self.mixin.status,
@@ -149,13 +167,13 @@ class Component:
                 **self.headers
             },
             'schema': {
-                name: v.schema for name, v in self.schema.items()
+                **self.schema
             }
         }
 
     def on_message(self, message):
-        self.logger.info('my uuid: %s', self.uuid)
-        self.logger.info('Received message: %s', message.payload)
+        # self.logger.info('my uuid: %s', self.uuid)
+        # self.logger.info('Received message: %s', message.payload)
 
         if 'action' in message.payload:
             try:
@@ -282,6 +300,8 @@ class Component:
             self.logger.warn('No mixin!')
             return
 
+        # self.logger.info("complete status:")
+        # self.logger.info(self.status)
         self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):

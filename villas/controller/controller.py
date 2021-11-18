@@ -5,7 +5,7 @@ import queue
 import os
 import kombu.mixins
 
-# from villas.controller.api import Api
+from villas.controller.api import Api
 from villas.controller import __version__ as version
 from villas.controller.config import Config
 from villas.controller.components.managers.generic import GenericManager
@@ -117,9 +117,9 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
     def start(self):
         self.started = time.time()
 
-        # if self.config.api.enabled:
-        #     self.api = Api(self)
-        #     self.api.start()
+        if self.config.api.enabled:
+            self.api = Api(self)
+            self.api.start()
 
         self.should_terminate = False
         while not self.should_terminate:
