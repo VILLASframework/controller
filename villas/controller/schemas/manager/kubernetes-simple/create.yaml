@@ -16,7 +16,7 @@ properties:
     default: 8dfd03b2-1c78-11ec-9621-0242ac130002
   jobname:
     type: string
-    title: 'Job name'
+    title: 'Jobname'
     default: myJob
   activeDeadlineSeconds:
     type: number
