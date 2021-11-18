@@ -43,7 +43,7 @@ class Component:
 
         self._schema = self.load_schema()
 
-        self.publish_status_interval = 30
+        self.publish_status_interval = 5
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
@@ -279,6 +279,7 @@ class Component:
 
     def publish_status(self):
         if not self.mixin:
+            self.logger.warn('No mixin!')
             return
 
         self.mixin.publish(self.status, headers=self.headers)
