@@ -15,14 +15,17 @@ parameters_simple = {
             },
             'spec': {
                 'activeDeadlineSeconds': 3600,
-                'backoffLimit': 0,
+                'backoffLimit': 2,
                 'template': {
                     'spec': {
                         'restartPolicy': 'Never',
                         'containers': [
                             {
                                 'image': '',
-                                'name': 'jobcontainer'
+                                'name': 'jobcontainer',
+                                'securityContext': {
+                                    'privileged': False
+                                }
                             }
                         ]
                     }
