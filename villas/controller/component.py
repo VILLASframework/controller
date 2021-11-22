@@ -101,7 +101,6 @@ class Component:
         try:
             pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
             pkg = importlib.import_module(pkg_name)
-            self.logger.info(pkg)
         except ModuleNotFoundError:
             self.logger.warn('Missing schemas!')
 
@@ -109,22 +108,17 @@ class Component:
 
         for res in resources.contents(pkg):
             name, ext = os.path.splitext(res)
-            self.logger.info(name)
-            self.logger.info(ext)
             if resources.is_resource(pkg, res) and ext in ['.yaml', '.json']:
 
                 fo = resources.open_text(pkg, res)
                 loadedschema = yaml.load(fo, yaml.SafeLoader)
-                self.logger.info(loadedschema)
 
                 try:
                     Draft202012Validator.check_schema(loadedschema)
                     schema[name] = loadedschema
-                    print(schema[name])
                 except jsonschema.exceptions.SchemaError:
                     self.logger.warn("Schema is invalid!")
 
-        print(schema)
         return schema
 
     def validate_parameters(self, action, parameters):
@@ -148,8 +142,6 @@ class Component:
 
     @property
     def status(self):
-        self.logger.info("status, self.schema:")
-        self.logger.info(self.schema)
 
         status = {
             'state': self._state,
@@ -300,8 +292,6 @@ class Component:
             self.logger.warn('No mixin!')
             return
 
-        # self.logger.info("complete status:")
-        # self.logger.info(self.status)
         self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):

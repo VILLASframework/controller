@@ -48,6 +48,8 @@ class KubernetesManagerSimple(KubernetesManager):
         sim_name = payload.get('name', 'Kubernetes Simulator')
         jobname = params.get('jobname', 'noname')
         adls = params.get('activeDeadlineSeconds', 3600)
+        if type(adls) is str:
+            adls = int(adls)
         image = params.get('image')
         name = params.get('name')
         uuid = params.get('uuid')
