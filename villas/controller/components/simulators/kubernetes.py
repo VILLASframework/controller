@@ -61,7 +61,7 @@ class KubernetesJob(Simulator):
                 kind='Pod',
                 name=self.manager.my_pod_name,
                 uid=self.manager.my_pod_uid,
-                api_version='v1'
+                api_version='batch/v1'
             )
 
         return None
@@ -162,18 +162,20 @@ class KubernetesJob(Simulator):
             return
 
         b = k8s.client.BatchV1Api()
-        c = k8s.client.CoreV1Api()
+        # c = k8s.client.CoreV1Api()
         body = k8s.client.V1DeleteOptions(propagation_policy='Background')
+
+        # print(self.job)
 
         try:
             self.job = b.delete_namespaced_job(
                 namespace=self.manager.namespace,
                 name=self.job.metadata.name,
                 body=body)
-            c.delete_namespaced_config_map(
-                namespace=self.manager.namespace,
-                name=self.cm_name,
-                body=body)
+            # c.delete_namespaced_config_map(
+            #    namespace=self.manager.namespace,
+            #    name=self.cm_name,
+            #    body=body)
         except k8s.client.exceptions.ApiException as e:
             raise SimulationException(self, 'Kubernetes API error',
                                       error=str(e))
