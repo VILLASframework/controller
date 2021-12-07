@@ -57,7 +57,8 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
                 type='generic',
                 category='manager',
                 name='Generic Manager',
-                location=socket.gethostname()
+                location=socket.gethostname(),
+                uuid=self.config.uuid
             )
 
             mgr.mixin = self
