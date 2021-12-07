@@ -15,6 +15,9 @@ class VILLASnodeManager(Manager):
 
         args['api_url'] = self.api_url
 
+        self.thread_stop = threading.Event()
+        self.thread = threading.Thread(target=self.reconcile_periodically)
+
         self.node = Node(**args)
 
         self._status = self.node.status
@@ -65,8 +68,6 @@ class VILLASnodeManager(Manager):
         if self.autostart and not self.node.is_running():
             self.start()
 
-        self.thread_stop = threading.Event()
-        self.thread = threading.Thread(target=self.reconcile_periodically)
         self.thread.start()
 
         super().on_ready()
