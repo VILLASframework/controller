@@ -23,17 +23,16 @@ class VILLASnodeManager(Manager):
 
         super().__init__(**args)
 
-        self.thread_stop = threading.Event()
-        self.thread = threading.Thread(target=self.reconcile_periodically)
-        self.thread.start()
-
     def reconcile_periodically(self):
         while not self.thread_stop.wait(2):
             self.reconcile()
 
     def reconcile(self):
         try:
-            for node in self.node.nodes:
+            self._status = self.node.status
+            self._nodes = self.node.nodes
+
+            for node in self._nodes:
                 self.logger.debug('Found node %s on gateway: %s',
                                   node['name'], node)
 
@@ -58,7 +57,7 @@ class VILLASnodeManager(Manager):
     def status(self):
         status = super().status
 
-        status['status']['villas_none_version'] = self._version
+        status['status']['villas_node_version'] = self._status.get('version')
 
         return status
 
@@ -66,10 +65,9 @@ class VILLASnodeManager(Manager):
         if self.autostart and not self.node.is_running():
             self.start()
 
-        try:
-            self._status = self.node.status
-        except Exception:
-            self.change_to_error('VILLASnode not installed')
+        self.thread_stop = threading.Event()
+        self.thread = threading.Thread(target=self.reconcile_periodically)
+        self.thread.start()
 
         super().on_ready()
 
