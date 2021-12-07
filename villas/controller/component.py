@@ -50,7 +50,6 @@ class Component:
 
     def on_ready(self):
         self.publish_status_thread.start()
-        pass
 
     def on_shutdown(self):
         if self.publish_status_thread.is_alive():

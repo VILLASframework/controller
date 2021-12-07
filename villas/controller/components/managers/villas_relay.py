@@ -12,7 +12,9 @@ class VILLASrelayManager(Manager):
         self.autostart = args.get('autostart', False)
         self.api_url = args.get('api_url', 'http://localhost:8088') + '/api/v1'
         self.api_url_external = args.get('api_url_external', self.api_url)
-        self._version = '-1'
+
+        self.thread_stop = threading.Event()
+        self.thread = threading.Thread(target=self.reconcile_periodically)
 
         uuid = self.get_uuid()
         if uuid is not None:
@@ -77,7 +79,7 @@ class VILLASrelayManager(Manager):
                 # and get recreated with the same UUID later
                 # self.remove_component(comp)
 
-            if len(self.components) > 0:
+            if len(active_sessions) > 0:
                 self.change_state('running')
             else:
                 self.change_state('paused')
@@ -105,8 +107,6 @@ class VILLASrelayManager(Manager):
         if self.autostart:
             os.system('villas-relay')
 
-        self.thread_stop = threading.Event()
-        self.thread = threading.Thread(target=self.reconcile_periodically)
         self.thread.start()
 
         super().on_ready()
