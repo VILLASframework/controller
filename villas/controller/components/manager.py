@@ -41,8 +41,6 @@ class Manager(Component):
             raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
-        print(self.name)
-        print(comp)
         if comp.uuid in self.mixin.components:
             #self.logger.error('UUID %s already exists, not added', comp.uuid)
             #return

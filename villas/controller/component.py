@@ -41,12 +41,9 @@ class Component:
         self.logger = logging.getLogger(
             f'villas.controller.{self.category}.{self.type}:{self.uuid}')
 
-        self.logger.info("init component:")
-        self.logger.info(self.name)
-
         self._schema = self.load_schema()
 
-        self.publish_status_interval = 15
+        self.publish_status_interval = 30
         self.publish_status_thread_stop = threading.Event()
         self.publish_status_thread = threading.Thread(
             target=self.publish_status_periodically)
