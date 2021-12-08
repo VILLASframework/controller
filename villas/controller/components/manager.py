@@ -41,16 +41,12 @@ class Manager(Component):
             raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
-        # print(self.name)
-        # print(comp)
         if comp.uuid in self.mixin.components:
             existing_comp = self.mixin.components[comp.uuid]
 
             raise SimulationException(self, 'Component with same UUID ' +
                                       'already exists!',
                                       component=existing_comp)
-            # self.logger.error('UUID %s already exists, not added', comp.uuid)
-            # return
 
         comp.set_manager(self)
 
