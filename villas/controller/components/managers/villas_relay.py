@@ -12,7 +12,9 @@ class VILLASrelayManager(Manager):
         self.autostart = args.get('autostart', False)
         self.api_url = args.get('api_url', 'http://localhost:8088') + '/api/v1'
         self.api_url_external = args.get('api_url_external', self.api_url)
-        self._version = '-1'
+
+        self.thread_stop = threading.Event()
+        self.thread = threading.Thread(target=self.reconcile_periodically)
 
         uuid = self.get_uuid()
         if uuid is not None:
@@ -21,14 +23,6 @@ class VILLASrelayManager(Manager):
         super().__init__(**args)
 
         self.properties['api_url'] = self.api_url_external
-
-        self.thread_stop = threading.Event()
-        self.thread = threading.Thread(target=self.reconcile_periodically)
-        self.thread.start()
-
-    def reconcile_periodically(self):
-        while not self.thread_stop.wait(2):
-            self.reconcile()
 
     def get_uuid(self):
         try:
@@ -50,54 +44,56 @@ class VILLASrelayManager(Manager):
 
             return None
 
+    def reconcile_periodically(self):
+        while not self.thread_stop.wait(2):
+            self.reconcile()
+
     def reconcile(self):
-        status = self.get_status()
-        if status is None:
-            return
+        try:
+            self._status = self.get_status()
 
-        if self._state == 'error':
-            self.change_state('idle')
+            active_sessions = self._status['sessions']
+            active_uuids = {session['uuid'] for session in active_sessions}
+            existing_uuids = set(self.components.keys())
 
-        self._status = status
-        self._version = self._status['version']
+            # Add new sessions and update existing ones
+            for session in active_sessions:
+                uuid = session['uuid']
 
-        active_sessions = self._status['sessions']
-        active_uuids = {session['uuid'] for session in active_sessions}
-        existing_uuids = set(self.components.keys())
+                if uuid in self.components:
+                    comp = self.components[uuid]
+                else:
+                    comp = VILLASrelayGateway(self, session)
+                    self.add_component(comp)
 
-        # Add new sessions and update existing ones
-        for session in active_sessions:
-            uuid = session['uuid']
+                comp.change_state('running')
 
-            if uuid in self.components:
+            # Find vanished sessions
+            for uuid in existing_uuids - active_uuids:
                 comp = self.components[uuid]
+
+                comp.change_state('stopped')
+
+                # We dont remove the components here
+                # So that they dont get removed from the backend
+                # and get recreated with the same UUID later
+                # self.remove_component(comp)
+
+            if len(active_sessions) > 0:
+                self.change_state('running')
             else:
-                comp = VILLASrelayGateway(self, session)
-                self.add_component(comp)
+                self.change_state('paused')
 
-            comp.change_state('running')
-
-        # Find vanished sessions
-        for uuid in existing_uuids - active_uuids:
-            comp = self.components[uuid]
-
-            comp.change_state('stopped')
-
-            # We dont remove the components here
-            # So that they dont get removed from the backend
-            # and get recreated with the same UUID later
-            # self.remove_component(comp)
-
-        if len(self.components) > 0:
-            self.change_state('running')
-        else:
-            self.change_state('paused')
+        except Exception as e:
+            self.change_to_error('failed to reconcile',
+                                 exception=str(e),
+                                 args=e.args)
 
     @property
     def status(self):
         status = super().status
 
-        status['status']['villas_relay_version'] = self._version
+        status['status']['villas_relay_version'] = self._status.get('version')
 
         return status
 
@@ -111,12 +107,6 @@ class VILLASrelayManager(Manager):
         if self.autostart:
             os.system('villas-relay')
 
-        try:
-            status = self.get_status()
-
-            self._version = status['version']
-
-        except Exception:
-            self.change_to_error('Failed to contact VILLASrelay')
+        self.thread.start()
 
         super().on_ready()

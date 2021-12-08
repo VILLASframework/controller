@@ -3,6 +3,7 @@ import argparse
 import logging
 import os
 import dotmap
+import uuid
 from typing import List
 
 from os import getcwd
@@ -41,7 +42,8 @@ class Config:
         },
         'components': [],
         # 'workdir': '/var/villas/controller/simulators/'
-        'workdir': os.getcwd()
+        'workdir': os.getcwd(),
+        'uuid': str(uuid.uuid4())
     }
 
     DEFAULT_PATHS = xdg_config_dirs() + [

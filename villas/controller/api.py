@@ -50,7 +50,7 @@ class Api(threading.Thread):
         }
 
         return [
-            (BASE + r'/', MainRequestHandler, args),
+            (BASE + r'/?', MainRequestHandler, args),
             (BASE + r'/health', HealthRequestHandler, args),
             (BASE + r'/component/('+REGEX_UUID+r')', ComponentRequestHandler, args)  # noqa E501
         ]
