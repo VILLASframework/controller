@@ -242,6 +242,8 @@ class KubernetesJob(Simulator):
         self.change_state('running')
 
     def reset(self, payload):
+        self.change_state('resetting', True)
+        self.mixin.drain_publish_queue()
         self._delete_job()
         super().reset(payload)
 
