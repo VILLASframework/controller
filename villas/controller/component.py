@@ -291,7 +291,8 @@ class Component:
         self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):
-        self.logger.info('Start state publish thread')
+        self.logger.info('Start state publish thread, initial status: %s', self.status)
+        self.publish_status() # publish the first update immediately
 
         while not self.publish_status_thread_stop.wait(
           self.publish_status_interval):
