@@ -54,7 +54,7 @@ class VILLASnodeManager(Manager):
         except Exception as e:
             self.change_to_error('failed to reconcile',
                                  exception=str(e),
-                                 args=e.args)
+                                 args=str(e.args))
 
     @property
     def status(self):
