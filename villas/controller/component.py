@@ -66,8 +66,6 @@ class Component:
         self.workdir = os.path.join(self.mixin.config.workdir, str(self.uuid))
 
     def get_consumer(self, channel):
-        self.logger.info(channel)
-        self.logger.info(self.headers)
         self.channel = channel
 
         return kombu.Consumer(
@@ -160,8 +158,7 @@ class Component:
         }
 
     def on_message(self, message):
-        # self.logger.info('my uuid: %s', self.uuid)
-        # self.logger.info('Received message: %s', message.payload)
+        self.logger.debug('Received message: %s', message.payload)
 
         if 'action' in message.payload:
             try:
