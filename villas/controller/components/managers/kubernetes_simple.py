@@ -40,10 +40,8 @@ class KubernetesManagerSimple(KubernetesManager):
 
     def __init__(self, **args):
         super().__init__(**args)
-        self.logger.info("init of KubernetesManagerSimple")
 
     def create(self, payload):
-        self.logger.info(payload)
         params = payload.get('parameters', {})
         sim_name = payload.get('name', 'Kubernetes Simulator')
         jobname = params.get('jobname', 'noname')
@@ -73,8 +71,6 @@ class KubernetesManagerSimple(KubernetesManager):
 
         if uuid:
             parameters['uuid'] = uuid
-
-        self.logger.info(parameters)
 
         comp = KubernetesJob(self, **parameters)
         self.add_component(comp)
