@@ -24,7 +24,7 @@ parameters_simple = {
                                 'image': '',
                                 'name': 'jobcontainer',
                                 'securityContext': {
-                                    'privileged': False
+                                    'privileged': True
                                 }
                             }
                         ]
@@ -51,6 +51,8 @@ class KubernetesManagerSimple(KubernetesManager):
         image = params.get('image')
         name = params.get('name')
         uuid = params.get('uuid')
+        self.logger.info('uuid:')
+        self.logger.info(uuid)
 
         if image is None:
             self.logger.error('No image given, will try super.create')

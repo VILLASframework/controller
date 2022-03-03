@@ -56,13 +56,13 @@ class KubernetesJob(Simulator):
             }
 
     def _owner(self):
-        if self.manager.my_pod_name and self.manager.my_pod_uid:
-            return k8s.client.V1OwnerReference(
-                kind='Pod',
-                name=self.manager.my_pod_name,
-                uid=self.manager.my_pod_uid,
-                api_version='v1'
-            )
+        # if self.manager.my_pod_name and self.manager.my_pod_uid:
+        #    return k8s.client.V1OwnerReference(
+        #        kind='Pod',
+        #        name=self.manager.my_pod_name,
+        #        uid=self.manager.my_pod_uid,
+        #        api_version='v1'
+        #    )
 
         return None
 
