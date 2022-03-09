@@ -22,6 +22,7 @@ parameters_simple = {
                         'containers': [
                             {
                                 'image': '',
+                                'imagePullPolicy': 'Always',
                                 'name': 'jobcontainer',
                                 'securityContext': {
                                     'privileged': True
