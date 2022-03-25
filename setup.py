@@ -33,7 +33,8 @@ setup(
         'xdg',
         'PyYAML',
         'tornado',
-        'jsonschema>=4.1.0'
+        'jsonschema>=4.1.0',
+        'psutil'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),

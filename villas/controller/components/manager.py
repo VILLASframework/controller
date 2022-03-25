@@ -34,6 +34,9 @@ class Manager(Component):
         if type == 'villas-relay':
             from villas.controller.components.managers import villas_relay  # noqa E501
             return villas_relay.VILLASrelayManager(**dict)
+        if type == 'miob':
+            from villas.controller.components.managers import miob  # noqa E501
+            return miob.MiobManager(**dict)
         else:
             raise Exception(f'Unknown type: {type}')
 

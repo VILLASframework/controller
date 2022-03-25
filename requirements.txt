@@ -9,3 +9,4 @@ dotmap
 PyYAML
 tornado
 jsonschema>=4.1.0
+psutil
