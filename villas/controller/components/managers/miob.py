@@ -10,22 +10,29 @@ class MiobManager(GenericManager):
     def usb_devices(self):
         devs = []
         for cfg in usb.core.find(find_all=True):
-            devs.append({
+            dev = {
                 'vendor_id': cfg.idVendor,
                 'product_id': cfg.idProduct,
-                'product': usb.util.get_string(cfg, cfg.iProduct),
-                'serial_no': usb.util.get_string(cfg, cfg.iSerialNumber),
-                'manufacturer': usb.util.get_string(cfg, cfg.iManufacturer),
-            })
+            }
+
+            m = {
+                'product': cfg.iProduct,
+                'serial_no': cfg.iSerialNumber,
+                'manufacturer': cfg.iManufacturer
+            }
+
+            for k, v in m.items():
+                try:
+                    dev[k] = usb.util.get_string(cfg, v)
+                except ValueError:
+                    pass
+
+            devs.append(dev)
 
         return devs
 
     @property
     def status(self):
-        sensors = {}
-        for name, s in psutil.sensors_temperatures().items():
-            sensors[name] = s._asdict()
-
         disks = [p._asdict() for p in psutil.disk_partitions()]
         for d in disks:
             try:
@@ -45,34 +52,36 @@ class MiobManager(GenericManager):
         usb = self.usb_devices
         freq = psutil.cpu_freq()
 
-        return {
-            'status': {
-                'cpu': {
-                    'physical_cores': psutil.cpu_count(logical=False),
-                    'usage': psutil.cpu_percent(interval=1, percpu=True),
-                    'loadavg': psutil.getloadavg(),
-                    'frequency': freq._asdict() if freq else {}
-                },
-                'memory': psutil.virtual_memory()._asdict(),
-                'swap': psutil.swap_memory()._asdict(),
-                'users': [u._asdict() for u in psutil.users()],
-                'disks': disks,
-                'nics': nics,
-                'sensors': {
-                    'fans': {name: [fan._asdict() for fan in fans]
-                             for name, fans in psutil.sensors_fans().items()},
-                    'temperatures': {name: [temp._asdict() for temp in temps]
-                                     for name, temps in
-                                     psutil.sensors_temperatures().items()}
-                },
-                'boottime': psutil.boot_time(),
-                'processes': len(psutil.pids()),
-                'usb': usb,
-                'fpga': {
-                    'jtag_available': len([d for d in usb
-                                           if d['vendor_id'] == 0x0403
-                                           and d['product_id'] == 0x6014]) > 0
-                }
+        s = {
+            'cpu': {
+                'physical_cores': psutil.cpu_count(logical=False),
+                'usage': psutil.cpu_percent(interval=1, percpu=True),
+                'loadavg': psutil.getloadavg(),
+                'frequency': freq._asdict() if freq else {}
             },
-            **super().status
+            'memory': psutil.virtual_memory()._asdict(),
+            'swap': psutil.swap_memory()._asdict(),
+            'users': [u._asdict() for u in psutil.users()],
+            'disks': disks,
+            'nics': nics,
+            'sensors': {
+                'fans': {name: [fan._asdict() for fan in fans]
+                         for name, fans in psutil.sensors_fans().items()},
+                'temperatures': {name: [temp._asdict() for temp in temps]
+                                 for name, temps in
+                                 psutil.sensors_temperatures().items()}
+            },
+            'boottime': psutil.boot_time(),
+            'processes': len(psutil.pids()),
+            'usb': usb,
+            'fpga': {
+                'jtag_available': len([d for d in usb
+                                       if d['vendor_id'] == 0x0403
+                                       and d['product_id'] == 0x6014]) > 0
+            }
         }
+
+        status = super().status
+        status['status'].update(s)
+
+        return status

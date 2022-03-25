@@ -34,7 +34,8 @@ setup(
         'PyYAML',
         'tornado',
         'jsonschema>=4.1.0',
-        'psutil'
+        'psutil',
+        'pyusb'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),
