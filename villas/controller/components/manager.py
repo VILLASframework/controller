@@ -28,6 +28,9 @@ class Manager(Component):
         if type == 'kubernetes':
             from villas.controller.components.managers import kubernetes
             return kubernetes.KubernetesManager(**dict)
+        if type == 'kubernetes-simple':
+            from villas.controller.components.managers import kubernetes_simple
+            return kubernetes_simple.KubernetesManagerSimple(**dict)
         if type == 'villas-node':
             from villas.controller.components.managers import villas_node  # noqa E501
             return villas_node.VILLASnodeManager(**dict)
