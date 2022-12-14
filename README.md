@@ -27,7 +27,7 @@ We kindly ask all academic publications employing components of VILLASframework 
 
 [![EONERC ACS Logo](doc/pictures/eonerc_logo.png)](http://www.acs.eonerc.rwth-aachen.de)
 
- - Steffen Vogel <stvogel@eonerc.rwth-aachen.de>
+ - Steffen Vogel <post@steffenvogel.de>
 
 [Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de)
 [EON Energy Research Center (EONERC)](http://www.eonerc.rwth-aachen.de)
