@@ -32,7 +32,7 @@ build:test:
   - pip3 install -r requirements.txt
   - pip3 install -r requirements-dev.txt
   script:
-  - pytest
+  - pytest -v
   tags:
   - docker
 
