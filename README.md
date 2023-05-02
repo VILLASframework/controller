@@ -2,10 +2,6 @@
 
 This project provides a unified API for controller real-time simulators from RTDS, OPAL, NI, Typhoon.
 
-## Note
-
-This project is currently under active development and not functionional yet!
-
 ## Documentation
 
 Documentation is available online at: https://villas.fein-aachen.org/doc/controller.html
