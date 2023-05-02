@@ -25,7 +25,7 @@ build:precommit:
 
 # build:test:
 #   stage: build
-#   image: python:3.9
+#   image: python:3.11
 #   services:
 #   - rabbitmq:latest
 #   before_script:
@@ -33,11 +33,11 @@ build:precommit:
 #   script:
 #   - PYTHONPATH=$(pwd) pytest
 #   tags:
-#     - docker
+#    - docker
 
 build:dist:
   stage: build
-  image: python:3.9
+  image: python:3.11
   script:
   - python3 setup.py sdist
   artifacts:
