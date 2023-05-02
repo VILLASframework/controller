@@ -9,9 +9,9 @@ build:docker:
   stage: build
   image: docker
   script:
-    - docker build --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} .
+  - docker build --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} .
   tags:
-    - docker
+  - docker
 
 build:precommit:
   stage: build
@@ -39,12 +39,12 @@ build:dist:
   stage: build
   image: python:3.9
   script:
-    - python3 setup.py sdist
+  - python3 setup.py sdist
   artifacts:
     paths:
       - dist/
   tags:
-    - docker
+  - docker
 
 # Stage: deploy
 ##############################################################################
@@ -52,8 +52,8 @@ build:dist:
 deploy:docker:
   stage: deploy
   before_script:
-    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+  - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
   script:
-    - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
+  - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
   tags:
-    - docker
+  - docker
