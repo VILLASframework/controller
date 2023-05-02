@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.4.0
+  rev: v4.4.0
   hooks:
   - id: check-yaml
   - id: check-json
@@ -14,12 +14,12 @@ repos:
   - id: check-symlinks
   - id: end-of-file-fixer
   - id: trailing-whitespace
-- repo: https://gitlab.com/pycqa/flake8
-  rev: 3.8.4
+- repo: https://github.com/pycqa/flake8
+  rev: 6.0.0
   hooks:
   - id: flake8
 - repo: https://github.com/sirosen/check-jsonschema
-  rev: 8a14ffa1d4c81a56057f55e1da308daeccc3bcd6
+  rev: 0.22.0
   hooks:
   - id: check-jsonschema
     name: "Check schemas"
