@@ -4,7 +4,7 @@ This project provides a unified API for controller real-time simulators from RTD
 
 ## Documentation
 
-Documentation is available online at: https://villas.fein-aachen.org/doc/controller.html
+Documentation is available online at: https://villas.fein-aachen.org/docs/controller/
 
 ## Copyright
 
