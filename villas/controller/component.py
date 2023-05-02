@@ -96,7 +96,7 @@ class Component:
             pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
             pkg = importlib.import_module(pkg_name)
         except ModuleNotFoundError:
-            self.logger.warn('Missing schemas!')
+            self.logger.warning('Missing schemas!')
 
             return schema
 
