@@ -42,10 +42,9 @@ class Manager(Component):
 
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
-            #self.logger.error('UUID %s already exists, not added', comp.uuid)
-            #return
             existing_comp = self.mixin.components[comp.uuid]
-
+#           self.logger.error('UUID %s already exists, not added', comp.uuid)
+#           return
             raise SimulationException(self, 'Component with same UUID ' +
                                       'already exists!',
                                       component=existing_comp)
@@ -67,9 +66,9 @@ class Manager(Component):
 
     def run_action(self, action, payload):
         if action == 'create':
-            #print(message.payload)
-            #self.create(message)
             self.create(payload)
+#           print(message.payload)
+#           self.create(message)
         elif action == 'delete':
             self.delete(payload)
         else:

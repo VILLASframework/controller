@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import json
 import signal
-from copy import deepcopy
-import collections
+# from copy import deepcopy
+# import collections
 import time
 
 import kubernetes as k8s
