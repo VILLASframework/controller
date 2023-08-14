@@ -94,7 +94,7 @@ class VILLASrelayManager(Manager):
         status = super().status
 
         try:
-            version = self._status.get('version')
+            version = status.get('version')
             status['status']['villas_relay_version'] = version
         except Exception as e:
             self.change_to_error('failed to get version from VILLASrelay',

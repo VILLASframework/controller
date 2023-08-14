@@ -72,7 +72,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
     def publish(self, body, **kwargs):
         self.publish_queue.put((body, kwargs))
 
-    def _drain_publish_queue(self):
+    def drain_publish_queue(self):
         try:
             while msg := self.publish_queue.get(False):
                 body = msg[0]
@@ -84,10 +84,12 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
                 self.producer.publish(body, **kwargs)
         except queue.Empty:
             pass
+        except TimeoutError:
+            LOGGER.warn('TimeoutError, let kombu reconnect..')
 
     def on_iteration(self):
         # Drain publish queue
-        self._drain_publish_queue()
+        self.drain_publish_queue()
 
         # Update components
         added = self.components.keys() - self.active_components.keys()

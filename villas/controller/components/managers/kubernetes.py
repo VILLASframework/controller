@@ -36,9 +36,12 @@ class KubernetesManager(Manager):
         else:
             k8s.config.load_incluster_config()
 
-        self.namespace = args.get('namespace', 'default')
+        self.namespace = os.environ.get('NAMESPACE')
+        if self.namespace:
+            self.namespace = self.namespace + '-controller'
+        else:
+            self.namespace = 'villas-controller'
 
-        self.my_namespace = os.environ.get('NAMESPACE')
         self.my_pod_name = os.environ.get('POD_NAME')
         self.my_pod_uid = os.environ.get('POD_UID')
 
@@ -107,6 +110,10 @@ class KubernetesManager(Manager):
 
                         if _match(comp.job.metadata.name,
                                   eo.involved_object.name):
+                            if comp._state == 'stopping':
+                                # incoming events are old repetitions
+                                continue
+
                             if eo.reason == 'Completed':
                                 comp.change_state('stopping', True)
                             elif eo.reason == 'Started':
