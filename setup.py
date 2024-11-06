@@ -23,6 +23,7 @@ setup(
     ],
     packages=find_namespace_packages(include=['villas.*']),
     install_requires=[
+        'dpsim',
         'dotmap',
         'kombu',
         'termcolor',
