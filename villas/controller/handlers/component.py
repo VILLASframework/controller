@@ -40,7 +40,7 @@ class ComponentRequestHandler(RequestHandler):
             component.run_action(action, payload)
             self.write(component.status)
 
-        except SimulationException as se:
+        except (SimulationException,NotImplementedError) as se:
             self.write({
                 'exception': {
                     'msg': se.msg,
