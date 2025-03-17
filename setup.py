@@ -1,12 +1,14 @@
 from setuptools import setup, find_namespace_packages
 from glob import glob
 
+from villas.controller import __version__ as version
+
 with open('README.md') as f:
     long_description = f.read()
 
 setup(
     name='villas-controller',
-    version='0.3.2',
+    version=version,
     description='A controller/orchestration API for real-time '
                 'power system simulators',
     long_description=long_description,
@@ -33,7 +35,9 @@ setup(
         'xdg',
         'PyYAML',
         'tornado',
-        'jsonschema>=4.1.0'
+        'jsonschema>=4.1.0',
+        'psutil',
+        'pyusb'
     ],
     data_files=[
         ('/etc/villas/controller', glob('etc/*.{json,yaml}')),

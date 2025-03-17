@@ -37,14 +37,15 @@ class Manager(Component):
         if type == 'villas-relay':
             from villas.controller.components.managers import villas_relay  # noqa E501
             return villas_relay.VILLASrelayManager(**dict)
+        if type == 'miob':
+            from villas.controller.components.managers import miob  # noqa E501
+            return miob.MiobManager(**dict)
         else:
             raise Exception(f'Unknown type: {type}')
 
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
             existing_comp = self.mixin.components[comp.uuid]
-#           self.logger.error('UUID %s already exists, not added', comp.uuid)
-#           return
             raise SimulationException(self, 'Component with same UUID ' +
                                       'already exists!',
                                       component=existing_comp)
@@ -67,8 +68,6 @@ class Manager(Component):
     def run_action(self, action, payload):
         if action == 'create':
             self.create(payload)
-#           print(message.payload)
-#           self.create(message)
         elif action == 'delete':
             self.delete(payload)
         else:

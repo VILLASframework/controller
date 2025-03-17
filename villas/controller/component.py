@@ -96,7 +96,7 @@ class Component:
             pkg_name = f'villas.controller.schemas.{self.category}.{self.type}'
             pkg = importlib.import_module(pkg_name)
         except ModuleNotFoundError:
-            self.logger.warn('Missing schemas!')
+            self.logger.warning('Missing schemas!')
 
             return schema
 
@@ -111,7 +111,7 @@ class Component:
                     Draft202012Validator.check_schema(loadedschema)
                     schema[name] = loadedschema
                 except jsonschema.exceptions.SchemaError:
-                    self.logger.warn("Schema is invalid!")
+                    self.logger.warning("Schema is invalid!")
 
         return schema
 
@@ -136,7 +136,6 @@ class Component:
 
     @property
     def status(self):
-
         status = {
             'state': self._state,
             **self.mixin.status,
@@ -153,7 +152,7 @@ class Component:
                 **self.headers
             },
             'schema': {
-                **self.schema
+                name: v.schema for name, v in self.schema.items()
             }
         }
 
