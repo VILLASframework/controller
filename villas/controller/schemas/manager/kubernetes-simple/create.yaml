@@ -26,3 +26,8 @@ properties:
     type: string
     title: Image
     default: perl
+  privileged:
+    type: boolean
+    title: Privileged
+    default: false
+    description: 'WARNING: If true, the container has root privileges on the host'
