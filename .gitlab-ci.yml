@@ -15,17 +15,17 @@ build:docker:
 
 build:precommit:
   stage: build
-  image: python:3.11-slim
+  image: python:3.11
   before_script:
   - pip3 install -r requirements-dev.txt
   script:
   - pre-commit run --all-files
   tags:
-    - docker
+    - k8s
 
 build:test:
   stage: build
-  image: python:3.11-slim
+  image: python:3.11
   services:
   - rabbitmq:latest
   before_script:
@@ -34,7 +34,7 @@ build:test:
   script:
   - pytest -v
   tags:
-  - docker
+  - k8s
 
 build:dist:
   stage: build
