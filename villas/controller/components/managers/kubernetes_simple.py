@@ -66,8 +66,9 @@ class KubernetesManagerSimple(KubernetesManager):
         job = parameters['properties']['job']
         job['metadata']['name'] = jobname
         job['spec']['activeDeadlineSeconds'] = adls
-        job['spec']['template']['spec']['containers'][0]['image'] = image
-        job['spec']['template']['spec']['containers'][0]['securityContext']['privileged'] = privileged
+        job_container = job['spec']['template']['spec']['containers'][0]
+        job_container['image'] = image
+        job_container['securityContext']['privileged'] = privileged
 
         parameters['job'] = job
 

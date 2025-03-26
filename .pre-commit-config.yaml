@@ -26,10 +26,10 @@ repos:
     language: python
     files: ^villas/controller/schemas/.*\.yaml$
     types: [yaml]
-    args: ["--schemafile", "https://json-schema.org/draft/2020-12/schema"]
+    args: ["--verbose", "--schemafile", "https://json-schema.org/draft/2020-12/schema"]
   - id: check-jsonschema
     name: "Check OpenAPI doc"
     language: python
     files: ^doc/openapi.yaml$
     types: [yaml]
-    args: ["--schemafile", "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json"]
+    args: ["--schemafile", "https://github.com/OAI/OpenAPI-Specification/tree/main/_archive_/schemas/v3.0/schema.yaml"]
