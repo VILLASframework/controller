@@ -15,9 +15,9 @@ build:docker:
 
 build:precommit:
   stage: build
-  image: python:3.11
+  image: python:3.11-slim
   before_script:
-  - python -m pip install -r requirements-dev.txt
+  - pip3 install -r requirements-dev.txt
   script:
   - pre-commit run --all-files
   tags:
@@ -25,12 +25,12 @@ build:precommit:
 
 build:test:
   stage: build
-  image: python:3.11
+  image: python:3.11-slim
   services:
   - rabbitmq:latest
   before_script:
-  - python -m pip install -r requirements.txt
-  - python -m pip install -r requirements-dev.txt
+  - pip3 install -r requirements.txt
+  - pip3 install -r requirements-dev.txt
   script:
   - pytest -v
   tags:
