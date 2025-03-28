@@ -20,8 +20,6 @@ build:precommit:
   - pip3 install -r requirements-dev.txt
   script:
   - pre-commit run --all-files
-  tags:
-    - k8s
 
 build:test:
   stage: build
@@ -32,10 +30,7 @@ build:test:
   - pip3 install -r requirements.txt
   - pip3 install -r requirements-dev.txt
   script:
-  - export PYTHONPATH="$PYTHONPATH:$(pwd)"
   - pytest -v
-  tags:
-  - k8s
 
 build:dist:
   stage: build

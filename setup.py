@@ -1,15 +1,7 @@
 from setuptools import setup, find_namespace_packages
 from glob import glob
 
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(__file__))
-
-try:
-    from villas.controller import __version__ as version
-except ModuleNotFoundError:
-    version = "0.0.0"
+from villas.controller import __version__ as version
 
 with open('README.md') as f:
     long_description = f.read()
