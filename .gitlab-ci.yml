@@ -29,11 +29,10 @@ build:test:
   services:
   - rabbitmq:latest
   before_script:
-  - pwd
-  - ls -la
   - pip3 install -r requirements.txt
   - pip3 install -r requirements-dev.txt
   script:
+  - export PYTHONPATH="$PYTHONPATH:$(pwd)"
   - pytest -v
   tags:
   - k8s
