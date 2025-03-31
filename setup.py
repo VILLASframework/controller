@@ -1,14 +1,25 @@
 from setuptools import setup, find_namespace_packages
 from glob import glob
 
-from villas.controller import __version__ as version
+import os
+import re
 
-with open('README.md') as f:
-    long_description = f.read()
+def get_version():
+    here = os.path.abspath(os.path.dirname(__file__))
+    init_file = os.path.join(here, "villas", "controller", "__init__.py")
+
+    with open(init_file, "r") as f:
+        content = f.read()
+
+    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
+    if match:
+        return match.group(1)
+
+    raise RuntimeError("Version not found")
 
 setup(
     name='villas-controller',
-    version=version,
+    version=get_version(),
     description='A controller/orchestration API for real-time '
                 'power system simulators',
     long_description=long_description,
@@ -20,7 +31,7 @@ setup(
     keywords='simulation controller villas',
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'License :: OSI Approved :: Apache Software License'
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3'
     ],
     packages=find_namespace_packages(include=['villas.*']),
