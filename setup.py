@@ -17,6 +17,9 @@ def get_version():
 
     raise RuntimeError("Version not found")
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name='villas-controller',
     version=get_version(),
