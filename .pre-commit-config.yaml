@@ -18,8 +18,8 @@ repos:
   rev: 6.0.0
   hooks:
   - id: flake8
-- repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.22.0
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: 0.32.1
   hooks:
   - id: check-jsonschema
     name: "Check schemas"
@@ -32,4 +32,4 @@ repos:
     language: python
     files: ^doc/openapi.yaml$
     types: [yaml]
-    args: ["--schemafile", "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json"]
+    args: ["--schemafile", "https://spec.openapis.org/oas/3.1/schema/2025-02-13"]
