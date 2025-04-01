@@ -4,6 +4,7 @@ from glob import glob
 import os
 import re
 
+
 def get_version():
     here = os.path.abspath(os.path.dirname(__file__))
     init_file = os.path.join(here, "villas", "controller", "__init__.py")
@@ -16,6 +17,7 @@ def get_version():
         return match.group(1)
 
     raise RuntimeError("Version not found")
+
 
 with open('README.md') as f:
     long_description = f.read()
