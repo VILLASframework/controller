@@ -36,7 +36,12 @@ class KubernetesManager(Manager):
         else:
             k8s.config.load_incluster_config()
 
-        self.namespace = os.environ.get('NAMESPACE')
+        # the namespace in which to create the jobs
+        # and to watch for events
+        self.namespace = os.environ.get('NAMESPACE' + "-controller")
+
+        # name and UID of the pod in which this controller is running
+        # used in kubernetes simulator to set the owner reference
         self.my_pod_name = os.environ.get('POD_NAME')
         self.my_pod_uid = os.environ.get('POD_UID')
 
