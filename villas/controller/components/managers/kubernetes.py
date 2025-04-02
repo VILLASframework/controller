@@ -22,15 +22,6 @@ class KubernetesManager(Manager):
     def __init__(self, **args):
         super().__init__(**args)
 
-        self.thread_stop = threading.Event()
-
-        self.pod_watcher_thread = threading.Thread(
-            target=self._run_pod_watcher)
-        self.job_watcher_thread = threading.Thread(
-            target=self._run_job_watcher)
-        self.event_watcher_thread = threading.Thread(
-            target=self._run_event_watcher)
-
         if os.environ.get('KUBECONFIG'):
             k8s.config.load_kube_config()
         else:
@@ -45,10 +36,21 @@ class KubernetesManager(Manager):
         self.my_pod_name = os.environ.get('POD_NAME')
         self.my_pod_uid = os.environ.get('POD_UID')
 
-        # self.pod_watcher_thread.start()
-        # self.job_watcher_thread.start()
+        self.thread_stop = threading.Event()
+
+        self.pod_watcher_thread = threading.Thread(
+            target=self._run_pod_watcher)
+        self.job_watcher_thread = threading.Thread(
+            target=self._run_job_watcher)
+        self.event_watcher_thread = threading.Thread(
+            target=self._run_event_watcher)
+
         self.event_watcher_thread.setDaemon(True)
         self.event_watcher_thread.start()
+
+        # Not used yet, can support more complex logic
+        # self.pod_watcher_thread.start()
+        # self.job_watcher_thread.start()
 
     def _run_pod_watcher(self):
         w = k8s.watch.Watch()
