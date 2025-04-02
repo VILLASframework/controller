@@ -29,7 +29,8 @@ class KubernetesManager(Manager):
 
         # the namespace in which to create the jobs
         # and to watch for events
-        self.namespace = os.environ.get('NAMESPACE' + "-controller")
+        self.namespace = os.environ.get('NAMESPACE')
+        self.namespace = ''.join([self.namespace, '-controller'])
 
         # name and UID of the pod in which this controller is running
         # used in kubernetes simulator to set the owner reference
