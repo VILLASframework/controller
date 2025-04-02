@@ -1,0 +1,33 @@
+---
+$schema: http://json-schema.org/draft-04/schema#
+
+type: object
+title: 'Simple Kubernetes Job'
+required:
+  - image
+properties:
+  name:
+    type: string
+    title: 'Simulator Name'
+    default: 'Kubernetes Simulator'
+  uuid:
+    type: string
+    title: UUID
+    default: 8dfd03b2-1c78-11ec-9621-0242ac130002
+  jobname:
+    type: string
+    title: 'Jobname'
+    default: myjob
+  activeDeadlineSeconds:
+    type: number
+    title: activeDeadlineSeconds
+    default: 3600
+  image:
+    type: string
+    title: Image
+    default: perl
+  privileged:
+    type: boolean
+    title: Privileged
+    default: false
+    description: 'WARNING: If true, the container has root privileges on the host'

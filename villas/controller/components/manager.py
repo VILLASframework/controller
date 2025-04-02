@@ -28,6 +28,9 @@ class Manager(Component):
         if type == 'kubernetes':
             from villas.controller.components.managers import kubernetes
             return kubernetes.KubernetesManager(**dict)
+        if type == 'kubernetes-simple':
+            from villas.controller.components.managers import kubernetes_simple
+            return kubernetes_simple.KubernetesManagerSimple(**dict)
         if type == 'villas-node':
             from villas.controller.components.managers import villas_node  # noqa E501
             return villas_node.VILLASnodeManager(**dict)
@@ -43,7 +46,6 @@ class Manager(Component):
     def add_component(self, comp):
         if comp.uuid in self.mixin.components:
             existing_comp = self.mixin.components[comp.uuid]
-
             raise SimulationException(self, 'Component with same UUID ' +
                                       'already exists!',
                                       component=existing_comp)

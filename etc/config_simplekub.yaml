@@ -1,0 +1,14 @@
+---
+broker:
+  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+
+components:
+- type: generic
+  category: manager
+  uuid: ebbbbba0-557b-4848-ac7a-faa3e7c51fa3
+
+- category: manager
+  type: kubernetes-simple
+  uuid: 4bbbb73e-7e74-11eb-8f63-f3a5b3ab82f6
+
+  namespace: villas-controller

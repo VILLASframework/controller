@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import json
 import signal
+import time
 
 import kubernetes as k8s
 
@@ -28,6 +29,7 @@ class KubernetesJob(Simulator):
 
         self.job = None
         self.pods = set()
+        self.cm_name = ''
 
         self.custom_schema = props.get('schema', {})
 
@@ -65,6 +67,7 @@ class KubernetesJob(Simulator):
     def _prepare_job(self, job, payload):
         # Create config map
         cm = self._create_config_map(payload)
+        self.cm_name = cm.metadata.name
 
         # Create volumes
         v = k8s.client.V1Volume(
@@ -173,6 +176,9 @@ class KubernetesJob(Simulator):
         self.job = None
         self.properties['job_name'] = None
         self.properties['pod_names'] = []
+        # job isn't immediately deleted
+        # let the user see that something is happening
+        time.sleep(7)
 
     def start(self, payload):
         # Delete prior job
@@ -194,9 +200,9 @@ class KubernetesJob(Simulator):
         self.properties['job_name'] = self.job.metadata.name
         self.properties['namespace'] = self.manager.namespace
 
-    def stop(self, payload):
+    def stop(self, message):
+        self.change_state('stopping', True)
         self._delete_job()
-
         self.change_state('idle')
 
     def _send_signal(self, sig):
@@ -227,6 +233,8 @@ class KubernetesJob(Simulator):
         self.change_state('running')
 
     def reset(self, payload):
+        self.change_state('resetting', True)
+        self.mixin.drain_publish_queue()
         self._delete_job()
         super().reset(payload)
 
