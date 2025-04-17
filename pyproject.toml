@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "villas-controller"
+version = "0.4.1"
+description = "A controller/orchestration API for real-time power system simulators"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+    { name="Steffen Vogel", email="acs-software@eonerc.rwth-aachen.de" }
+]
+license = "Apache-2.0"
+dependencies = [
+    "dotmap",
+    "kombu",
+    "termcolor",
+    "psutil",
+    "requests",
+    "villas-node>=0.10.2",
+    "kubernetes",
+    "xdg",
+    "PyYAML",
+    "tornado",
+    "jsonschema>=4.1.0",
+    "pyusb"
+]
+
+[tool.setuptools.packages.find]
+include = ["villas*"]
+
+[project.scripts]
+villas-controller = "villas.controller.main:main"
+villas-ctl = "villas.controller.main:main"
