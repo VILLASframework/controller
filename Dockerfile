@@ -4,8 +4,7 @@ FROM python:3.11 AS builder
 WORKDIR /build
 COPY . .
 
-COPY requirements.txt /tmp/
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install .
 
 RUN python3 setup.py sdist && \
     pip install dist/*.tar.gz --target /install

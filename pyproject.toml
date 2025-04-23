@@ -26,6 +26,12 @@ dependencies = [
     "pyusb"
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pre-commit"
+]
+
 [project.license]
 text = "Apache-2.0"
 
