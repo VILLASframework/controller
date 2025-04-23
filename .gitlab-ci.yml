@@ -11,13 +11,13 @@ build:docker:
   script:
   - docker build --tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH} .
   tags:
-  - docker
+  - docker-image-builder
 
 build:precommit:
   stage: build
   image: python:3.11
   before_script:
-  - pip3 install -r requirements-dev.txt
+  - pip install .[dev]
   script:
   - pre-commit run --all-files
 
@@ -27,8 +27,7 @@ build:test:
   services:
   - rabbitmq:latest
   before_script:
-  - pip3 install -r requirements.txt
-  - pip3 install -r requirements-dev.txt
+  - pip3 install .[dev]
   script:
   - pytest -v
 
@@ -41,7 +40,7 @@ build:dist:
     paths:
       - dist/
   tags:
-  - docker
+  - docker-image-builder
 
 # Stage: deploy
 ##############################################################################
