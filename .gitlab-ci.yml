@@ -39,8 +39,6 @@ build:dist:
   artifacts:
     paths:
       - dist/
-  tags:
-  - docker-image-builder
 
 # Stage: deploy
 ##############################################################################
@@ -52,4 +50,4 @@ deploy:docker:
   script:
   - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_BRANCH}
   tags:
-  - docker
+  - docker-image-builder
