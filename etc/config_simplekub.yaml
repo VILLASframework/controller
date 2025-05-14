@@ -1,14 +1,17 @@
 ---
 broker:
-  url: amqp://villas:Haegiethu0rohtee@kubernetes-master-1.os-cloud.eonerc.rwth-aachen.de:30809/%2F
+  url: amqp://admin:vieQuoo2sieDahHee8ohM5aThaibiPei@villas-broker:5672/
 
 components:
 - type: generic
   category: manager
-  uuid: ebbbbba0-557b-4848-ac7a-faa3e7c51fa3
+  name: Generic Manager
+  location: VM Iris
+  uuid: eddb51a0-557b-4848-ac7a-faccc7c51fa3
 
 - category: manager
   type: kubernetes-simple
-  uuid: 4bbbb73e-7e74-11eb-8f63-f3a5b3ab82f6
-
+  name: Simple Kubernetes Manager
+  location: VM Iris
+  uuid: 4f8fb73e-7e74-11eb-8f63-f3ccc3ab82f6
   namespace: villas-controller

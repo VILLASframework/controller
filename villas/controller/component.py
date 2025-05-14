@@ -152,7 +152,7 @@ class Component:
                 **self.headers
             },
             'schema': {
-                name: v.schema for name, v in self.schema.items()
+                name: v for name, v in self.schema.items()
             }
         }
 

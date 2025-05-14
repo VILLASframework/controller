@@ -138,7 +138,7 @@ class ControllerMixin(kombu.mixins.ConsumerProducerMixin):
             c.on_shutdown()
 
         # Publish last status updates before shutdown
-        self._drain_publish_queue()
+        self.drain_publish_queue()
         self.should_terminate = True
 
     @property
