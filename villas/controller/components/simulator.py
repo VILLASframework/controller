@@ -15,6 +15,8 @@ class Simulator(Component):
         super().__init__(**args)
 
         self.model = None
+        self.t_up_token = None
+        self.t_down_token = None
         self.results = None
 
     @property
@@ -93,17 +95,25 @@ class Simulator(Component):
 
         self.params = payload.get('parameters', {})
         self.model = payload.get('model')
+        self.t_down_token = self.model.get('token',None)
+        
         self.results = payload.get('results')
+        self.t_up_token = self.results.get('token',None)
+        try:
+            del self.results['token']
+            del self.model['token']
+        except:
+            pass
 
         self.sim_workdir = os.path.join(self.workdir, 'simulation',
                                         str(self.simuuid))
 
-        self.sim_logdir = self.sim_workdir + '/Logs/'
+        self.sim_logdir = self.sim_workdir + '/logs/'
         self.logger.info('Simulation working directory: %s' % self.sim_workdir)
 
         try:
-            os.makedirs(self.sim_logdir)
-            os.chdir(self.sim_logdir)
+            os.makedirs(self.sim_workdir)
+            os.chdir(self.sim_workdir)
         except Exception as e:
             raise SimulationException(self, 'Failed to create and change to '
                                             'working directory: %s ( %s )' %
@@ -111,14 +121,22 @@ class Simulator(Component):
 
     def _upload(self, filename):
         url = self.results['url']
+        params={"url":url}
+        if self.t_up_token:
+            params["headers"] = {"Authorization":f"Bearer {self.t_up_token}"}
+            self.t_up_token = None
         with open(filename, 'rb') as f:
-            r = requests.put(url, body=f)
+            params["files"] = {'file':f}
+            r = requests.post(**params)
             r.raise_for_status()
-
             self.logger.info(f'Uploaded file {filename} to {url}')
 
     def _download(self, url):
-        with requests.get(url, stream=True) as r:
+        params = {"url":url,"stream":True}
+        if self.t_down_token:
+            params["headers"] = {"Authorization":f"Bearer {self.t_down_token}"}
+            self.t_down_token = None
+        with requests.get(**params) as r:
             r.raise_for_status()
             with tempfile.NamedTemporaryFile(delete=False, suffix='.xml') as f:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -161,7 +179,6 @@ class Simulator(Component):
         if self.model:
             if 'url' in self.model:
                 filename = self._download(self.model['url'])
-
                 return self._unzip_files(filename)
             else:
                 self.logger.info('No URL provided for model download. '
