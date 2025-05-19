@@ -16,4 +16,4 @@ COPY --from=builder /install /usr/local/lib/python3.11/site-packages
 COPY etc/*.json etc/*.yaml /etc/villas/controller/
 COPY villas-controller.service /etc/systemd/system/
 
-ENTRYPOINT ["villas-controller"]
+ENTRYPOINT ["/usr/local/lib/python3.11/site-packages/bin/villas-controller"]
