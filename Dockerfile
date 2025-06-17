@@ -1,12 +1,19 @@
-FROM python:3.9
+# build stage
+FROM python:3.11 AS builder
 
-COPY requirements.txt /tmp
-RUN pip3 install -r /tmp/requirements.txt
+WORKDIR /build
+COPY . .
 
-COPY . /tmp/controller
-RUN cd /tmp/controller && \
-	python3 setup.py sdist && \
-	pip3 install dist/*.tar.gz && \
-	rm -rf /tmp/controller
+RUN pip install .
 
-ENTRYPOINT [ "villas-controller" ]
+RUN python3 setup.py sdist && \
+    pip install dist/*.tar.gz --target /install
+
+# minimal runtime image
+FROM python:3.11-slim AS runtime
+
+COPY --from=builder /install /usr/local/lib/python3.11/site-packages
+COPY etc/*.json etc/*.yaml /etc/villas/controller/
+COPY villas-controller.service /etc/systemd/system/
+
+ENTRYPOINT ["/usr/local/lib/python3.11/site-packages/bin/villas-controller"]

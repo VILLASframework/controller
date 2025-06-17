@@ -63,7 +63,7 @@ def setup_argparse():
         epilog=(f'VILLAScontroller {ver}\n'
                 f' Copyright 2014-{year}, Institute for Automation '
                 'of Complex Power Systems, EONERC\n'
-                ' Steffen Vogel <svogel2@eonerc.rwth-aachen.de>\n')
+                ' Steffen Vogel <post@steffenvogel.de>\n')
     )
 
     parser.add_argument('-b', '--broker',

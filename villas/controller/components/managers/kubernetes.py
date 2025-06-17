@@ -22,6 +22,21 @@ class KubernetesManager(Manager):
     def __init__(self, **args):
         super().__init__(**args)
 
+        if os.environ.get('KUBECONFIG'):
+            k8s.config.load_kube_config()
+        else:
+            k8s.config.load_incluster_config()
+
+        # the namespace in which to create the jobs
+        # and to watch for events
+        self.namespace = os.environ.get('NAMESPACE')
+        self.namespace = ''.join([self.namespace, '-controller'])
+
+        # name and UID of the pod in which this controller is running
+        # used in kubernetes simulator to set the owner reference
+        self.my_pod_name = os.environ.get('POD_NAME')
+        self.my_pod_uid = os.environ.get('POD_UID')
+
         self.thread_stop = threading.Event()
 
         self.pod_watcher_thread = threading.Thread(
@@ -31,36 +46,12 @@ class KubernetesManager(Manager):
         self.event_watcher_thread = threading.Thread(
             target=self._run_event_watcher)
 
-        if os.environ.get('KUBECONFIG'):
-            k8s.config.load_kube_config()
-        else:
-            k8s.config.load_incluster_config()
-
-        self.namespace = os.environ.get('NAMESPACE')
-        if self.namespace:
-            self.namespace = self.namespace + '-controller'
-        else:
-            self.namespace = 'villas-controller'
-
-        self.my_pod_name = os.environ.get('POD_NAME')
-        self.my_pod_uid = os.environ.get('POD_UID')
-
-        self._check_namespace(self.namespace)
-
-        # self.pod_watcher_thread.start()
-        # self.job_watcher_thread.start()
         self.event_watcher_thread.setDaemon(True)
         self.event_watcher_thread.start()
 
-    def _check_namespace(self, ns):
-        c = k8s.client.CoreV1Api()
-
-        namespaces = c.list_namespace()
-        for namespace in namespaces.items:
-            if namespace.metadata.name == ns:
-                return
-
-        raise RuntimeError(f'Namespace {ns} does not exist')
+        # Not used yet, can support more complex logic
+        # self.pod_watcher_thread.start()
+        # self.job_watcher_thread.start()
 
     def _run_pod_watcher(self):
         w = k8s.watch.Watch()

@@ -1,5 +1,5 @@
 from copy import deepcopy
-import collections
+from collections import abc
 
 
 def merge(dict1, dict2):
@@ -8,7 +8,7 @@ def merge(dict1, dict2):
     result = deepcopy(dict1)
 
     for key, value in dict2.items():
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, abc.Mapping):
             result[key] = merge(result.get(key, {}), value)
         elif value is None:
             del result[key]

@@ -25,7 +25,7 @@ parameters_simple = {
                                 'imagePullPolicy': 'Always',
                                 'name': 'jobcontainer',
                                 'securityContext': {
-                                    'privileged': True
+                                    'privileged': False
                                 }
                             }
                         ]
@@ -51,6 +51,7 @@ class KubernetesManagerSimple(KubernetesManager):
             adls = int(adls)
         image = params.get('image')
         name = params.get('name')
+        privileged = params.get('privileged', False)
         uuid = params.get('uuid')
         self.logger.info('uuid:')
         self.logger.info(uuid)
@@ -65,7 +66,9 @@ class KubernetesManagerSimple(KubernetesManager):
         job = parameters['properties']['job']
         job['metadata']['name'] = jobname
         job['spec']['activeDeadlineSeconds'] = adls
-        job['spec']['template']['spec']['containers'][0]['image'] = image
+        job_container = job['spec']['template']['spec']['containers'][0]
+        job_container['image'] = image
+        job_container['securityContext']['privileged'] = privileged
 
         parameters['job'] = job
 

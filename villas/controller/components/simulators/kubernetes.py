@@ -2,8 +2,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import json
 import signal
-# from copy import deepcopy
-# import collections
 import time
 
 import kubernetes as k8s
@@ -56,13 +54,13 @@ class KubernetesJob(Simulator):
             }
 
     def _owner(self):
-        # if self.manager.my_pod_name and self.manager.my_pod_uid:
-        #    return k8s.client.V1OwnerReference(
-        #        kind='Pod',
-        #        name=self.manager.my_pod_name,
-        #        uid=self.manager.my_pod_uid,
-        #        api_version='v1'
-        #    )
+        if self.manager.my_pod_name and self.manager.my_pod_uid:
+            return k8s.client.V1OwnerReference(
+                kind='Pod',
+                name=self.manager.my_pod_name,
+                uid=self.manager.my_pod_uid,
+                api_version='v1'
+            )
 
         return None
 
@@ -179,7 +177,7 @@ class KubernetesJob(Simulator):
         self.properties['job_name'] = None
         self.properties['pod_names'] = []
         # job isn't immediately deleted
-        # let the user see something is happening
+        # let the user see that something is happening
         time.sleep(7)
 
     def start(self, payload):
