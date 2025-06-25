@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt /tmp/
 RUN pip install --upgrade pip && \
-    pip install -r /tmp/requirements.txt
+    pip install -m build
 
 COPY . /tmp/controller
 
