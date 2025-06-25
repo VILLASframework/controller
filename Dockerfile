@@ -1,22 +1,18 @@
-# build stage
-FROM python:3.11 AS builder
+FROM python:3.11-slim
 
-WORKDIR /build
-COPY . .
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN pip install build
-RUN python3 -m build
+COPY requirements.txt /tmp/
+RUN pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt
 
-#RUN python3 setup.py sdist && \
-#    pip install dist/*.tar.gz --target /install
+COPY . /tmp/controller
 
-# minimal runtime image
-FROM python:3.11-slim AS runtime
-
-COPY --from=builder /build/dist/*.tar.gz /tmp/
-RUN pip install /tmp/*.tar.gz
-
-COPY etc/*.json etc/*.yaml /etc/villas/controller/
-COPY villas-controller.service /etc/systemd/system/
+RUN cd /tmp/controller && \
+    python3 setup.py sdist && \
+    pip install dist/*.tar.gz && \
+    rm -rf /tmp/controller
 
 ENTRYPOINT ["villas-controller"]
