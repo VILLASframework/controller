@@ -194,9 +194,9 @@ class KubernetesJob(Simulator):
         self.properties['job_name'] = self.job.metadata.name
         self.properties['namespace'] = self.manager.namespace
 
-    def stop(self, payload):
+    def stop(self, message):
+        self.change_state('stopping', True)
         self._delete_job()
-
         self.change_state('idle')
 
     def _send_signal(self, sig):
@@ -227,6 +227,7 @@ class KubernetesJob(Simulator):
         self.change_state('running')
 
     def reset(self, payload):
+        self.change_state('resetting', True)
         self._delete_job()
         super().reset(payload)
 
