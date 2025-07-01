@@ -1,0 +1,14 @@
+---
+components:
+- type: generic
+  category: manager
+  name: Generic Manager
+  location: VM Iris
+  uuid: eddb51a0-557b-4848-ac7a-faccc7c51fa3
+
+- category: manager
+  type: kubernetes-simple
+  name: Simple Kubernetes Manager
+  location: VM Iris
+  uuid: 4f8fb73e-7e74-11eb-8f63-f3ccc3ab82f6
+  namespace: villas-controller
