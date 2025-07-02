@@ -49,7 +49,6 @@ class KubernetesManager(Manager):
         self.event_watcher_thread.setDaemon(True)
         self.event_watcher_thread.start()
 
-
     def _check_namespace(self, ns):
         c = k8s.client.CoreV1Api()
 

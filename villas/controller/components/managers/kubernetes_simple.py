@@ -2,7 +2,8 @@ from villas.controller.components.managers.kubernetes import KubernetesManager
 from villas.controller.components.simulators.kubernetes import KubernetesJob
 
 
-def build_parameters(sim_name, jobname, image, adls=3600, privileged=False, name=None, uuid=None):
+def build_parameters(sim_name, jobname, image, adls=3600,
+                     privileged=False, name=None, uuid=None):
     parameters = {
         'type': 'kubernetes',
         'category': 'simulator',
@@ -38,6 +39,7 @@ def build_parameters(sim_name, jobname, image, adls=3600, privileged=False, name
         }
     }
     return parameters
+
 
 class KubernetesManagerSimple(KubernetesManager):
 
