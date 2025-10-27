@@ -106,8 +106,8 @@ class KubernetesJob(Simulator):
         job.metadata.generate_name = name + '-'
         job.metadata.name = None
 
-        if o := self._owner():
-            job.metadata.owner_references = [o]
+#        if o := self._owner():
+#            job.metadata.owner_references = [o]
 
         if job.metadata.labels is None:
             job.metadata.labels = {}
@@ -144,8 +144,8 @@ class KubernetesJob(Simulator):
             }
         )
 
-        if o := self._owner():
-            self.cm.metadata.owner_references = [o]
+#        if o := self._owner():
+#            self.cm.metadata.owner_references = [o]
 
         return c.create_namespaced_config_map(
             namespace=self.manager.namespace,
@@ -165,8 +165,12 @@ class KubernetesJob(Simulator):
                 name=self.job.metadata.name,
                 body=body)
         except k8s.client.exceptions.ApiException as e:
-            raise SimulationException(self, 'Kubernetes API error',
-                                      error=str(e))
+            if e.status == 404:
+                # Job does not exist, treat as already deleted
+                return
+            else:
+                raise SimulationException(self, 'Kubernetes API error',
+                                          error=str(e))
 
         self.pods.clear()
 
