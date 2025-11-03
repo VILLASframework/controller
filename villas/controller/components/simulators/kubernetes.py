@@ -169,7 +169,7 @@ class KubernetesJob(Simulator):
                 # Job does not exist, treat as already deleted
                 return
             else:
-                raise SimulationException(self, 'Kubernetes API error',
+                raise SimulationException(self, 'Kubernetes API exception',
                                           error=str(e))
 
         self.pods.clear()
