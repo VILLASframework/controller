@@ -2,7 +2,7 @@
 openapi: 3.1.0
 info:
   title: VILLAScontroller API
-  description: 'A HTTP/REST API for controlling VILLAScontroller remotely for querying component status as well as issuing control actions.'
+  description: "A HTTP/REST API for controlling VILLAScontroller remotely for querying component status as well as issuing control actions."
   version: 0.0.1
   contact:
     name: "Steffen Vogel"
@@ -12,20 +12,19 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
-- url: https://villas.k8s.eonerc.rwth-aachen.de/controller/api/v1
-  description: Demo instance at RWTH Aachen
+  - url: https://villas.k8s.eonerc.rwth-aachen.de/controller/api/v1
+    description: Demo instance at RWTH Aachen
 
 paths:
-
   /:
     get:
-      summary: 'Get status of VILLAScontroller daemon'
+      summary: "Get status of VILLAScontroller daemon"
       operationId: getStatus
       tags:
-      - status
+        - status
       responses:
-        '200':
-          description: ''
+        "200":
+          description: ""
           content:
             application/json:
               schema:
@@ -71,7 +70,7 @@ paths:
                     sysname: Linux
                     nodename: lat.0l.de
                     release: 5.13.14-200.fc34.x86_64
-                    version: '#1 SMP Fri Sep 3 15:33:01 UTC 2021'
+                    version: "#1 SMP Fri Sep 3 15:33:01 UTC 2021"
                     machine: x86_64
 
   /health:
@@ -79,9 +78,9 @@ paths:
       operationId: getHealth
       summary: Query health of daemon.
       tags:
-      - status
+        - status
       responses:
-        '200':
+        "200":
           description: The daemon is healthy
           content:
             application/json:
@@ -93,23 +92,22 @@ paths:
               example:
                 status: ok
 
-
   /component/{uuid}:
     get:
-      summary: 'Get the current status of a component'
+      summary: "Get the current status of a component"
       operationId: getComponentStatus
 
       parameters:
-      - name: uuid
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
 
       responses:
-        '200':
-          description: ''
+        "200":
+          description: ""
           content:
             application/json:
               schema:
@@ -131,18 +129,18 @@ paths:
                       state:
                         type: string
                         enum:
-                        - idle
-                        - starting
-                        - running
-                        - stopping
-                        - pausing
-                        - paused
-                        - resuming
-                        - error
-                        - resetting
-                        - shuttingdown
-                        - shutdown
-                        - gone
+                          - idle
+                          - starting
+                          - running
+                          - stopping
+                          - pausing
+                          - paused
+                          - resuming
+                          - error
+                          - resetting
+                          - shuttingdown
+                          - shutdown
+                          - gone
 
                       version:
                         type: string
@@ -170,17 +168,17 @@ paths:
                       category:
                         type: string
                         enum:
-                        - manager
-                        - simulator
-                        - gateway
+                          - manager
+                          - simulator
+                          - gateway
                       type:
                         type: string
-                        pattern: '[a-z-]+'
+                        pattern: "[a-z-]+"
                       name:
                         type: string
                       realm:
                         type: string
-                        pattern: '[a-z0-9-.]+'
+                        pattern: "[a-z0-9-.]+"
                       uuid:
                         type: string
                         format: uuid
@@ -190,7 +188,7 @@ paths:
                   schema:
                     type: object
                     additionalProperties:
-                      $ref: 'https://json-schema.org/draft/2020-12/schema'
+                      $ref: "https://json-schema.org/draft/2020-12/schema"
 
               example:
                 components: []
@@ -203,7 +201,7 @@ paths:
                     sysname: Linux
                     nodename: lat.0l.de
                     release: 5.13.14-200.fc34.x86_64
-                    version: '#1 SMP Fri Sep 3 15:33:01 UTC 2021'
+                    version: "#1 SMP Fri Sep 3 15:33:01 UTC 2021"
                     machine: x86_64
                   managed_by: f4751894-205e-11eb-aefb-0741ff98abca
                 properties:
@@ -218,79 +216,79 @@ paths:
                     type: object
                     default: {}
                     required:
-                    - name
-                    - category
-                    - location
-                    - owner
-                    - realm
-                    - type
-                    - api_url
-                    - ws_url
+                      - name
+                      - category
+                      - location
+                      - owner
+                      - realm
+                      - type
+                      - api_url
+                      - ws_url
                     properties:
                       name:
                         type: string
                         title: Component name
                         default: New Component
-                        examples: 'Generic Simulator #1'
+                        examples: "Generic Simulator #1"
                       owner:
                         type: string
                         title: Component owner
                         examples:
-                        - rmr
-                        - svg
+                          - rmr
+                          - svg
                       realm:
                         type: string
                         title: Component realm
-                        default: ''
+                        default: ""
                         examples:
-                        - de.rwth-aachen.eonerc.acs
+                          - de.rwth-aachen.eonerc.acs
                       category:
                         type: string
                         title: Component category
                         examples:
-                        - simulator
+                          - simulator
                       location:
                         type: string
                         title: Component location
                         examples:
-                        - Richard's PC
+                          - Richard's PC
                       type:
                         type: string
                         default: generic
                       uuid:
-                        type: 'string'
+                        type: "string"
                         format: uuid
                       ws_url:
                         type: string
                         examples:
-                        - 'https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1'
+                          - "https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/generic_1"
                       api_url:
                         type: string
                         examples:
-                        - 'https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1'
+                          - "https://villas.k8s.eonerc.rwth-aachen.de/api/ic/generic_1"
                       shell:
                         type: boolean
                         default: false
                         examples:
-                        - true
+                          - true
                       whitelist:
                         type: array
                         title: The whitelist schema
                         default: []
                         examples:
-                        - - /sbin/ping
-                          - ^echo
+                          - - /sbin/ping
+                            - ^echo
                         additionalItems: true
                         items:
                           anyOf:
-                          - type: string
-                            examples:
-                            - /sbin/ping
-                            - ^echo
+                            - type: string
+                              examples:
+                                - /sbin/ping
+                                - ^echo
 
     post:
       operationId: executeComponentAction
-      summary: 'Send a control action to the component'
+      summary: "Send a control action to the component"
       requestBody:
         required: true
         content:
@@ -301,27 +299,26 @@ paths:
                 action:
                   type: string
                   enum:
-                  - start
-                  - stop
-                  - pause
-                  - resume
-                  - create
-                  - delete
-                  - shutdown
-                  - reset
+                    - start
+                    - stop
+                    - pause
+                    - resume
+                    - create
+                    - delete
+                    - shutdown
+                    - reset
                 parameters:
                   oneOf:
-                  - $ref: ../villas/controller/schemas/manager/generic/create.yaml
-                  - $ref: ../villas/controller/schemas/manager/kubernetes/create.yaml
-                  - $ref: ../villas/controller/schemas/simulator/dpsim/start.yaml
-                  - $ref: ../villas/controller/schemas/simulator/dummy/start.yaml
+                    - $ref: ../villas/controller/schemas/manager/generic/create-generic.yaml
+                    - $ref: ../villas/controller/schemas/manager/kubernetes/create-kubernetes.yaml
+                    - $ref: ../villas/controller/schemas/simulator/dpsim/start-dpsim.yaml
+                    - $ref: ../villas/controller/schemas/simulator/dummy/start-dummy.yaml
 
       responses:
-        '200':
-          description: ''
+        "200":
+          description: ""
           content:
             application/json: {}
-
 
               # example:
               #   runtime: 10.2
