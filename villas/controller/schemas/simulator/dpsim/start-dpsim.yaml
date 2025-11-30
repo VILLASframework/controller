@@ -3,37 +3,38 @@ $schema: http://json-schema.org/draft-04/schema#
 
 type: object
 required:
-- name
+  - name
 properties:
   blocking:
-    title: Block execution of each time-step until the arrival of new data on the
+    title:
+      Block execution of each time-step until the arrival of new data on the
       interfaces
     type: boolean
   duration:
     examples:
-    - 3600.0
+      - 3600.0
     title: Simulation duration [s]
     type: number
   log-level:
     enum:
-    - NONE
-    - INFO
-    - DEBUG
-    - WARN
-    - ERR
+      - NONE
+      - INFO
+      - DEBUG
+      - WARN
+      - ERR
     title: Logging level
     type: string
   name:
     examples:
-    - Simulation_1
+      - Simulation_1
     title: Name of log files
     type: string
   options:
     additionalProperties:
       type: number
     examples:
-    - Ld: 0.2299
-      Lq: 0.0
+      - Ld: 0.2299
+        Lq: 0.0
     title: User-definable options
     type: object
   scenario:
@@ -41,21 +42,21 @@ properties:
     type: integer
   solver-domain:
     enum:
-    - SP
-    - DP
-    - EMT
+      - SP
+      - DP
+      - EMT
     title: Domain of solver
     type: string
   solver-type:
     enum:
-    - NRP
-    - MNA
+      - NRP
+      - MNA
     title: Type of solver
     type: string
   start-at:
     description: The date must be given as an ISO8601 formatted string
     examples:
-    - '2004-06-14T23:34:30'
+      - "2004-06-14T23:34:30"
     format: date-time
     title: Start time of real-time simulation
     type: string
@@ -70,12 +71,12 @@ properties:
     type: boolean
   system-freq:
     examples:
-    - 50.0
-    - 60.0
+      - 50.0
+      - 60.0
     title: System frequency [Hz]
     type: number
   timestep:
     examples:
-    - 5.0e-05
+      - 5.0e-05
     title: Simulation time-step [s]
     type: number
