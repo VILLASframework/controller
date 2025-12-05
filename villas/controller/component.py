@@ -107,7 +107,11 @@ class Component:
                 fo = resources.open_text(pkg, res)
                 loadedschema = yaml.load(fo, yaml.SafeLoader)
 
-                schema[name] = Draft202012Validator(loadedschema)
+                try:
+                    Draft202012Validator.check_schema(loadedschema)
+                    schema[name] = loadedschema
+                except jsonschema.exceptions.SchemaError:
+                    self.logger.warning("Schema is invalid!")
 
         return schema
 
@@ -148,7 +152,7 @@ class Component:
                 **self.headers
             },
             'schema': {
-                name: v.schema for name, v in self.schema.items()
+                name: v for name, v in self.schema.items()
             }
         }
 
@@ -277,12 +281,15 @@ class Component:
 
     def publish_status(self):
         if not self.mixin:
+            self.logger.warn('No mixin!')
             return
 
         self.mixin.publish(self.status, headers=self.headers)
 
     def publish_status_periodically(self):
-        self.logger.info('Start state publish thread')
+        self.logger.info('Start state publish thread, initial status: %s',
+                         self.status)
+        self.publish_status()  # publish the first update immediately
 
         while not self.publish_status_thread_stop.wait(
           self.publish_status_interval):
