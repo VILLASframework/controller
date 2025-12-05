@@ -39,7 +39,7 @@ class Component:
         self._status_fields = {}
 
         self.logger = logging.getLogger(
-            f'villas.controller.{self.category}.{self.type}:{self.uuid}')
+            f'villas.controller.{self.category}.{self.type}.{self.uuid}')
 
         self._schema = self.load_schema()
 
