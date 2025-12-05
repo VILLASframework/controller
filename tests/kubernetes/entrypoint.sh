@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+# SPDX-License-Identifier: Apache-2.0
 
 sleep_interruptible() {
 	REM=$1

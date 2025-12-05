@@ -1,4 +1,7 @@
 ---
+# SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+# SPDX-License-Identifier: Apache-2.0
+
 $schema: http://json-schema.org/draft-07/schema
 additionalProperties: true
 

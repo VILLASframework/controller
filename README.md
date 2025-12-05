@@ -8,11 +8,15 @@ Documentation is available online at: https://villas.fein-aachen.org/docs/contro
 
 ## Copyright
 
-2021, Institute for Automation of Complex Power Systems, EONERC
+2025, Institute for Automation of Complex Power Systems, EONERC
 
 ## License
 
 This project is released under the terms of the [Apache 2.0](LICENSE).
+
+- SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+- SPDX-License-Identifier: Apache-2.0
+
 
 We kindly ask all academic publications employing components of VILLASframework to cite one of the following papers:
 

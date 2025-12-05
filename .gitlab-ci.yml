@@ -1,6 +1,23 @@
+---
+# SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+# SPDX-License-Identifier: Apache-2.0
+
 stages:
+  - test
   - build
   - deploy
+
+# Stage: test
+##############################################################################
+
+test:reuse:
+  stage: test
+  needs: []
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
 
 # Stage: build
 ##############################################################################
