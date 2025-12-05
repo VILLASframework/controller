@@ -90,7 +90,7 @@ class VILLASnodeManager(Manager):
         self.change_state('idle')
 
         # Once the gateway shutsdown, all the gateway nodes are also shutdown
-        for node in self.nodes:
+        for node in self._nodes:
             node.change_state('shutdown')
 
     def pause(self, payload):
@@ -99,7 +99,7 @@ class VILLASnodeManager(Manager):
         self.change_state('paused')
 
         # Once the gateway shutsdown, all the gateway nodes are also shutdown
-        for node in self.nodes:
+        for node in self._nodes:
             node.change_state('paused')
 
     def resume(self, payload):
