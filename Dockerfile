@@ -4,7 +4,7 @@ FROM python:3.13 AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc python3-dev pkg-config && \
     rm -rf /var/lib/apt/lists/*
-    
+
 RUN pip install --upgrade \
     pip \
     setuptools \
