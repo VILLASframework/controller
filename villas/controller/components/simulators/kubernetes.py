@@ -19,7 +19,7 @@ class KubernetesJob(Simulator):
     def __init__(self, manager: KubernetesManager, **args):
         super().__init__(**args)
 
-        self.manager = manager
+        self.set_manager(manager)
 
         props = args.get('properties', {})
 
