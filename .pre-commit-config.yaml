@@ -1,3 +1,7 @@
+---
+# SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+# SPDX-License-Identifier: Apache-2.0
+
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0

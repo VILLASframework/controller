@@ -1,4 +1,7 @@
 ---
+# SPDX-FileCopyrightText: 2014-2025 The VILLASframework Authors
+# SPDX-License-Identifier: Apache-2.0
+
 broker:
   url: amqp://villas:Haegiethu0rohtee@k8s.eonerc.rwth-aachen.de:30809/%2F
 
