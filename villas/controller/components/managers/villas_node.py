@@ -110,3 +110,6 @@ class VILLASnodeManager(Manager):
 
     def reset(self, payload):
         self.node.restart()
+
+    def load_config(self, payload):
+        self.node.load_config(payload['config'])
