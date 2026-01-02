@@ -212,6 +212,9 @@ class Component:
             elif action == 'reset':
                 self.change_state('resetting')
                 self.reset(payload)
+            elif action == 'load_config':
+                self.change_state('loading configuration')
+                self.load_config(payload)
             else:
                 raise SimulationException(self, 'Unknown action',
                                           action=action)
@@ -261,6 +264,9 @@ class Component:
 
     def reset(self, payload):
         self.started = time.time()
+
+    def load_config(self, payload):
+        raise SimulationException(self, 'The component can not load a configuration')
 
     @staticmethod
     def from_dict(dict):
