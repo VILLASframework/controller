@@ -245,19 +245,19 @@ class Component:
         self.publish_status()
 
     def start(self, payload):
-        raise SimulationException('The component can not be started')
+        raise SimulationException(self, 'The component can not be started')
 
     def stop(self, payload):
-        raise SimulationException('The component can not be stopped')
+        raise SimulationException(self, 'The component can not be stopped')
 
     def pause(self, payload):
-        raise SimulationException('The component can not be paused')
+        raise SimulationException(self, 'The component can not be paused')
 
     def resume(self, payload):
-        raise SimulationException('The component can not be resumed')
+        raise SimulationException(self, 'The component can not be resumed')
 
     def shutdown(self, payload):
-        raise SimulationException('The component can not be shut down')
+        raise SimulationException(self, 'The component can not be shut down')
 
     def reset(self, payload):
         self.started = time.time()
