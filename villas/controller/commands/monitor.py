@@ -32,7 +32,8 @@ class MonitorCommand(Command):
 
         queue = kombu.Queue(exchange=exchange,
                             binding_arguments=headers,
-                            durable=False)
+                            durable=False,
+                            exclusive=True)
 
         consumer = kombu.Consumer(connection,
                                   queues=queue,
