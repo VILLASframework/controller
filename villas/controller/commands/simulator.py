@@ -104,7 +104,8 @@ class SimulatorPingCommand(Command):
         consumer = kombu.Consumer(channel,
                                   queues=kombu.Queue(
                                       exchange=exchange,
-                                      durable=False
+                                      durable=False,
+                                      exclusive=True
                                   ),
                                   on_message=SimulatorPingCommand.on_message)
 
